@@ -16,9 +16,9 @@ class CreateAuditLogsTable extends Migration
                 'auto_increment' => true,
             ],
             'admin_id' => [
-                'type'     => 'INT',
+                'type'       => 'INT',
                 'constraint' => 11,
-                'unsigned' => true,
+                'unsigned'   => true,
             ],
             'action' => [
                 'type'       => 'VARCHAR',
@@ -38,7 +38,8 @@ class CreateAuditLogsTable extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey('admin_id');
         $this->forge->addKey('action');
-        $this->forge->addForeignKey('admin_id', 'admins', 'id', 'RESTRICT', 'CASCADE');
+        // RESTRICT: admin yang punya jejak audit tidak dapat dihapus, log tidak ikut hilang.
+        $this->forge->addForeignKey('admin_id', 'admins', 'id', 'RESTRICT', 'RESTRICT');
 
         $this->forge->createTable('audit_logs', true, [
             'ENGINE'  => 'InnoDB',

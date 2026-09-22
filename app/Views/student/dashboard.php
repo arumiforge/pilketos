@@ -5,7 +5,7 @@
 <section class="page-header">
   <div class="container">
     <p class="eyebrow">Dasbor Siswa</p>
-    <h2><?= esc($name) ?></h2>
+    <h2><?= esc($student['name']) ?></h2>
   </div>
 </section>
 
@@ -13,16 +13,22 @@
   <div class="container stack-lg">
     <dl class="kv-list">
       <div class="kv-list__row">
+        <dt>NISN</dt>
+        <dd><?= esc($student['nisn']) ?></dd>
+      </div>
+      <div class="kv-list__row">
         <dt>Kelas</dt>
-        <dd><?= esc($kelas) ?></dd>
+        <dd><?= esc($student['kelas']) ?></dd>
       </div>
       <div class="kv-list__row">
         <dt>Nomor Absen</dt>
-        <dd><?= esc($nomor_absen ?? '-') ?></dd>
+        <dd><?= esc($student['nomor_absen'] ?? '-') ?></dd>
       </div>
     </dl>
 
-    <p class="text-muted">Halaman untuk memilih kandidat akan muncul di sini begitu pemilihan dibuka sesuai jadwal, ya.</p>
+    <?= $this->include('partials/election_status') ?>
+
+    <p class="text-muted">Halaman untuk memilih pasangan calon akan muncul di sini begitu pemilihan dibuka sesuai jadwal.</p>
 
     <form action="<?= base_url('student/logout') ?>" method="post">
       <?= csrf_field() ?>

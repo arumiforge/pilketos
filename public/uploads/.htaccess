@@ -1,0 +1,11 @@
+# Direktori upload asset kandidat (Stage 3).
+# Hanya file statis (gambar); skrip tidak boleh dieksekusi/diakses.
+Options -Indexes -ExecCGI
+
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp|htaccess)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>

@@ -16,28 +16,36 @@ class CreateTeacherVotesTable extends Migration
                 'auto_increment' => true,
             ],
             'election_id' => [
-                'type'     => 'INT',
+                'type'       => 'INT',
                 'constraint' => 11,
-                'unsigned' => true,
+                'unsigned'   => true,
             ],
             'teacher_id' => [
-                'type'     => 'INT',
+                'type'       => 'INT',
                 'constraint' => 11,
-                'unsigned' => true,
+                'unsigned'   => true,
             ],
             'candidate_id' => [
-                'type'     => 'INT',
+                'type'       => 'INT',
                 'constraint' => 11,
-                'unsigned' => true,
+                'unsigned'   => true,
             ],
             'status' => [
                 'type'       => 'ENUM',
-                'constraint' => ['LOCKED'],
+                'constraint' => ['LOCKED', 'UNLOCKED'],
                 'default'    => 'LOCKED',
-                'comment'    => 'Baris hanya ada selama hak suara aktif terkunci. Unlock menghapus baris ini setelah diarsipkan ke vote_unlock_logs.',
+                'comment'    => 'LOCKED = suara aktif. UNLOCKED = dibuka admin, baris tetap disimpan sebagai riwayat',
             ],
+            // Bernilai 1 hanya untuk suara LOCKED, NULL untuk riwayat UNLOCKED.
+            // Unique key di bawah memakai kolom ini sehingga database sendiri
+            // menjamin maksimal 1 suara aktif per guru per election.
+            'active_lock' => "`active_lock` TINYINT(1) GENERATED ALWAYS AS (CASE WHEN `status` = 'LOCKED' THEN 1 ELSE NULL END) STORED",
             'voted_at' => [
                 'type' => 'DATETIME',
+            ],
+            'unlocked_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
             ],
             'device_info' => [
                 'type'       => 'VARCHAR',
@@ -60,13 +68,14 @@ class CreateTeacherVotesTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        // Satu guru hanya boleh punya 1 baris vote aktif per election.
-        $this->forge->addUniqueKey(['election_id', 'teacher_id']);
-        $this->forge->addKey('candidate_id');
+        $this->forge->addUniqueKey(['election_id', 'teacher_id', 'active_lock'], 'uq_teacher_votes_active');
+        $this->forge->addKey('teacher_id');
+        $this->forge->addKey(['election_id', 'status', 'candidate_id'], false, false, 'idx_teacher_votes_count');
 
-        $this->forge->addForeignKey('election_id', 'elections', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('teacher_id', 'teachers', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('candidate_id', 'candidates', 'id', 'RESTRICT', 'CASCADE');
+        // RESTRICT: guru/kandidat/election yang sudah memiliki suara tidak dapat dihapus.
+        $this->forge->addForeignKey('election_id', 'elections', 'id', 'RESTRICT', 'RESTRICT');
+        $this->forge->addForeignKey('teacher_id', 'teachers', 'id', 'RESTRICT', 'RESTRICT');
+        $this->forge->addForeignKey('candidate_id', 'candidates', 'id', 'RESTRICT', 'RESTRICT');
 
         $this->forge->createTable('teacher_votes', true, [
             'ENGINE'  => 'InnoDB',

@@ -2,9 +2,10 @@
 ## STUDENT & TEACHER VOTING EXPERIENCE, INTERACTIVE CANDIDATES & LOCKED CHOICE
  
 Baca:
-1. `MASTER PROJECT`
-2. `01-foundation-database-auth.md`
-3. seluruh file aplikasi yang benar-benar dihasilkan Stage 1.
+1. `00-MASTER-PROJECT.md`
+2. `01-FOUNDATION-DATABASE-AUTH.md`
+3. `STAGE1-NOTES.md` (kontrak & handoff Stage 1)
+4. seluruh file aplikasi yang benar-benar dihasilkan Stage 1.
 Jangan membuat project baru.
  
 ## OBJECTIVE
@@ -167,6 +168,14 @@ Simpan:
 - device info;
 - browser info;
 - lock status.
+ 
+Kontrak Stage 1 yang wajib dipakai:
+- insert ke `student_votes`/`teacher_votes` dengan `status = 'LOCKED'` (jangan mengisi kolom generated `active_lock`);
+- election aktif dari `ElectionModel::getCurrentElection()`, voting hanya bila status `ONGOING`;
+- kandidat harus `status_aktif = 1`;
+- identitas pemilih hanya dari session (`student_id`/`teacher_id`), tidak pernah dari input form;
+- device/browser diambil server dari User-Agent, bukan dari input client;
+- duplicate key pada `uq_student_votes_active`/`uq_teacher_votes_active` diperlakukan sebagai "sudah memilih", bukan error 500.
 ## DUPLICATE PROTECTION
  
 Wajib aman terhadap:
@@ -180,6 +189,8 @@ Gunakan:
 - DB constraint;
 - transaction;
 - server-side validation.
+ 
+Request AJAX mengirim header dari `App.jsonHeaders()` (CSRF + `X-Requested-With`). Sesi habis menghasilkan `401` JSON dengan field `redirect`.
 ## LOGIN ULANG
  
 Setelah voting:

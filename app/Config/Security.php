@@ -15,7 +15,7 @@ class Security extends BaseConfig
      *
      * @var string 'cookie' or 'session'
      */
-    public string $csrfProtection = 'cookie';
+    public string $csrfProtection = 'session';
 
     /**
      * --------------------------------------------------------------------------
@@ -33,7 +33,7 @@ class Security extends BaseConfig
      *
      * Token name for Cross Site Request Forgery protection.
      */
-    public string $tokenName = 'csrf_test_name';
+    public string $tokenName = 'csrf_token';
 
     /**
      * --------------------------------------------------------------------------
@@ -70,8 +70,11 @@ class Security extends BaseConfig
      * --------------------------------------------------------------------------
      *
      * Regenerate CSRF Token on every submission.
+     *
+     * false: token tetap per sesi (sesi sudah di-regenerate saat login).
+     * Mencegah gagal CSRF pada tab ganda dan request AJAX voting/live count.
      */
-    public bool $regenerate = true;
+    public bool $regenerate = false;
 
     /**
      * --------------------------------------------------------------------------

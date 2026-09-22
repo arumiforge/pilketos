@@ -20,8 +20,9 @@ class CreateElectionsTable extends Migration
                 'constraint' => 150,
             ],
             'tahun' => [
-                'type'       => 'INT',
+                'type'       => 'SMALLINT',
                 'constraint' => 4,
+                'unsigned'   => true,
             ],
             'start_at' => [
                 'type' => 'DATETIME',
@@ -33,6 +34,7 @@ class CreateElectionsTable extends Migration
                 'type'       => 'ENUM',
                 'constraint' => ['UPCOMING', 'ONGOING', 'FINISHED'],
                 'default'    => 'UPCOMING',
+                'comment'    => 'Cermin dari jadwal. Sumber kebenaran: start_at/end_at vs waktu server (ElectionModel::resolveStatus)',
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -50,6 +52,12 @@ class CreateElectionsTable extends Migration
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
+
+        // Jadwal harus valid: selesai setelah mulai.
+        $table = $this->db->escapeIdentifiers($this->db->prefixTable('elections'));
+        $this->db->query(
+            "ALTER TABLE {$table} ADD CONSTRAINT `chk_elections_schedule` CHECK (`end_at` > `start_at`)",
+        );
     }
 
     public function down()

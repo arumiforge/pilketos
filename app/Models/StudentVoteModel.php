@@ -4,8 +4,21 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
+/**
+ * Suara siswa. Satu baris = satu kali memilih.
+ *
+ * - status LOCKED   : suara aktif (maksimal 1 per siswa per election, dijamin
+ *                     unique key uq_student_votes_active di database).
+ * - status UNLOCKED : suara lama yang dibuka admin; tetap disimpan sebagai
+ *                     riwayat audit dan TIDAK dihitung dalam hasil.
+ *
+ * Kolom active_lock adalah generated column (read-only), jangan diisi.
+ */
 class StudentVoteModel extends Model
 {
+    public const STATUS_LOCKED   = 'LOCKED';
+    public const STATUS_UNLOCKED = 'UNLOCKED';
+
     protected $table         = 'student_votes';
     protected $primaryKey    = 'id';
     protected $returnType    = 'array';
@@ -15,6 +28,7 @@ class StudentVoteModel extends Model
         'candidate_id',
         'status',
         'voted_at',
+        'unlocked_at',
         'device_info',
         'browser_info',
     ];
@@ -24,13 +38,13 @@ class StudentVoteModel extends Model
     protected $updatedField  = 'updated_at';
 
     /**
-     * Cari vote aktif milik seorang siswa pada election tertentu.
-     * Baris hanya ada selama hak suara terkunci (LOCKED).
+     * Suara aktif (LOCKED) milik seorang siswa pada election tertentu.
      */
     public function findActiveVote(int $electionId, int $studentId): ?array
     {
         return $this->where('election_id', $electionId)
             ->where('student_id', $studentId)
+            ->where('status', self::STATUS_LOCKED)
             ->first();
     }
 

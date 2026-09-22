@@ -33,7 +33,7 @@ class CreateStudentsTable extends Migration
                 'constraint' => 20,
             ],
             'nomor_absen' => [
-                'type'       => 'INT',
+                'type'       => 'SMALLINT',
                 'constraint' => 5,
                 'unsigned'   => true,
                 'null'       => true,
@@ -41,7 +41,13 @@ class CreateStudentsTable extends Migration
             'kodeunik' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 20,
-                'comment'    => 'Format tanggal lahir sebagai string, contoh 01032013',
+                'comment'    => 'Tanggal lahir DDMMYYYY sebagai string, contoh 01032013',
+            ],
+            'status_aktif' => [
+                'type'       => 'TINYINT',
+                'constraint' => 1,
+                'default'    => 1,
+                'comment'    => 'Hanya siswa aktif yang dapat login dan dihitung sebagai pemilih',
             ],
             'created_at' => [
                 'type' => 'DATETIME',

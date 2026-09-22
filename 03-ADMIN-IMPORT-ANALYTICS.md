@@ -2,9 +2,9 @@
 ## ADMIN PANEL, IMPORT STUDENTS & TEACHERS, CANDIDATE THEMING, ANALYTICS, LIVE COUNT & UNLOCK
  
 Baca:
-1. MASTER PROJECT
-2. STAGE 1
-3. STAGE 2
+1. `00-MASTER-PROJECT.md`
+2. `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md`
+3. `02-STUDENT-TEACHER-VOTING.md` + catatan handoff Stage 2
 4. semua source file aktual dari project.
 Jangan membuat project baru.
 Jangan menghapus behavior voting yang sudah bekerja.
@@ -76,6 +76,10 @@ Validasi:
 - safe storage.
 Candidate theme harus dipakai oleh frontend Stage 2.
  
+Simpan file di `public/uploads/candidates/` dengan nama acak; kolom database hanya berisi nama file. URL dibuat dengan `CandidateModel::assetUrl()`.
+ 
+Kandidat yang sudah menerima suara tidak dapat dihapus (FK RESTRICT); gunakan `status_aktif = 0`.
+ 
 ## STUDENT MANAGEMENT
  
 Fitur:
@@ -137,6 +141,8 @@ Validasi:
 - leading zero.
 Jangan kehilangan leading zero.
  
+Import ulang: NISN yang sudah ada diperbarui (upsert), bukan diduplikasi. Siswa yang sudah memiliki riwayat suara tidak dapat dihapus; nonaktifkan dengan `status_aktif = 0`.
+ 
 ## IMPORT EXCEL TEACHERS
  
 Template:
@@ -160,12 +166,14 @@ Admin dapat:
 - end_at;
 - election name;
 - year;
-- state.
+- state (ditampilkan dari `ElectionModel::resolveStatus()`; menutup lebih awal = mengubah end_at).
 Jangan mengandalkan browser clock.
  
 ## ANALYTICS
  
 Analytics hanya admin.
+ 
+Semua angka hanya menghitung suara `status = 'LOCKED'` dan pemilih `status_aktif = 1`, dihitung dengan query agregasi MySQL.
  
 ### 1. Overall
  
@@ -282,7 +290,8 @@ Setelah klik:
 - wajib reason;
 - confirmation;
 - transaction;
-- ubah state;
+- ubah state: `UPDATE` baris vote `LOCKED` menjadi `UNLOCKED` + `unlocked_at` (jangan `DELETE`);
+- insert `vote_unlock_logs` dengan `student_vote_id`/`teacher_vote_id`;
 - simpan audit log.
 Admin tidak boleh:
 - mengubah pilihan kandidat;

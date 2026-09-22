@@ -10,74 +10,73 @@ class AuthController extends BaseController
     public function loginForm()
     {
         if (session()->get('user_type') === 'admin') {
-            return redirect()->to('/admin/dashboard');
+            return redirect()->to('admin/dashboard');
         }
 
-        return view('admin/login');
+        return view('admin/login', ['title' => 'Masuk Admin']);
     }
 
     public function attemptLogin()
     {
+        $data = [
+            'username' => trim((string) $this->request->getPost('username')),
+            'password' => (string) $this->request->getPost('password'),
+        ];
+
         $rules = [
             'username' => [
-                'label' => 'Nama pengguna',
-                'rules' => 'required|max_length[100]',
+                'label'  => 'Nama pengguna',
+                'rules'  => 'required|max_length[100]',
                 'errors' => [
                     'required'   => 'Nama pengguna wajib diisi.',
                     'max_length' => 'Nama pengguna terlalu panjang.',
                 ],
             ],
             'password' => [
-                'label' => 'Kata sandi',
-                'rules' => 'required',
+                'label'  => 'Kata sandi',
+                'rules'  => 'required|max_length[255]',
                 'errors' => [
-                    'required' => 'Kata sandi wajib diisi.',
+                    'required'   => 'Kata sandi wajib diisi.',
+                    'max_length' => 'Kata sandi terlalu panjang.',
                 ],
             ],
         ];
 
-        if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        if (! $this->validateData($data, $rules)) {
+            return $this->failLogin('username', $data['username'], $this->validator->getErrors());
         }
 
-        $ip = $this->request->getIPAddress();
-        if (! $this->loginAttemptAllowed('login-admin-' . $ip, 5, 60)) {
-            return redirect()->back()->withInput()
-                ->with('error', 'Terlalu banyak percobaan masuk. Silakan coba lagi sebentar lagi.');
+        $wait = $this->loginBlockedSeconds('admin', $data['username']);
+        if ($wait > 0) {
+            return $this->failLogin(
+                'username',
+                $data['username'],
+                "Terlalu banyak percobaan masuk. Silakan coba lagi dalam {$wait} detik.",
+            );
         }
 
-        $username = trim((string) $this->request->getPost('username'));
-        $password = (string) $this->request->getPost('password');
-
-        $adminModel = new AdminModel();
-        $admin      = $adminModel->verifyCredentials($username, $password);
+        $admin = model(AdminModel::class)->verifyCredentials($data['username'], $data['password']);
 
         if (! $admin) {
-            return redirect()->back()->withInput()
-                ->with('error', 'Nama pengguna atau kata sandi tidak sesuai.');
+            $this->recordLoginFailure('admin', $data['username']);
+
+            return $this->failLogin(
+                'username',
+                $data['username'],
+                'Nama pengguna atau kata sandi tidak sesuai.',
+            );
         }
 
-        session()->regenerate();
-        session()->set([
-            'user_type'  => 'admin',
-            'admin_id'   => $admin['id'],
-            'admin_name' => $admin['name'],
-            'isLoggedIn' => true,
-        ]);
+        $this->clearLoginFailures('admin', $data['username']);
+        $this->startAuthSession('admin', (int) $admin['id']);
 
-        return redirect()->to('/admin/dashboard');
+        return redirect()->to('admin/dashboard');
     }
 
     public function logout()
     {
-        session()->remove([
-            'user_type',
-            'admin_id',
-            'admin_name',
-            'isLoggedIn',
-        ]);
-        session()->destroy();
+        $this->endAuthSession();
 
-        return redirect()->to('/admin/login');
+        return redirect()->to('admin/login');
     }
 }

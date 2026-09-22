@@ -10,74 +10,73 @@ class AuthController extends BaseController
     public function loginForm()
     {
         if (session()->get('user_type') === 'teacher') {
-            return redirect()->to('/teacher/dashboard');
+            return redirect()->to('teacher/dashboard');
         }
 
-        return view('teacher/login');
+        return view('teacher/login', ['title' => 'Masuk Guru']);
     }
 
     public function attemptLogin()
     {
+        // Normalisasi: NIP tanpa spasi; kode unik boleh diketik 01-03-2006 / 01/03/2006.
+        $data = [
+            'nip'      => preg_replace('/\s+/', '', (string) $this->request->getPost('nip')),
+            'kodeunik' => preg_replace('/[\s\-\/.]+/', '', (string) $this->request->getPost('kodeunik')),
+        ];
+
         $rules = [
             'nip' => [
-                'label' => 'NIP',
-                'rules' => 'required|max_length[30]',
+                'label'  => 'NIP',
+                'rules'  => 'required|max_length[30]',
                 'errors' => [
                     'required'   => 'NIP wajib diisi.',
                     'max_length' => 'NIP terlalu panjang.',
                 ],
             ],
             'kodeunik' => [
-                'label' => 'Kode unik',
-                'rules' => 'required|max_length[20]',
+                'label'  => 'Kode unik',
+                'rules'  => 'required|regex_match[/^[0-9]{8}$/]',
                 'errors' => [
-                    'required'   => 'Kode unik wajib diisi.',
-                    'max_length' => 'Kode unik terlalu panjang.',
+                    'required'    => 'Kode unik wajib diisi.',
+                    'regex_match' => 'Kode unik terdiri dari 8 angka tanggal lahir, contoh 01032006.',
                 ],
             ],
         ];
 
-        if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        if (! $this->validateData($data, $rules)) {
+            return $this->failLogin('nip', $data['nip'], $this->validator->getErrors());
         }
 
-        $ip = $this->request->getIPAddress();
-        if (! $this->loginAttemptAllowed('login-teacher-' . $ip, 8, 60)) {
-            return redirect()->back()->withInput()
-                ->with('error', 'Terlalu banyak percobaan masuk. Silakan coba lagi sebentar lagi.');
+        $wait = $this->loginBlockedSeconds('teacher', $data['nip']);
+        if ($wait > 0) {
+            return $this->failLogin(
+                'nip',
+                $data['nip'],
+                "Terlalu banyak percobaan masuk. Silakan coba lagi dalam {$wait} detik.",
+            );
         }
 
-        $nip      = trim((string) $this->request->getPost('nip'));
-        $kodeunik = trim((string) $this->request->getPost('kodeunik'));
-
-        $teacherModel = new TeacherModel();
-        $teacher      = $teacherModel->findForLogin($nip, $kodeunik);
+        $teacher = model(TeacherModel::class)->findForLogin($data['nip'], $data['kodeunik']);
 
         if (! $teacher) {
-            return redirect()->back()->withInput()
-                ->with('error', 'NIP atau kode unik tidak sesuai. Silakan periksa kembali.');
+            $this->recordLoginFailure('teacher', $data['nip']);
+
+            return $this->failLogin(
+                'nip',
+                $data['nip'],
+                'NIP atau kode unik tidak sesuai. Silakan periksa kembali.',
+            );
         }
 
-        session()->regenerate();
-        session()->set([
-            'user_type'    => 'teacher',
-            'teacher_id'   => $teacher['id'],
-            'teacher_name' => $teacher['name'],
-            'isLoggedIn'   => true,
-        ]);
+        $this->clearLoginFailures('teacher', $data['nip']);
+        $this->startAuthSession('teacher', (int) $teacher['id']);
 
-        return redirect()->to('/teacher/dashboard');
+        return redirect()->to('teacher/dashboard');
     }
 
     public function logout()
     {
-        session()->remove([
-            'user_type',
-            'teacher_id',
-            'teacher_name',
-            'isLoggedIn',
-        ]);
-        session()->destroy();
+        $this->endAuthSession();
 
         return redirect()->to('/');
     }
