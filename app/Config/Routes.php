@@ -11,6 +11,9 @@ use CodeIgniter\Router\RouteCollection;
 // -----------------------------------------------------------------
 $routes->get('/', 'Home::index');
 
+// Jam server untuk countdown (JSON publik, tanpa data pemilih/suara).
+$routes->get('election/clock', 'ElectionController::clock');
+
 $routes->get('student/login', 'Student\AuthController::loginForm');
 $routes->post('student/login', 'Student\AuthController::attemptLogin');
 
@@ -27,19 +30,27 @@ $routes->addRedirect('admin', 'admin/dashboard');
 
 // -----------------------------------------------------------------
 // STUDENT (protected by studentauth filter)
-// Stage 2 menambahkan route voting siswa di dalam grup ini.
+// Voting (Stage 2): identitas pemilih hanya dari sesi, tidak ada id di URL.
 // -----------------------------------------------------------------
 $routes->group('student', ['filter' => 'studentauth'], static function (RouteCollection $routes) {
     $routes->get('dashboard', 'Student\DashboardController::index');
+    $routes->get('vote', 'Student\VoteController::index');
+    $routes->post('vote', 'Student\VoteController::submit');
+    $routes->get('vote/confirm/(:num)', 'Student\VoteController::confirm/$1');
+    $routes->get('my-vote', 'Student\VoteController::myVote');
     $routes->post('logout', 'Student\AuthController::logout');
 });
 
 // -----------------------------------------------------------------
 // TEACHER (protected by teacherauth filter)
-// Stage 2 menambahkan route voting guru di dalam grup ini.
+// Voting (Stage 2): identitas pemilih hanya dari sesi, tidak ada id di URL.
 // -----------------------------------------------------------------
 $routes->group('teacher', ['filter' => 'teacherauth'], static function (RouteCollection $routes) {
     $routes->get('dashboard', 'Teacher\DashboardController::index');
+    $routes->get('vote', 'Teacher\VoteController::index');
+    $routes->post('vote', 'Teacher\VoteController::submit');
+    $routes->get('vote/confirm/(:num)', 'Teacher\VoteController::confirm/$1');
+    $routes->get('my-vote', 'Teacher\VoteController::myVote');
     $routes->post('logout', 'Teacher\AuthController::logout');
 });
 

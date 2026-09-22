@@ -10,6 +10,8 @@ use CodeIgniter\Model;
  * Kolom file (foto_ketua, foto_wakil, theme_background) dan isi theme_asset
  * menyimpan NAMA FILE di public/uploads/candidates/ (bukan URL penuh).
  * theme_asset = JSON object, contoh: {"hero":"x.webp","texture":"y.webp","artwork":"z.webp","poster":"p.webp"}.
+ * theme_layout = art direction halaman kandidat (split | poster | column, NULL = otomatis).
+ * Data tampilan (URL, warna, layout) dibentuk oleh App\Libraries\CandidateTheme.
  */
 class CandidateModel extends Model
 {
@@ -30,6 +32,7 @@ class CandidateModel extends Model
         'theme_background',
         'theme_accent',
         'theme_asset',
+        'theme_layout',
         'status_aktif',
     ];
 
@@ -46,6 +49,7 @@ class CandidateModel extends Model
         'nama_ketua'   => 'required|max_length[150]',
         'nama_wakil'   => 'required|max_length[150]',
         'theme_accent' => 'permit_empty|regex_match[/^#[0-9A-Fa-f]{6}$/]',
+        'theme_layout' => 'permit_empty|in_list[split,poster,column]',
         'status_aktif' => 'permit_empty|in_list[0,1]',
     ];
 

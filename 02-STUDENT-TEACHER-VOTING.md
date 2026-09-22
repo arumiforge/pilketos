@@ -7,6 +7,8 @@ Baca:
 3. `STAGE1-NOTES.md` (kontrak & handoff Stage 1)
 4. seluruh file aplikasi yang benar-benar dihasilkan Stage 1.
 Jangan membuat project baru.
+
+Hasil implementasi aktual dan handoff Stage 2: `STAGE2-NOTES.md`.
  
 ## OBJECTIVE
  

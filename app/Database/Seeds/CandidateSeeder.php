@@ -10,7 +10,8 @@ class CandidateSeeder extends Seeder
     /**
      * Seed 3 pasangan calon contoh (data pengembangan, bukan data nyata).
      * Foto & asset tema sengaja dikosongkan (null) karena upload asset
-     * ditangani oleh panel admin pada Stage 3.
+     * ditangani oleh panel admin pada Stage 3. Tanpa asset, halaman kandidat
+     * memakai monogram inisial + pola SVG sesuai theme_layout.
      */
     public function run()
     {
@@ -35,6 +36,7 @@ class CandidateSeeder extends Seeder
                 'theme_background' => null,
                 'theme_accent'     => '#C4432B',
                 'theme_asset'      => null,
+                'theme_layout'     => 'split',
                 'status_aktif'     => 1,
                 'created_at'       => $now,
                 'updated_at'       => $now,
@@ -51,6 +53,7 @@ class CandidateSeeder extends Seeder
                 'theme_background' => null,
                 'theme_accent'     => '#2F5D50',
                 'theme_asset'      => null,
+                'theme_layout'     => 'poster',
                 'status_aktif'     => 1,
                 'created_at'       => $now,
                 'updated_at'       => $now,
@@ -67,6 +70,7 @@ class CandidateSeeder extends Seeder
                 'theme_background' => null,
                 'theme_accent'     => '#1B3A6B',
                 'theme_asset'      => null,
+                'theme_layout'     => 'column',
                 'status_aktif'     => 1,
                 'created_at'       => $now,
                 'updated_at'       => $now,

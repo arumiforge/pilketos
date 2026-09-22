@@ -1,9 +1,11 @@
 /* ==========================================================================
    SMP 1 Dawe — Pemilihan Ketua OSIS 2026
-   Foundation stylesheet (Stage 1)
+   Foundation (Stage 1) + beranda, countdown, dasbor pemilih (Stage 2).
    Base hitam / putih / abu-abu. Tanpa gradient, tanpa emoji.
-   Warna aksen hanya milik masing-masing pasangan calon (Stage 2/3),
-   dipasang lewat custom property --accent pada elemen kandidat.
+   Warna aksen hanya milik masing-masing pasangan calon, dipasang lewat
+   custom property --accent / --accent-ink / --accent-text pada elemen
+   kandidat (App\Libraries\CandidateTheme::style()).
+   Halaman kandidat & surat suara: voting.css.
    ========================================================================== */
 
 /* -- fonts: self-hosted (OFL), tidak bergantung CDN saat hari pemilihan -- */
@@ -26,6 +28,9 @@
 :root {
   /* -- color: neutral base only -- */
   --ink:        #15141A;
+  --ink-2:      #232229;
+  --ink-line:   #3A3940;
+  --ink-muted:  #BDB9AE;
   --ink-soft:   #3A3833;
   --paper:      #FAF9F6;
   --paper-dim:  #F1EFEA;
@@ -40,7 +45,9 @@
   --success:    #2F5D3E;
 
   /* default aksen = ink; elemen kandidat menimpa --accent dengan warna solid pasangan */
-  --accent:     var(--ink);
+  --accent:      var(--ink);
+  --accent-ink:  var(--paper);
+  --accent-text: var(--ink);
 
   --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -217,8 +224,11 @@ p { max-width: 62ch; }
 .site-nav__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
+
+.site-nav__logout { margin: 0; }
 
 @media (min-width: 720px) {
   .site-nav__row { min-height: 76px; }
@@ -267,6 +277,21 @@ p { max-width: 62ch; }
 }
 
 .btn--block { width: 100%; }
+
+.btn--lg {
+  min-height: 54px;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* tombol berwarna aksen pasangan (konfirmasi pilihan) */
+.btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn .icon { width: 1.2em; height: 1.2em; flex: 0 0 auto; }
 
 .btn:disabled,
 .btn[aria-disabled="true"] {
@@ -373,6 +398,44 @@ summary:focus-visible {
   margin-inline: auto;
 }
 
+/* -- ikon SVG inline (helper icon()) -- */
+.icon {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  flex: 0 0 auto;
+}
+
+/* -- pemberitahuan netral -- */
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  max-width: none;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-left-width: 4px;
+  border-left-color: var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper-dim);
+  font-size: 0.9375rem;
+}
+
+.notice .icon { margin-top: 0.15em; }
+
+/* -- status suara terkunci -- */
+.lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.45rem 0.85rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 /* -- status badge (selalu berisi teks, bukan warna saja) -- */
 .badge {
   display: inline-flex;
@@ -441,36 +504,6 @@ summary:focus-visible {
   .modal__actions .btn { flex: 1 1 100%; }
 }
 
-/* -- hero (Stage 1 foundation, art direction penuh di Stage 2) -- */
-.hero {
-  padding-block: var(--space-8) var(--space-7);
-  border-bottom: 1px solid var(--line);
-}
-
-.hero__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4) var(--space-6);
-  margin-top: var(--space-5);
-  font-size: 0.9375rem;
-  color: var(--gray-700);
-}
-
-.hero__meta dd { color: var(--ink); font-weight: 500; }
-
-.hero__empty { margin-top: var(--space-5); }
-
-.hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-}
-
-@media (max-width: 479px) {
-  .hero__actions .btn { flex: 1 1 100%; }
-}
-
 /* -- dashboard shell (student/teacher/admin) -- */
 .page-header {
   padding-block: var(--space-6);
@@ -497,6 +530,555 @@ summary:focus-visible {
 
 .kv-list__row dt { color: var(--gray-700); }
 .kv-list__row dd { font-weight: 600; text-align: right; }
+
+/* ==========================================================================
+   Stage 2 — Beranda (hero editorial + countdown kinetik)
+   ========================================================================== */
+
+.hero-x {
+  padding-block: var(--space-6) var(--space-6);
+  overflow: hidden;
+}
+
+.hero-x__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hero-x__kicker {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-x__title {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-5);
+  font-size: clamp(3.3rem, 17vw, 10.5rem);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+}
+
+.hero-x__year {
+  font-weight: 300;
+  color: var(--gray-700);
+  font-variant-numeric: lining-nums;
+}
+
+.hero-x__bands {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: var(--space-6);
+  height: 44px;
+}
+
+.hero-x__band {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-3);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  transform-origin: left center;
+  animation: band-in 0.9s var(--ease) both;
+}
+
+.hero-x__band:nth-child(2) { animation-delay: 0.08s; }
+.hero-x__band:nth-child(3) { animation-delay: 0.16s; }
+
+@keyframes band-in {
+  from { transform: scaleX(0); }
+  to { transform: none; }
+}
+
+.hero-x__lede {
+  margin-top: var(--space-5);
+  font-size: 1.0625rem;
+  max-width: 46ch;
+}
+
+@media (min-width: 720px) {
+  .hero-x { padding-block: var(--space-7) var(--space-7); }
+  .hero-x__lede { font-size: 1.1875rem; }
+}
+
+/* -- pita jam: countdown di atas bidang hitam -- */
+.clock-band {
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: var(--space-6) var(--space-7);
+}
+
+.clock-band__empty { color: var(--ink-muted); }
+
+/* -- countdown (partials/countdown.php + countdown.js) -- */
+.countdown__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.countdown__units {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.countdown__unit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.countdown__digits {
+  display: flex;
+  gap: 0.06em;
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.countdown__name {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* segmen digit odometer: setiap angka satu "keping" dengan garis belah tengah */
+.odo {
+  --h: 1.18em;
+  position: relative;
+  display: inline-block;
+  width: 0.72em;
+  height: var(--h);
+  overflow: hidden;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.odo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.18;
+}
+
+.odo__strip {
+  display: flex;
+  flex-direction: column;
+  transform: translate3d(0, calc(var(--pos, 1) * var(--h) * -1), 0);
+  transition: transform 0.7s var(--ease);
+}
+
+.odo__strip.is-instant { transition: none; }
+
+.odo__strip > span {
+  display: block;
+  height: var(--h);
+  line-height: var(--h);
+}
+
+.countdown--hero .countdown__label { color: var(--ink-muted); }
+
+.countdown--hero .countdown__digits { font-size: clamp(2.5rem, 12.5vw, 7.25rem); }
+
+.countdown--hero .odo {
+  background: var(--ink-2);
+  color: var(--paper);
+}
+
+.countdown--hero .countdown__name { color: var(--ink-muted); }
+
+.countdown--hero.countdown--finished .countdown__label,
+.countdown--hero:not(.countdown--upcoming):not(.countdown--ongoing) .countdown__label {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--paper);
+}
+
+.countdown--compact {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+}
+
+.countdown--compact .countdown__label { color: var(--gray-700); }
+
+.countdown--compact .countdown__units {
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  gap: var(--space-4);
+}
+
+.countdown--compact .countdown__digits { font-size: 1.9rem; }
+
+.countdown--compact .odo {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 3px;
+}
+
+.countdown--compact .countdown__name { color: var(--gray-700); font-size: 0.625rem; }
+
+/* -- garis waktu: mulai -> sekarang -> selesai -- */
+.timeline { margin-top: var(--space-6); }
+
+.timeline__track {
+  position: relative;
+  height: 22px;
+}
+
+.timeline__track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--ink-line);
+}
+
+.timeline__ticks {
+  position: absolute;
+  inset: 0 0 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.timeline__ticks i {
+  width: 1px;
+  height: 7px;
+  background: var(--ink-line);
+}
+
+.timeline__ticks i:nth-child(6n + 1) {
+  height: 15px;
+  background: var(--gray-500);
+}
+
+.timeline__fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--paper);
+  transform-origin: left center;
+  transform: scaleX(var(--progress, 0));
+}
+
+.timeline__marker {
+  position: absolute;
+  bottom: -5px;
+  left: calc(var(--progress, 0) * 100%);
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 4px var(--ink);
+}
+
+.countdown--ongoing .timeline__marker::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--paper);
+  border-radius: 50%;
+  animation: marker-pulse 2.4s var(--ease) infinite;
+}
+
+@keyframes marker-pulse {
+  from { transform: scale(0.6); opacity: 0.9; }
+  to { transform: scale(2); opacity: 0; }
+}
+
+.timeline__ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+.timeline__ends div:last-child { text-align: right; }
+
+.timeline__ends dd {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+/* -- pintu masuk siswa / guru -- */
+.entry { border-bottom: 1px solid var(--line); }
+
+.entry__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.entry__link {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  min-height: 96px;
+  padding-block: var(--space-5);
+  text-decoration: none;
+}
+
+.entry__link + .entry__link { border-top: 1px solid var(--line); }
+
+.entry__who {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  line-height: 1.1;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.15em;
+}
+
+.entry__how {
+  grid-column: 1;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+.entry__arrow {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 36px;
+  height: 36px;
+  transition: transform 0.3s var(--ease);
+}
+
+.entry__link:hover .entry__who,
+.entry__link:focus-visible .entry__who { text-decoration-line: underline; }
+
+.entry__link:hover .entry__arrow { transform: translateX(6px); }
+
+@media (min-width: 720px) {
+  .entry__grid { grid-template-columns: 1fr 1fr; }
+  .entry__link { padding: var(--space-6) var(--space-6) var(--space-6) 0; }
+  .entry__link + .entry__link {
+    border-top: 0;
+    border-left: 1px solid var(--line);
+    padding-left: var(--space-6);
+  }
+}
+
+/* -- teaser pasangan calon (publik, tanpa data suara) -- */
+.teaser { padding-block: var(--space-7) var(--space-8); }
+
+.teaser__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.teaser__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 2px solid var(--ink);
+}
+
+.teaser__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-4);
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.teaser__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 64px;
+  height: 6px;
+  background: var(--accent);
+}
+
+.teaser__no {
+  grid-row: span 2;
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 600;
+  line-height: 0.9;
+  color: var(--accent-text);
+}
+
+.teaser__name {
+  display: block;
+  font-weight: 600;
+}
+
+.teaser__name--wakil {
+  font-weight: 400;
+  color: var(--gray-700);
+}
+
+.teaser__theme {
+  grid-column: 2;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+@media (min-width: 720px) {
+  .teaser__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .teaser__item { padding-right: var(--space-5); border-bottom: 0; }
+  .teaser__item + .teaser__item {
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--line);
+  }
+  .teaser__item + .teaser__item::before { left: var(--space-5); }
+}
+
+/* ==========================================================================
+   Stage 2 — Dasbor pemilih
+   ========================================================================== */
+
+.dash-head {
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.dash-head__name {
+  margin-top: var(--space-2);
+  font-size: clamp(2.1rem, 8vw, 3.8rem);
+  letter-spacing: -0.02em;
+}
+
+.dash-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin-top: var(--space-5);
+}
+
+.dash-meta dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+.dash-meta dd {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .dash-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.dash-aside { display: grid; gap: var(--space-4); }
+.dash-aside__title { font-size: 1.25rem; }
+
+.vote-card {
+  position: relative;
+  padding: var(--space-5);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+}
+
+.vote-card--locked {
+  border-color: var(--accent);
+  box-shadow: inset 6px 0 0 var(--accent);
+  padding-left: calc(var(--space-5) + 6px);
+}
+
+.vote-card__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+.vote-card__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+}
+
+.vote-card__text { margin-top: var(--space-3); }
+
+.vote-card__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.vote-card__no {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 600;
+  line-height: 0.85;
+  color: var(--accent-text);
+}
+
+.vote-card__pair {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+.vote-card__meta {
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+.vote-card .btn { margin-top: var(--space-5); }
+
+@media (min-width: 720px) {
+  .vote-card { padding: var(--space-6); }
+  .vote-card--locked { padding-left: calc(var(--space-6) + 6px); }
+}
 
 footer.site-footer {
   border-top: 1px solid var(--line);

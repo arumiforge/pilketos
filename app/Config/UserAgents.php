@@ -79,6 +79,14 @@ class UserAgents extends BaseConfig
      * @var array<string, string>
      */
     public array $browsers = [
+        // Browser Android/iOS yang umum di HP siswa. Harus di atas 'Chrome'
+        // dan 'Safari' karena User-Agent-nya juga memuat token tersebut.
+        'SamsungBrowser' => 'Samsung Internet',
+        'MiuiBrowser'    => 'Mi Browser',
+        'UCBrowser'      => 'UC Browser',
+        'YaBrowser'      => 'Yandex Browser',
+        'CriOS'          => 'Chrome',
+        'FxiOS'          => 'Firefox',
         'OPR'    => 'Opera',
         'Flock'  => 'Flock',
         'Edge'   => 'Spartan',

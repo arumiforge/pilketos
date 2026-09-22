@@ -1,9 +1,11 @@
 /**
  * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
- * Foundation JS (Stage 1). Interaksi voting/3D/countdown kinetic
- * ditambahkan pada Stage 2, tidak dimuat di sini.
+ * Foundation JS (Stage 1) + helper bersama Stage 2 (postJson, preferensi
+ * efek, reduced motion). Interaksi voting/3D/countdown ada di file terpisah:
+ * countdown.js, candidates.js, ballot.js, nail-webgl.js.
  *
  * Tidak menyimpan data siswa/guru di localStorage/sessionStorage.
+ * localStorage hanya untuk preferensi non-sensitif (mode efek 3D/ringan).
  */
 (function () {
   'use strict';
@@ -30,6 +32,59 @@
     return headers;
   }
 
+  /**
+   * POST JSON dengan header CSRF. Resolve {status, data}; sesi habis (401)
+   * langsung diarahkan ke halaman login dari field "redirect".
+   * Gagal jaringan -> reject (pemanggil menampilkan pesan "coba lagi").
+   */
+  function postJson(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: jsonHeaders(),
+      credentials: 'same-origin',
+      body: JSON.stringify(body || {})
+    }).then(function (response) {
+      return response.json().catch(function () {
+        return {};
+      }).then(function (data) {
+        if (response.status === 401 && data && data.redirect) {
+          window.location.assign(data.redirect);
+        }
+        return { status: response.status, data: data || {} };
+      });
+    });
+  }
+
+  function reducedMotion() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  /**
+   * Preferensi non-sensitif (mis. "fx" = 3d/2d). Dibungkus try/catch karena
+   * localStorage bisa diblokir (mode privat / kebijakan browser sekolah).
+   */
+  var PREF_PREFIX = 'osis2026.';
+
+  function getPref(key) {
+    try {
+      return window.localStorage.getItem(PREF_PREFIX + key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setPref(key, value) {
+    try {
+      if (value === null) {
+        window.localStorage.removeItem(PREF_PREFIX + key);
+      } else {
+        window.localStorage.setItem(PREF_PREFIX + key, value);
+      }
+    } catch (e) {
+      /* abaikan: preferensi hanya kenyamanan */
+    }
+  }
+
   /** Modal berbasis <dialog> native. */
   function initModals() {
     document.addEventListener('click', function (event) {
@@ -53,8 +108,9 @@
         return;
       }
 
-      // Klik pada backdrop menutup modal.
-      if (event.target.tagName === 'DIALOG' && event.target.open) {
+      // Klik pada backdrop menutup modal (kecuali modal yang mengelola
+      // penutupannya sendiri, mis. konfirmasi suara: data-modal-static).
+      if (event.target.tagName === 'DIALOG' && event.target.open && !event.target.hasAttribute('data-modal-static')) {
         var rect = event.target.getBoundingClientRect();
         var inside = event.clientX >= rect.left && event.clientX <= rect.right &&
           event.clientY >= rect.top && event.clientY <= rect.bottom;
@@ -123,6 +179,10 @@
 
   window.App = {
     csrfHeader: csrfHeader,
-    jsonHeaders: jsonHeaders
+    jsonHeaders: jsonHeaders,
+    postJson: postJson,
+    reducedMotion: reducedMotion,
+    getPref: getPref,
+    setPref: setPref
   };
 })();

@@ -4,7 +4,7 @@
 Baca:
 1. `00-MASTER-PROJECT.md`
 2. `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md`
-3. `02-STUDENT-TEACHER-VOTING.md` + catatan handoff Stage 2
+3. `02-STUDENT-TEACHER-VOTING.md` + `STAGE2-NOTES.md` (handoff Stage 2)
 4. semua source file aktual dari project.
 Jangan membuat project baru.
 Jangan menghapus behavior voting yang sudah bekerja.
@@ -75,6 +75,8 @@ Validasi:
 - image dimensions;
 - safe storage.
 Candidate theme harus dipakai oleh frontend Stage 2.
+
+Kontrak tema dari Stage 2 (`App\Libraries\CandidateTheme`): `theme_accent` `#RRGGBB`, `theme_layout` `split|poster|column` (kosong = otomatis), `theme_background`, `foto_ketua`, `foto_wakil`, dan `theme_asset` JSON dengan kunci `hero`, `texture`, `artwork`, `poster`.
  
 Simpan file di `public/uploads/candidates/` dengan nama acak; kolom database hanya berisi nama file. URL dibuat dengan `CandidateModel::assetUrl()`.
  

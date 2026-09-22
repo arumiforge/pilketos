@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Services\VoteService;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -29,4 +30,17 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+    /**
+     * Logika voting siswa/guru (Stage 2). Dipanggil lewat service('voting').
+     * Test dapat menggantinya dengan Services::injectMock('voting', ...).
+     */
+    public static function voting(bool $getShared = true): VoteService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('voting');
+        }
+
+        return new VoteService();
+    }
 }
