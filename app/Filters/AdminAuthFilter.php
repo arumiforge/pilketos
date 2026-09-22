@@ -2,23 +2,27 @@
 
 namespace App\Filters;
 
-use CodeIgniter\Filters\FilterInterface;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
+use App\Models\AdminModel;
 
-class AdminAuthFilter implements FilterInterface
+class AdminAuthFilter extends AuthFilter
 {
-    public function before(RequestInterface $request, $arguments = null)
+    protected function userType(): string
     {
-        if (session()->get('user_type') !== 'admin') {
-            return redirect()->to('/admin/login')->with('error', 'Silakan masuk sebagai admin terlebih dahulu.');
-        }
-
-        return null;
+        return 'admin';
     }
 
-    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    protected function loginPath(): string
     {
-        return $response;
+        return 'admin/login';
+    }
+
+    protected function deniedMessage(): string
+    {
+        return 'Silakan masuk sebagai admin terlebih dahulu.';
+    }
+
+    protected function accountIsValid(int $id): bool
+    {
+        return model(AdminModel::class)->findForSession($id) !== null;
     }
 }

@@ -2,18 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<?php
-$statusLabel = [
-    'UPCOMING' => 'Belum Dibuka',
-    'ONGOING'  => 'Sedang Berlangsung',
-    'FINISHED' => 'Sudah Selesai',
-];
-$badgeClass = [
-    'UPCOMING' => 'badge--upcoming',
-    'ONGOING'  => 'badge--ongoing',
-    'FINISHED' => 'badge--finished',
-];
-?>
+<?php $status = $election['status'] ?? null; ?>
 
 <section class="hero">
   <div class="container">
@@ -22,23 +11,23 @@ $badgeClass = [
 
     <?php if ($election): ?>
       <p class="hero__meta">
-        <span class="badge <?= $badgeClass[$status] ?? '' ?>">
-          <span class="badge__dot"></span>
-          <?= esc($statusLabel[$status] ?? $status) ?>
+        <span class="badge badge--<?= esc(strtolower($status), 'attr') ?>">
+          <span class="badge__dot" aria-hidden="true"></span>
+          <?= esc(election_status_label($status)) ?>
         </span>
       </p>
       <dl class="hero__meta">
         <div>
           <dt class="text-muted text-small">Mulai</dt>
-          <dd><?= esc(date('d M Y, H:i', strtotime($election['start_at']))) ?> WIB</dd>
+          <dd><time datetime="<?= esc($election['start_at'], 'attr') ?>"><?= esc(format_waktu($election['start_at'])) ?></time></dd>
         </div>
         <div>
           <dt class="text-muted text-small">Selesai</dt>
-          <dd><?= esc(date('d M Y, H:i', strtotime($election['end_at']))) ?> WIB</dd>
+          <dd><time datetime="<?= esc($election['end_at'], 'attr') ?>"><?= esc(format_waktu($election['end_at'])) ?></time></dd>
         </div>
       </dl>
     <?php else: ?>
-      <p class="text-muted" style="margin-top: var(--space-5);">Jadwal pemilihan belum tersedia. Silakan cek kembali nanti, ya.</p>
+      <p class="text-muted hero__empty">Jadwal pemilihan belum tersedia. Silakan cek kembali nanti.</p>
     <?php endif; ?>
 
     <div class="hero__actions">

@@ -39,9 +39,9 @@ Admin menyiapkan data → import data siswa dan guru → mengatur 3 pasangan cal
 ## 3. TEKNOLOGI
  
 Backend:
-- PHP
+- PHP 8.2+ (syarat CodeIgniter 4.7)
 - CodeIgniter 4
-- MySQL
+- MySQL 8.0+ / MariaDB 10.4+
 - Composer
 Development:
 - Windows
@@ -269,6 +269,9 @@ Jenis kelamin minimal mendukung:
 - P
 Jangan mengandalkan nama untuk menentukan jenis kelamin.
  
+Opsional:
+- status aktif (siswa non-aktif tidak dapat login dan tidak dihitung sebagai pemilih).
+ 
 Import Excel siswa minimal:
  
 | no | NISN | nama | jenis_kelamin | kelas | nomor_absen | kodeunik |
@@ -320,6 +323,8 @@ Pilih desain yang paling mudah menjaga:
 - foreign key;
 - integrity.
 Tidak boleh ada cara bagi siswa untuk menggunakan vote guru atau sebaliknya.
+ 
+Keputusan Stage 1: desain A (`student_votes` dan `teacher_votes`). Baris vote tidak pernah dihapus; status `LOCKED` = suara aktif, `UNLOCKED` = riwayat yang dibuka admin. Database menjamin maksimal satu suara `LOCKED` per pemilih per election. Detail kontrak ada di `STAGE1-NOTES.md`.
  
 ## 14. ADMIN ANALYTICS
  
@@ -435,6 +440,14 @@ State:
 - FINISHED.
 Backend/server time adalah sumber kebenaran.
  
+Zona waktu aplikasi: Asia/Jakarta (WIB).
+ 
+State dihitung dari start_at/end_at terhadap waktu server:
+- sebelum start_at: UPCOMING;
+- start_at sampai sebelum end_at: ONGOING;
+- sejak end_at: FINISHED.
+Admin menutup lebih awal atau memperpanjang dengan mengubah end_at (tercatat di audit log), bukan dengan mengubah state secara manual.
+ 
 Countdown di frontend hanya visualisasi.
  
 Jangan membiarkan manipulasi waktu browser membuka voting lebih awal atau memperpanjang voting.
@@ -474,7 +487,7 @@ Unlock harus:
 - election;
 - alasan;
 - timestamp.
-Riwayat vote tetap dapat diaudit.
+Riwayat vote tetap dapat diaudit: baris vote lama tidak dihapus, hanya berubah status menjadi `UNLOCKED` dan ditautkan dari `vote_unlock_logs`.
  
 ## 19. AUDIT
  

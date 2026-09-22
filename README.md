@@ -1,61 +1,36 @@
-# CodeIgniter 4 Framework
+# Pemilihan Ketua & Wakil Ketua OSIS SMP 1 Dawe 2026
 
-## What is CodeIgniter?
+Aplikasi e-voting sekolah berbasis CodeIgniter 4 + MySQL untuk siswa dan guru
+(identitas pemilih terpisah, satu suara aktif per pemilih, unlock hanya oleh admin
+dengan audit log).
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Dokumen proyek
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+| File | Isi |
+|---|---|
+| `00-MASTER-PROJECT.md` | Spesifikasi utama (source of truth) |
+| `01-FOUNDATION-DATABASE-AUTH.md` | Stage 1: fondasi, database, autentikasi |
+| `STAGE1-NOTES.md` | Hasil Stage 1: instalasi, schema, route, test, handoff |
+| `02-STUDENT-TEACHER-VOTING.md` | Stage 2: pengalaman voting |
+| `03-ADMIN-IMPORT-ANALYTICS.md` | Stage 3: panel admin, import, analytics |
+| `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` | Stage 4: audit akhir & deployment |
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Mulai cepat
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Syarat: PHP 8.2+ (intl, mbstring, mysqli), Composer, MySQL 8.0+ / MariaDB 10.4+.
 
-## Important Change with index.php
+```
+composer install
+copy .env.example .env        (Linux/macOS: cp .env.example .env)
+php spark migrate
+php spark db:seed DatabaseSeeder
+php spark serve
+```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+Detail instalasi Laragon, akun development, dan cara menjalankan test ada di
+`STAGE1-NOTES.md`.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## Lisensi
 
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Contributing
-
-We welcome contributions from the community.
-
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
-
-## Server Requirements
-
-PHP version 8.2 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+Framework CodeIgniter: MIT (`LICENSE`).
+Font Inter dan Newsreader: SIL Open Font License (`public/assets/fonts/`).

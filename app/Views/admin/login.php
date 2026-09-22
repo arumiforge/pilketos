@@ -16,7 +16,7 @@
         <div class="field">
           <label for="username">Nama Pengguna</label>
           <input type="text" id="username" name="username" autocomplete="username"
-                 value="<?= esc(old('username')) ?>" required>
+                 maxlength="100" value="<?= esc(session()->getFlashdata('old_username') ?? '', 'attr') ?>" required>
         </div>
 
         <div class="field">
@@ -24,7 +24,7 @@
           <input type="password" id="password" name="password" autocomplete="current-password" required>
         </div>
 
-        <button type="submit" class="btn btn--block">Masuk</button>
+        <button type="submit" class="btn btn--block" data-loading-text="Memeriksa...">Masuk</button>
       </form>
     </div>
   </div>

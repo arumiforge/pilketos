@@ -1,7 +1,9 @@
 # STAGE 1
 ## FOUNDATION, DATABASE, AUTHENTICATION & PROJECT CONTRACT
  
-Baca `MASTER PROJECT` terlebih dahulu.
+Baca `00-MASTER-PROJECT.md` terlebih dahulu.
+ 
+Hasil implementasi aktual dan handoff Stage 1: `STAGE1-NOTES.md`.
  
 ## OBJECTIVE
  
@@ -31,14 +33,18 @@ Jangan membangun analytics lengkap dan jangan membangun seluruh voting experienc
 Environment:
 - Windows;
 - Laragon;
-- PHP;
+- PHP 8.2 atau lebih baru (wajib untuk CodeIgniter 4.7; tambahkan versi PHP baru di Laragon bila bawaan masih 8.1);
+- ekstensi PHP: intl, mbstring, mysqli;
 - Composer;
-- MySQL.
+- MySQL 8.0+ atau MariaDB 10.4+ (butuh generated column dan CHECK constraint).
 Dependency PHP:
-- CodeIgniter 4;
-- PhpSpreadsheet boleh dipasang pada tahap ini atau Stage 3.
+- CodeIgniter 4 (folder `system/` sudah ada di repository);
+- PHPUnit (require-dev, untuk test otomatis);
+- PhpSpreadsheet dipasang pada Stage 3.
 Dependency JS:
 - tidak perlu memasang library visual berat pada tahap ini kecuali benar-benar diperlukan untuk shared setup.
+Font:
+- Inter dan Newsreader di-host lokal (`public/assets/fonts`, lisensi OFL) agar halaman tidak bergantung CDN pada hari pemilihan.
 ## REQUIRED PREVIOUS FILES
  
 Untuk Stage 1, tidak ada file aplikasi sebelumnya.
@@ -64,6 +70,7 @@ Implementasikan migration minimal untuk:
 - kelas
 - nomor_absen nullable
 - kodeunik
+- status_aktif (default 1)
 - created_at
 - updated_at
 Constraint:
@@ -73,7 +80,7 @@ Constraint:
 - nip
 - name
 - kodeunik
-- status aktif bila digunakan
+- status_aktif (default 1)
 - created_at
 - updated_at
 Constraint:
@@ -90,9 +97,12 @@ Constraint:
 - theme_name
 - theme_background
 - theme_accent
-- theme_asset
+- theme_asset (JSON: hero, texture, artwork, poster)
+- status_aktif
 - created_at
 - updated_at
+Constraint:
+- nomor_urut unique.
 ### elections
 - id
 - nama
@@ -102,32 +112,55 @@ Constraint:
 - status
 - created_at
 - updated_at
+Constraint:
+- CHECK `end_at > start_at`.
+Status adalah cermin jadwal. Sumber kebenaran tetap `start_at`/`end_at` terhadap waktu server (`ElectionModel::resolveStatus()`), lalu disinkronkan ke kolom `status`.
 ### votes
  
-Pilih desain yang jelas untuk membedakan student vote dan teacher vote.
+Keputusan desain: **dua tabel terpisah** `student_votes` dan `teacher_votes` agar foreign key ke `students`/`teachers` tetap valid di database dan vote siswa tidak mungkin tertukar dengan vote guru.
  
-Pastikan desain mendukung:
+Kolom:
 - election_id;
-- voter type/reference;
+- student_id / teacher_id;
 - candidate_id;
+- status: `LOCKED` (suara aktif) atau `UNLOCKED` (dibuka admin, disimpan sebagai riwayat);
+- active_lock: generated column, bernilai 1 bila LOCKED dan NULL bila UNLOCKED;
 - voted_at;
+- unlocked_at nullable;
 - device_info;
 - browser_info;
-- status;
 - created_at;
 - updated_at.
-Pastikan database dapat mencegah duplicate active vote.
- 
+Constraint:
+- unique `(election_id, student_id, active_lock)` / `(election_id, teacher_id, active_lock)`: database menolak suara aktif kedua, termasuk pada race condition;
+- baris vote tidak pernah dihapus. Unlock mengubah status menjadi `UNLOCKED`, re-vote membuat baris `LOCKED` baru;
+- hasil dan analytics hanya menghitung `status = 'LOCKED'`.
 ### vote_unlock_logs
 - id
 - election_id
 - student_id nullable
 - teacher_id nullable
+- student_vote_id nullable (baris vote yang di-unlock)
+- teacher_vote_id nullable (baris vote yang di-unlock)
 - admin_id
 - reason
 - unlocked_at
+Constraint:
+- CHECK: tepat satu pasangan `(student_id, student_vote_id)` atau `(teacher_id, teacher_vote_id)` yang terisi.
 ### audit_logs
-Buat jika dibutuhkan sejak awal untuk aktivitas penting admin.
+- id
+- admin_id
+- action
+- description
+- created_at
+### Kebijakan foreign key
+ 
+Semua foreign key memakai `ON UPDATE RESTRICT ON DELETE RESTRICT`:
+- siswa/guru/kandidat/election/admin yang sudah punya suara atau log tidak dapat dihapus (gunakan `status_aktif = 0`);
+- MySQL 8 menolak CHECK constraint pada kolom yang FK-nya memakai CASCADE/SET NULL (error 3823).
+Perhatian: urutan argumen CodeIgniter adalah `addForeignKey(field, table, tableField, onUpdate, onDelete)`.
+ 
+Koneksi database wajib `strictOn = true`. Bila false, CodeIgniter menghapus `STRICT_TRANS_TABLES` sehingga data tidak valid dipotong diam-diam.
  
 ## AUTHENTICATION
  
@@ -141,31 +174,54 @@ Password wajib hash.
 Login:
 - NISN;
 - kodeunik.
+Hanya siswa `status_aktif = 1`.
+ 
 ### Teacher
 Login:
 - NIP;
 - kodeunik.
+Hanya guru `status_aktif = 1`.
+ 
+Kode unik divalidasi sebagai 8 digit (DDMMYYYY). Input `01-03-2013` atau `01/03/2013` dinormalisasi menjadi `01032013`.
+ 
 Student dan teacher authentication harus terpisah secara semantik.
  
 Admin tidak boleh login melalui student/teacher login.
  
 Student/teacher tidak boleh masuk `/admin/*`.
  
+### Login throttling
+- dihitung dari login **gagal**;
+- per akun (NISN/NIP/username): 5 kegagalan, lalu 1 percobaan per menit;
+- per IP: 30 kegagalan per menit, sengaja longgar karena satu sekolah bisa berbagi satu IP;
+- key cache di-hash (IPv6 seperti `::1` mengandung karakter terlarang untuk key cache).
 ## SESSION
  
-Session minimal menyimpan:
-- user type;
-- user id;
-- authentication state.
-Jangan menyimpan password atau kode unik di session jika tidak diperlukan.
+Session hanya menyimpan:
+- `user_type` (`admin` / `student` / `teacher`);
+- `admin_id` / `student_id` / `teacher_id`;
+- `isLoggedIn`.
+Data profil (nama, kelas, dll) selalu dibaca ulang dari database.
+ 
+Jangan menyimpan password atau kode unik di session. Karena itu form login tidak memakai `withInput()` (fungsi itu menyalin seluruh POST ke session); hanya identifier yang di-flash untuk isian ulang.
+ 
+Setiap login: identitas role lain dihapus dan session id di-regenerate.
  
 ## FILTER
  
 Buat filter:
 - AdminAuth;
-- VoterAuth atau StudentAuth/TeacherAuth sesuai desain.
+- StudentAuth;
+- TeacherAuth.
+Filter memeriksa `user_type` di session **dan** memastikan akun masih ada/aktif di database. Request AJAX/JSON yang ditolak menerima `401` JSON, bukan redirect HTML.
+ 
 Pastikan route terproteksi.
  
+## CSRF
+ 
+- mode `session`, token tetap per sesi (`regenerate = false`) agar tab ganda dan request AJAX tidak gagal;
+- nama field `csrf_token`, header `X-CSRF-TOKEN`;
+- layout memuat `csrf_meta()`; JS membaca token lewat `App.jsonHeaders()`.
 ## ROUTES
  
 Siapkan minimal:
@@ -176,14 +232,14 @@ Public:
 - `/teacher/login`
 Student:
 - `/student/dashboard`
-- `/student/logout`
+- `/student/logout` (POST)
 Teacher:
 - `/teacher/dashboard`
-- `/teacher/logout`
+- `/teacher/logout` (POST)
 Admin:
 - `/admin/login`
 - `/admin/dashboard`
-- `/admin/logout`
+- `/admin/logout` (POST)
 Voting routes dapat disiapkan struktur awal untuk Stage 2.
  
 ## FRONTEND FOUNDATION
@@ -195,7 +251,7 @@ Buat:
 - buttons;
 - forms;
 - card;
-- modal dasar;
+- modal dasar (elemen `<dialog>` native);
 - responsive breakpoint;
 - navigation foundation.
 Tema:
@@ -209,6 +265,11 @@ Tidak boleh menggunakan emoji.
  
 Boleh menggunakan SVG/icon library.
  
+## KONFIGURASI WAKTU & URL
+ 
+- `appTimezone = Asia/Jakarta`; seluruh waktu ditulis dari PHP (`Time::now()`), bukan `NOW()` MySQL;
+- `indexPage = ''` (URL bersih, butuh mod_rewrite Apache Laragon atau `php spark serve`);
+- locale `id` untuk format tanggal Indonesia.
 ## SEEDER
  
 Sediakan:
@@ -217,11 +278,11 @@ Sediakan:
 - 1 election 2026;
 - beberapa siswa;
 - beberapa guru.
-Pastikan data seed mudah diketahui sebagai sample development.
+Pastikan data seed mudah diketahui sebagai sample development (NISN `00000000xx`, NIP `0000...0x`). Seeder ditolak bila `CI_ENVIRONMENT = production`.
  
 ## TEST STAGE 1
  
-Wajib dapat diuji:
+Wajib dapat diuji (otomatis dengan PHPUnit):
 - koneksi database;
 - migration;
 - seeder;
@@ -231,7 +292,8 @@ Wajib dapat diuji:
 - invalid credential;
 - route protection;
 - session;
-- CSRF.
+- CSRF;
+- satu suara aktif per pemilih (constraint database).
 ## OUTPUT FORMAT
  
 Berikan:
@@ -266,4 +328,3 @@ Kelompokkan:
 - JS;
 - routes;
 - seeders.
- 

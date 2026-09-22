@@ -5,13 +5,15 @@
 <section class="page-header">
   <div class="container">
     <p class="eyebrow">Dasbor Admin</p>
-    <h2><?= esc($name) ?></h2>
+    <h2><?= esc($admin['name']) ?></h2>
   </div>
 </section>
 
 <section class="section">
   <div class="container stack-lg">
-    <p class="text-muted">Kelola kandidat, impor data siswa/guru, lihat analitik, hitung suara langsung, dan buka kunci hak suara akan tersedia pada tahap berikutnya.</p>
+    <?= $this->include('partials/election_status') ?>
+
+    <p class="text-muted">Pengelolaan kandidat, impor data siswa dan guru, analitik, hitung suara langsung, dan buka kunci hak suara tersedia pada panel admin tahap berikutnya.</p>
 
     <form action="<?= base_url('admin/logout') ?>" method="post">
       <?= csrf_field() ?>

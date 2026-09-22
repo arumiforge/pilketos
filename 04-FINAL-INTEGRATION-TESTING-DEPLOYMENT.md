@@ -2,10 +2,10 @@
 ## FINAL INTEGRATION, SECURITY, PERFORMANCE, POLISH, FINAL RESULT & DEPLOYMENT
  
 Baca:
-1. MASTER PROJECT
-2. STAGE 1
-3. STAGE 2
-4. STAGE 3
+1. `00-MASTER-PROJECT.md`
+2. `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md`
+3. `02-STUDENT-TEACHER-VOTING.md` + handoff Stage 2
+4. `03-ADMIN-IMPORT-ANALYTICS.md` + handoff Stage 3
 5. seluruh source file aktual.
 Jangan membuat project baru.
  
@@ -77,10 +77,10 @@ After:
 `LOCKED`
  
 Unlock:
-`NO_ACTIVE_VOTE` untuk hak pilih aktif, tetapi riwayat tetap dapat diaudit.
+`NO_ACTIVE_VOTE` untuk hak pilih aktif (baris lama `UNLOCKED`), tetapi riwayat tetap dapat diaudit.
  
 Re-vote:
-`LOCKED` dengan vote baru.
+`LOCKED` dengan vote baru (baris baru).
  
 Jangan menghapus audit secara sembarangan.
  
@@ -171,6 +171,8 @@ dan:
 dan:
 `active student votes + active teacher votes = total election votes`
  
+Definisi: active student/teacher = `status_aktif = 1`; active vote = `status = 'LOCKED'`.
+ 
 kecuali ada status bisnis khusus yang secara eksplisit didokumentasikan.
  
 ## 10. IMPORT VERIFICATION
@@ -235,13 +237,14 @@ Dokumentasikan:
 `C:\laragon\www\smp1dawe-osis-2026`
  
 Setup:
+- PHP 8.2+ (CodeIgniter 4.7);
 - Apache;
 - MySQL;
 - `.env`;
 - database;
 - composer;
 - migration;
-- seeder;
+- seeder (DatabaseSeeder hanya development; admin production dibuat terpisah);
 - writable;
 - upload directory;
 - public folder;

@@ -16,16 +16,17 @@
         <div class="field">
           <label for="nip">NIP</label>
           <input type="text" id="nip" name="nip" inputmode="numeric" autocomplete="off"
-                 value="<?= esc(old('nip')) ?>" required>
+                 maxlength="30" value="<?= esc(session()->getFlashdata('old_nip') ?? '', 'attr') ?>" required>
         </div>
 
         <div class="field">
           <label for="kodeunik">Kode Unik</label>
-          <input type="password" id="kodeunik" name="kodeunik" inputmode="numeric" autocomplete="off" required>
-          <p class="field-hint">Kode unik adalah tanggal lahir Anda, contoh: 01032006.</p>
+          <input type="password" id="kodeunik" name="kodeunik" inputmode="numeric" autocomplete="off"
+                 maxlength="10" aria-describedby="kodeunik-hint" required>
+          <p class="field-hint" id="kodeunik-hint">Kode unik adalah tanggal lahir Anda (DDMMYYYY), contoh: 01032006.</p>
         </div>
 
-        <button type="submit" class="btn btn--block">Masuk</button>
+        <button type="submit" class="btn btn--block" data-loading-text="Memeriksa...">Masuk</button>
       </form>
     </div>
   </div>

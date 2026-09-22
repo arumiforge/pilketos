@@ -35,11 +35,13 @@ class Database extends Config
         'pConnect'     => false,
         'DBDebug'      => true,
         'charset'      => 'utf8mb4',
-        'DBCollat'     => 'utf8mb4_general_ci',
+        'DBCollat'     => 'utf8mb4_unicode_ci',
         'swapPre'      => '',
         'encrypt'      => false,
         'compress'     => false,
-        'strictOn'     => false,
+        // Wajib true: dengan false, CI4 MENGHAPUS STRICT_TRANS_TABLES dari sql_mode
+        // sehingga MySQL diam-diam memotong/mengosongkan data tidak valid.
+        'strictOn'     => true,
         'failover'     => [],
         'port'         => 3306,
         'numberNative' => false,
@@ -163,26 +165,26 @@ class Database extends Config
      * @var array<string, mixed>
      */
     public array $tests = [
+        // Migration memakai fitur MySQL (ENUM, generated column, CHECK),
+        // sehingga test wajib memakai MySQL/MariaDB, bukan SQLite.
+        // Kredensial diisi lewat .env (database.tests.*), bukan di source code.
         'DSN'         => '',
-        'hostname'    => '127.0.0.1',
+        'hostname'    => 'localhost',
         'username'    => '',
         'password'    => '',
-        'database'    => ':memory:',
-        'DBDriver'    => 'SQLite3',
-        'DBPrefix'    => 'db_',  // Needed to ensure we're working correctly with prefixes live. DO NOT REMOVE FOR CI DEVS
+        'database'    => 'smp1dawe_osis_2026_test',
+        'DBDriver'    => 'MySQLi',
+        'DBPrefix'    => '',
         'pConnect'    => false,
         'DBDebug'     => true,
-        'charset'     => 'utf8',
-        'DBCollat'    => '',
+        'charset'     => 'utf8mb4',
+        'DBCollat'    => 'utf8mb4_unicode_ci',
         'swapPre'     => '',
         'encrypt'     => false,
         'compress'    => false,
         'strictOn'    => true,
         'failover'    => [],
         'port'        => 3306,
-        'foreignKeys' => true,
-        'busyTimeout' => 1000,
-        'synchronous' => null,
         'dateFormat'  => [
             'date'     => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',

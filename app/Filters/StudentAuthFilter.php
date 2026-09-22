@@ -2,23 +2,27 @@
 
 namespace App\Filters;
 
-use CodeIgniter\Filters\FilterInterface;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
+use App\Models\StudentModel;
 
-class StudentAuthFilter implements FilterInterface
+class StudentAuthFilter extends AuthFilter
 {
-    public function before(RequestInterface $request, $arguments = null)
+    protected function userType(): string
     {
-        if (session()->get('user_type') !== 'student') {
-            return redirect()->to('/student/login')->with('error', 'Kamu perlu masuk sebagai siswa terlebih dahulu.');
-        }
-
-        return null;
+        return 'student';
     }
 
-    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    protected function loginPath(): string
     {
-        return $response;
+        return 'student/login';
+    }
+
+    protected function deniedMessage(): string
+    {
+        return 'Kamu perlu masuk sebagai siswa terlebih dahulu.';
+    }
+
+    protected function accountIsValid(int $id): bool
+    {
+        return model(StudentModel::class)->findActive($id) !== null;
     }
 }

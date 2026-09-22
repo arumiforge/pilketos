@@ -2,23 +2,27 @@
 
 namespace App\Filters;
 
-use CodeIgniter\Filters\FilterInterface;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
+use App\Models\TeacherModel;
 
-class TeacherAuthFilter implements FilterInterface
+class TeacherAuthFilter extends AuthFilter
 {
-    public function before(RequestInterface $request, $arguments = null)
+    protected function userType(): string
     {
-        if (session()->get('user_type') !== 'teacher') {
-            return redirect()->to('/teacher/login')->with('error', 'Silakan masuk sebagai guru terlebih dahulu.');
-        }
-
-        return null;
+        return 'teacher';
     }
 
-    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    protected function loginPath(): string
     {
-        return $response;
+        return 'teacher/login';
+    }
+
+    protected function deniedMessage(): string
+    {
+        return 'Silakan masuk sebagai guru terlebih dahulu.';
+    }
+
+    protected function accountIsValid(int $id): bool
+    {
+        return model(TeacherModel::class)->findActive($id) !== null;
     }
 }

@@ -6,11 +6,11 @@ use CodeIgniter\Model;
 
 class AdminModel extends Model
 {
-    protected $table            = 'admins';
-    protected $primaryKey       = 'id';
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $allowedFields    = ['name', 'username', 'password_hash'];
+    protected $table          = 'admins';
+    protected $primaryKey     = 'id';
+    protected $returnType     = 'array';
+    protected $useSoftDeletes = false;
+    protected $allowedFields  = ['name', 'username', 'password_hash'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
@@ -30,6 +30,10 @@ class AdminModel extends Model
         $admin = $this->where('username', $username)->first();
 
         if (! $admin) {
+            // Samakan biaya waktu dengan password_verify agar keberadaan
+            // username tidak dapat ditebak dari lama respons.
+            password_hash($password, PASSWORD_DEFAULT);
+
             return null;
         }
 
@@ -40,5 +44,13 @@ class AdminModel extends Model
         unset($admin['password_hash']);
 
         return $admin;
+    }
+
+    /**
+     * Ambil admin untuk sesi aktif (tanpa password_hash).
+     */
+    public function findForSession(int $id): ?array
+    {
+        return $this->select('id, name, username')->find($id);
     }
 }

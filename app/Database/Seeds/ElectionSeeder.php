@@ -2,14 +2,17 @@
 
 namespace App\Database\Seeds;
 
+use App\Models\ElectionModel;
 use CodeIgniter\Database\Seeder;
+use CodeIgniter\I18n\Time;
 
 class ElectionSeeder extends Seeder
 {
     /**
      * Seed 1 election development 2026.
-     * start_at/end_at dibuat relatif terhadap waktu seed dijalankan agar
-     * election langsung berada dalam status ONGOING saat testing lokal.
+     * Jadwal relatif terhadap waktu seed (mulai kemarin, selesai 7 hari lagi)
+     * agar election langsung ONGOING saat testing lokal. Status dihitung
+     * dari jadwal, bukan di-hardcode.
      */
     public function run()
     {
@@ -19,14 +22,17 @@ class ElectionSeeder extends Seeder
             return;
         }
 
-        $this->db->table('elections')->insert([
-            'nama'       => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe',
-            'tahun'      => 2026,
-            'start_at'   => date('Y-m-d H:i:s', strtotime('-1 day')),
-            'end_at'     => date('Y-m-d H:i:s', strtotime('+7 days')),
-            'status'     => 'ONGOING',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $now      = Time::now();
+        $election = [
+            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe',
+            'tahun'    => 2026,
+            'start_at' => $now->subDays(1)->setSecond(0)->toDateTimeString(),
+            'end_at'   => $now->addDays(7)->setSecond(0)->toDateTimeString(),
+        ];
+        $election['status']     = (new ElectionModel())->resolveStatus($election, $now);
+        $election['created_at'] = $now->toDateTimeString();
+        $election['updated_at'] = $now->toDateTimeString();
+
+        $this->db->table('elections')->insert($election);
     }
 }

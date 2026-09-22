@@ -3,6 +3,7 @@
 namespace App\Database\Seeds;
 
 use CodeIgniter\Database\Seeder;
+use CodeIgniter\I18n\Time;
 
 class CandidateSeeder extends Seeder
 {
@@ -19,7 +20,7 @@ class CandidateSeeder extends Seeder
             return;
         }
 
-        $now = date('Y-m-d H:i:s');
+        $now = Time::now()->toDateTimeString();
 
         $candidates = [
             [
