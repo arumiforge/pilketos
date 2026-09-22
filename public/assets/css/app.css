@@ -1,0 +1,351 @@
+/* ==========================================================================
+   SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+   Foundation stylesheet (Stage 1)
+   Base hitam / putih / abu-abu. Tanpa gradient, tanpa emoji.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* -- color: neutral base only. Accent color lives per-candidate (Stage 2/3). -- */
+  --ink:        #15141A;
+  --ink-soft:   #3A3833;
+  --paper:      #FAF9F6;
+  --paper-dim:  #F1EFEA;
+  --gray-100:   #F1EFEA;
+  --gray-200:   #E3E0D8;
+  --gray-300:   #CBC7BB;
+  --gray-500:   #8D897D;
+  --gray-700:   #514E45;
+  --line:       #DCD8CD;
+  --line-strong:#B9B4A6;
+  --danger:     #A3341F;
+  --success:    #2F5D3E;
+
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --radius: 3px;
+  --radius-lg: 6px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --container-w: 1080px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* -- reset -- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body, h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+ul[class], ol[class] { list-style: none; margin: 0; padding: 0; }
+img, picture { max-width: 100%; display: block; }
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -- typography -- */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+h3 { font-size: 1.25rem; }
+
+p { max-width: 62ch; }
+
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.text-muted { color: var(--gray-700); }
+.text-small { font-size: 0.875rem; }
+
+/* -- layout -- */
+.container {
+  width: 100%;
+  max-width: var(--container-w);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 720px) {
+  .container { padding-inline: var(--space-6); }
+}
+
+.stack > * + * { margin-top: var(--space-4); }
+.stack-lg > * + * { margin-top: var(--space-6); }
+
+/* -- navigation shell -- */
+.site-nav {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.site-nav__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+}
+
+.site-nav__brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.site-nav__brand strong {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.site-nav__brand span {
+  font-size: 0.75rem;
+  color: var(--gray-700);
+}
+
+.site-nav__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* -- buttons -- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 46px;
+  transition: transform 0.15s var(--ease), opacity 0.15s var(--ease);
+}
+
+.btn:hover { opacity: 0.85; }
+.btn:active { transform: translateY(1px); }
+
+.btn--outline {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.btn--outline:hover { border-color: var(--ink); opacity: 1; background: var(--gray-100); }
+
+.btn--block { width: 100%; }
+
+.btn:focus-visible,
+a:focus-visible,
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* -- forms -- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field input {
+  min-height: 46px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 1rem;
+}
+
+.field input:focus {
+  border-color: var(--ink);
+}
+
+.field-hint {
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+.form-alert {
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9375rem;
+}
+
+.form-alert--list { margin: 0; padding-left: 1.1rem; }
+
+/* -- card -- */
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  padding: var(--space-5);
+}
+
+.card--auth {
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+/* -- status badge -- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gray-500);
+}
+
+.badge--ongoing .badge__dot { background: var(--success); }
+.badge--upcoming .badge__dot { background: var(--gray-700); }
+.badge--finished .badge__dot { background: var(--ink); }
+
+/* -- modal (base, used from Stage 2 onward) -- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 20, 26, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 50;
+}
+
+.modal-backdrop.is-open { display: flex; }
+
+.modal {
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  max-width: 480px;
+  width: 100%;
+  padding: var(--space-6);
+}
+
+/* -- hero (Stage 1 placeholder, full art direction arrives Stage 2) -- */
+.hero {
+  padding-block: var(--space-8) var(--space-7);
+  border-bottom: 1px solid var(--line);
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  font-size: 0.9375rem;
+  color: var(--gray-700);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* -- dashboard shell (student/teacher/admin) -- */
+.page-header {
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.section {
+  padding-block: var(--space-7);
+}
+
+.kv-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.kv-list__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.kv-list__row dt { color: var(--gray-700); }
+.kv-list__row dd { font-weight: 600; text-align: right; }
+
+footer.site-footer {
+  border-top: 1px solid var(--line);
+  padding-block: var(--space-5);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+@media (min-width: 720px) {
+  .site-nav__row { min-height: 76px; }
+}
