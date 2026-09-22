@@ -209,6 +209,8 @@ Jika WebGL tidak tersedia atau perangkat terlalu lemah:
 - gunakan CSS 3D atau 2D animation;
 - jangan membuat voting gagal hanya karena efek visual.
 Efek tidak boleh mengubah mekanisme keamanan.
+
+Keputusan Stage 2: paku 3D dirender WebGL langsung tanpa library (satu objek kecil, dimuat malas), fallback paku 2D SVG + CSS, tombol "Coblos" untuk keyboard/pembaca layar, dan halaman konfirmasi server bila JavaScript tidak berjalan. Detail di `STAGE2-NOTES.md`.
  
 ## 9. KONFIRMASI VOTING
  

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="no-js">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,13 @@
 <meta name="theme-color" content="#FAF9F6">
 <?= csrf_meta() ?>
 <title><?= isset($title) ? esc($title) . ' — Pemilihan OSIS SMP 1 Dawe' : 'Pemilihan Ketua OSIS — SMP 1 Dawe 2026' ?></title>
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 <link rel="preload" href="<?= base_url('assets/fonts/inter-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="<?= base_url('assets/fonts/newsreader-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 <?= $this->renderSection('head') ?>
 </head>
-<body>
+<body class="<?= esc($bodyClass ?? '', 'attr') ?>">
 <a class="skip-link" href="#main">Langsung ke konten</a>
 <?= $this->include('partials/header') ?>
 <?= $this->include('partials/flash') ?>
