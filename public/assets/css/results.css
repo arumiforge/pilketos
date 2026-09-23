@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+   SMP 1 DAWE — Pemilihan Ketua OSIS 2026
    Halaman hasil akhir (Stage 4). Dimuat setelah app.css + admin.css.
 
    Arah visual: "lembar berita acara" yang lebih seremonial daripada dasbor,
@@ -59,10 +59,32 @@
 }
 
 .final__masthead {
+  position: relative;
   display: grid;
   gap: var(--space-4);
   padding-top: var(--space-5);
   border-top: 6px double var(--ink);
+}
+
+/* Stage 6: stempel geometris hasil akhir (S04 result-mark.svg): dua cincin,
+   cincin perforasi, titik coblos; warna dari CSS lewat mask, tanpa piala. */
+.final__mark {
+  display: none;
+  position: absolute;
+  top: var(--space-5);
+  right: 0;
+  width: clamp(72px, 8vw, 104px);
+  aspect-ratio: 1;
+  background-color: var(--ink);
+  opacity: 0.85;
+  -webkit-mask: url('../img/results/result-mark.svg') center / contain no-repeat;
+  mask: url('../img/results/result-mark.svg') center / contain no-repeat;
+}
+
+@media (min-width: 720px) {
+  .final__mark { display: block; }
+  .final__kicker,
+  .final__title { padding-right: clamp(88px, 10vw, 128px); }
 }
 
 .final__kicker {
@@ -541,6 +563,11 @@
   .confetti { display: none !important; }
 
   .final { gap: var(--space-5); }
+
+  .final__mark {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
   .victor {
     background: none;

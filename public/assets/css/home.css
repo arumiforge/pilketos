@@ -1,17 +1,21 @@
 /* ==========================================================================
-   SMP 1 Dawe — Pemilihan Ketua OSIS 2026
-   Beranda imersif (redesign beranda, STAGE5-NOTES.md). Dimuat hanya di
-   beranda, setelah app.css.
+   SMP 1 DAWE — Pemilihan Ketua OSIS 2026
+   Beranda imersif (Stage 5, STAGE5-NOTES.md) dengan identitas visual "Surat
+   Suara dari Lereng Muria" (Stage 6, STAGE6-NOTES.md; dokumen 06-10).
+   Dimuat hanya di beranda, setelah app.css.
 
-   - Layar pembuka (.splash), scene layar penuh (.scene), pintu masuk
-     (.portal), perolehan suara (.pair, .turnout), panel status terminal
-     (.dock), navigasi scene (.pager).
+   - Layar pembuka (.splash), scene layar penuh (.scene), hero berlapis
+     (.hero-bg, .hero), pintu masuk (.portal), perolehan suara (.pair,
+     .turnout), panel status terminal (.dock), navigasi scene (.pager).
    - Mode scene aktif saat home.js menambah html.has-scenes. Tanpa itu
      (tanpa JavaScript / skrip gagal) scene tampil sebagai halaman bergulir
      biasa dengan scroll-snap CSS.
-   - Tanpa gradient, tanpa emoji: kedalaman dari transform, opacity, dan
-     lapisan warna solid. Warna hanya netral + aksen solid tiap pasangan.
-   - Semua gerak dimatikan oleh prefers-reduced-motion (app.css + bawah file).
+   - Palet "Pagi Muria" (kroma rendah) + warna aksen solid tiap pasangan.
+     Parijoto (--parijoto, dari server) hanya di bilah muat layar pembuka;
+     scene SUARA hanya palet netral + aksen pasangan. Tanpa gradient, tanpa
+     emoji, tanpa blur: kedalaman dari transform, opacity, lapisan solid.
+   - Gerak memakai token --motion-* / --ease-* (10-MOTION §2); semua gerak
+     dimatikan oleh prefers-reduced-motion (app.css + bawah file).
    ========================================================================== */
 
 @font-face {
@@ -23,19 +27,31 @@
 }
 
 .page-home {
-  --night:       #0F0E13;
-  --night-2:     #16151C;
-  --night-3:     #1E1D25;
-  --on-night:    #F4F2EC;
-  --on-night-2:  #B9B5AB; /* 9,3:1 di atas --night */
-  --on-night-3:  #8E8A80; /* 5,5:1: teks kecil sekunder */
-  --night-line:  rgba(244, 242, 236, 0.12);
-  --night-line-2: rgba(244, 242, 236, 0.24);
-  --led-on:      #7FCB9A;
-  --led-wait:    #D9C27E;
-  --led-off:     #8E8A80;
+  /* -- palet "Pagi Muria" (06-VISUAL-DIRECTION §5) -- */
+  --night:       #101312; /* Malam Lereng: latar gelap utama */
+  --night-2:     #171B19; /* permukaan dock, panel */
+  --night-3:     #1F2421; /* latar portal sebelum gambar dimuat */
+  --on-night:    #F2F1EC; /* Kabut: 16,5:1 di atas --night */
+  --on-night-2:  #B7B8B0; /* 9,3:1 */
+  --on-night-3:  #8C8E86; /* 5,6:1: teks kecil sekunder */
+  --earth:       #2A2521; /* bayangan hangat */
+  --night-line:  rgba(242, 241, 236, 0.12);
+  --night-line-2: rgba(242, 241, 236, 0.24);
 
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* -- gerak (10-MOTION §2): pakai token, jangan durasi baru per elemen -- */
+  --motion-fast:   180ms;
+  --motion-ui:     260ms;
+  --motion-reveal: 380ms;
+  --motion-scene:  800ms;
+  --ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out:    cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* skala latar hero saat diam: sedikit diperbesar di desktop agar tepi
+     tidak terlihat saat paralaks bergeser (10-MOTION §5) */
+  --bg-rest: 1;
 
   /* diukur ulang oleh home.js (ResizeObserver); nilai awal = perkiraan */
   --nav-h: calc(64px + env(safe-area-inset-top, 0px));
@@ -46,16 +62,16 @@
   /* ruang kanan scene untuk navigasi scene (.pager) agar tidak menimpa konten */
   --pager-space: 60px;
 
-  --scene-dur: 1050ms;
-  --scene-ease: cubic-bezier(0.77, 0, 0.175, 1);
-  --out: cubic-bezier(0.16, 1, 0.3, 1);
-
   background: var(--night);
   color: var(--on-night);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .page-home { --bg-rest: 1.02; }
+}
+
 html.is-immersive {
-  background: #0F0E13;
+  background: #101312;
   color-scheme: dark;
 }
 
@@ -76,7 +92,7 @@ html.is-immersive {
   outline-offset: 3px;
 }
 
-/* -- navigasi melayang: logo di tengah, transparan di atas scene ---------- */
+/* -- navigasi melayang: lockup di tengah, transparan di atas scene -------- */
 .site-nav--immersive {
   position: fixed;
   top: 0;
@@ -97,24 +113,25 @@ html.is-immersive {
 
 .site-nav--immersive .site-nav__row > * { pointer-events: auto; }
 
-.site-nav--immersive .site-nav__logo { height: 30px; }
+.site-nav--immersive .brandmark { --brand-h: 30px; }
 
 .site-nav--immersive .site-nav__action {
   border-color: var(--night-line-2);
-  background: rgba(15, 14, 19, 0.6);
+  background: rgba(16, 19, 18, 0.6);
 }
 
 .site-nav--immersive .site-nav__action:hover {
   border-color: var(--on-night);
-  background: rgba(244, 242, 236, 0.08);
+  background: rgba(242, 241, 236, 0.08);
 }
 
-/* logo navigasi disembunyikan selama layar pembuka: logo pembuka "mendarat"
-   tepat di sini lalu ditukar tanpa transisi (piksel sama, tidak berkedip) */
-.intro-active .site-nav--immersive .site-nav__logo { opacity: 0; }
+/* lockup navigasi disembunyikan selama layar pembuka: lockup pembuka
+   "mendarat" tepat di sini lalu ditukar tanpa transisi (satu logo terlihat
+   pada satu waktu, tidak berkedip) */
+.intro-active .site-nav--immersive .brandmark { opacity: 0; }
 
 @media (min-width: 720px) {
-  .site-nav--immersive .site-nav__logo { height: 36px; }
+  .site-nav--immersive .brandmark { --brand-h: 36px; }
 }
 
 /* -- pesan flash (mis. sesi form kedaluwarsa) melayang di atas scene ------ */
@@ -135,10 +152,10 @@ html.is-immersive {
 }
 
 .page-home .alert--error { border-left-color: #E07B63; }
-.page-home .alert--success { border-left-color: var(--led-on); }
+.page-home .alert--success { border-left-color: var(--on-night-2); }
 
 /* ==========================================================================
-   Layar pembuka
+   Layar pembuka: pemandangan hero berkabut pekat -> "kabut tersingkap"
    ========================================================================== */
 
 .splash { display: none; }
@@ -151,10 +168,12 @@ html.is-immersive {
   place-items: center;
   overflow: hidden;
   background-color: var(--night);
-  /* pengaman: hilang sendiri bila home.js tidak berjalan */
-  animation: splash-failsafe 0.6s ease 8s forwards;
+  /* pengaman: hilang sendiri bila home.js tidak berjalan (di atas Intro.MAX) */
+  animation: splash-failsafe 0.6s ease 6s forwards;
 }
 
+/* satu-satunya pengecualian "selalu tampil": muat ulang otomatis karena
+   status pemilihan berubah (layouts/main.php) */
 .js.intro-seen .splash { display: none; }
 
 .splash.is-managed { animation: none; }
@@ -172,59 +191,62 @@ html.is-immersive {
   max-width: none;
 }
 
+/* sebingkai dengan latar hero: object-fit & skala awal sama (1,04), jadi
+   saat kabut memudar pemandangan tidak bergeser */
 .splash__img {
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.08);
-  transition: opacity 1.2s var(--out), transform 2.6s var(--out);
+  transform: scale(1.04);
+  transition: opacity 400ms var(--ease-out);
 }
 
-.splash__img.is-loaded {
-  opacity: 1;
-  transform: scale(1);
-}
+.splash__img.is-loaded { opacity: 1; }
 
-/* lapisan gelap: logo tetap fokus utama di atas latar apa pun */
+/* lapisan gelap tipis: latar sudah berkabut & diredupkan, lockup tetap fokus */
 .splash__shade {
   position: absolute;
   inset: 0;
-  background: rgba(8, 8, 11, 0.58);
+  background: rgba(16, 19, 18, 0.28);
 }
 
 .splash__center {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: 26px;
-  width: min(440px, 70vw);
+  gap: clamp(20px, 3.4vh, 30px);
+  max-width: calc(100vw - 32px);
 }
 
-.splash__logo {
-  width: 100%;
-  height: auto;
+.brandmark--splash {
+  --brand-h: clamp(40px, min(10vw, 12vh), 88px);
   opacity: 0;
-  transform: translate3d(0, 10px, 0) scale(0.97);
-  animation: splash-logo-in 1.1s var(--out) 0.1s forwards;
+  transform: translate3d(0, 8px, 0);
+  animation: splash-brand-in 900ms var(--ease-out) 100ms forwards;
+  transform-origin: 50% 50%;
   will-change: transform;
 }
 
-@keyframes splash-logo-in {
+@keyframes splash-brand-in {
   to { opacity: 1; transform: none; }
 }
 
 .splash__bar {
   position: relative;
-  width: 58%;
+  width: min(240px, 50vw);
   height: 2px;
   overflow: hidden;
   border-radius: 2px;
-  background: rgba(244, 242, 236, 0.16);
+  background: rgba(242, 241, 236, 0.18);
+  opacity: 0;
+  animation: splash-bar-in 400ms var(--ease-out) 300ms forwards;
 }
 
+/* satu-satunya warna identitas sekolah di beranda: parijoto (dari server;
+   netral/Kabut bila mirip warna pasangan mana pun) */
 .splash__fill {
   position: absolute;
   inset: 0;
-  background: var(--on-night);
+  background: var(--parijoto, var(--on-night));
   transform: scaleX(var(--p, 0));
   transform-origin: left center;
 }
@@ -232,32 +254,49 @@ html.is-immersive {
 .splash__pct {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.2em;
   color: var(--on-night-2);
   font-variant-numeric: tabular-nums;
+  opacity: 0;
+  animation: splash-bar-in 400ms var(--ease-out) 300ms forwards;
 }
 
-/* keluar: latar & bilah memudar, logo terbang ke navigasi (home.js) */
+@keyframes splash-bar-in {
+  to { opacity: 1; }
+}
+
+/* Keluar ("kabut tersingkap", 10-MOTION §10.3): bilah & angka memudar
+   200 ms; latar kabut memudar 700 ms di atas hero yang sudah dirender;
+   latar kabut & hero mengendap bersama (1,04 -> diam) mulai t0+260 ms;
+   lockup terbang ke navigasi 800 ms (home.js). */
 .splash.is-leaving {
   pointer-events: none;
   background-color: transparent;
-  transition: background-color 0.9s var(--out) 0.15s;
+  transition: background-color 700ms var(--ease-editorial);
 }
 
 .splash.is-leaving .splash__bg,
 .splash.is-leaving .splash__shade {
   opacity: 0;
-  transition: opacity 0.9s var(--out) 0.1s;
+  transition: opacity 700ms var(--ease-editorial);
+}
+
+.splash.is-leaving .splash__img {
+  transform: scale(var(--bg-rest));
+  transition: transform 1200ms var(--ease-editorial) 260ms;
 }
 
 .splash.is-leaving .splash__bar,
 .splash.is-leaving .splash__pct {
   opacity: 0;
-  transition: opacity 0.3s var(--out);
+  animation: none;
+  transition: opacity 200ms var(--ease-out);
 }
 
-.splash.is-leaving .splash__logo {
-  transition: transform 0.95s cubic-bezier(0.65, 0, 0.35, 1);
+.splash.is-leaving .brandmark--splash {
+  animation: none;
+  opacity: 1;
+  transition: transform 800ms var(--ease-in-out);
 }
 
 /* ==========================================================================
@@ -313,7 +352,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   overflow: clip;
   perspective: 1600px;
   perspective-origin: 50% 30%;
-  background: #08080B;
+  background: #0B0D0C;
 }
 
 /* Scene nonaktif TIDAK disembunyikan (visibility/display): tetap terbaca
@@ -328,10 +367,8 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   transform-origin: 50% 0;
   backface-visibility: hidden;
   /* tepi atas tipis: batas scene terbaca saat meluncur di atas scene lain */
-  box-shadow: 0 -1px 0 rgba(244, 242, 236, 0.1);
-  transition:
-    transform var(--scene-dur) var(--scene-ease),
-    opacity var(--scene-dur) var(--scene-ease);
+  box-shadow: 0 -1px 0 rgba(242, 241, 236, 0.1);
+  transition: transform var(--motion-scene) var(--ease-in-out);
 }
 
 /* lapisan gelap: scene yang mundur ke belakang ikut meredup (kedalaman) */
@@ -343,7 +380,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   background: #000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--scene-dur) var(--scene-ease);
+  transition: opacity var(--motion-scene) var(--ease-in-out);
 }
 
 .has-scenes .scene.is-active {
@@ -351,30 +388,34 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   transform: translate3d(0, var(--drag, 0px), 0);
 }
 
+/* lebih tenang dari Stage 5: mundur sedikit, miring tipis (desktop saja) */
 .has-scenes .scene.is-before {
-  opacity: 0.35;
-  transform: translate3d(0, -12%, -320px) rotateX(10deg) scale(0.9);
+  transform: translate3d(0, -6%, -120px) rotateX(3deg) scale(0.94);
 }
 
-.has-scenes .scene.is-before::after { opacity: 0.72; }
+@media (hover: none), (pointer: coarse) {
+  .has-scenes .scene.is-before { transform: translate3d(0, -6%, -120px) scale(0.94); }
+}
+
+.has-scenes .scene.is-before::after { opacity: 0.5; }
 
 .has-scenes .scene.is-after { transform: translate3d(0, 100%, 0); }
 
 .has-scenes .scene.is-dragging { transition: none; }
 
 /* seret sentuh dilepas tanpa pindah scene: kembali cepat */
-.has-scenes .scene.is-settling { transition: transform 0.5s var(--out); }
+.has-scenes .scene.is-settling { transition: transform 500ms var(--ease-out); }
 
 /* scene pertama/terakhir: dorongan kecil, tanda tidak ada scene lagi */
-.has-scenes .scene.is-bump-up { animation: scene-bump-up 0.6s var(--out); }
-.has-scenes .scene.is-bump-down { animation: scene-bump-down 0.6s var(--out); }
+.has-scenes .scene.is-bump-up { animation: scene-bump-up 600ms var(--ease-out); }
+.has-scenes .scene.is-bump-down { animation: scene-bump-down 600ms var(--ease-out); }
 
 @keyframes scene-bump-up {
-  35% { transform: translate3d(0, -16px, 0); }
+  35% { transform: translate3d(0, -12px, 0); }
 }
 
 @keyframes scene-bump-down {
-  35% { transform: translate3d(0, 16px, 0); }
+  35% { transform: translate3d(0, 12px, 0); }
 }
 
 .has-scenes .scene.no-transition,
@@ -389,32 +430,32 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(244, 242, 236, 0.22) transparent;
-  transition: transform calc(var(--scene-dur) * 1.2) var(--out);
+  scrollbar-color: rgba(242, 241, 236, 0.22) transparent;
+  transition: transform calc(var(--motion-scene) * 1.15) var(--ease-out);
 }
 
 /* lapisan konten tertinggal dari bidang scene: paralaks saat berpindah */
-.has-scenes .scene.is-after .scene__inner { transform: translate3d(0, 16vh, 0); }
-.has-scenes .scene.is-before .scene__inner { transform: translate3d(0, -8vh, 0); }
+.has-scenes .scene.is-after .scene__inner { transform: translate3d(0, 10vh, 0); }
+.has-scenes .scene.is-before .scene__inner { transform: translate3d(0, -5vh, 0); }
 
-/* -- muncul bertahap: isi scene naik & memudar masuk ---------------------- */
+/* -- muncul bertahap: isi scene naik & memudar masuk (stagger 70 ms) ------ */
 .js [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 26px, 0);
+  transform: translate3d(0, 18px, 0);
   /* pengaman bila home.js tidak berjalan */
-  animation: reveal-failsafe 0.6s var(--out) 8s forwards;
+  animation: reveal-failsafe 0.6s var(--ease-out) 6s forwards;
 }
 
 .js.is-ready [data-reveal] {
   animation: none;
-  transition: opacity 0.5s var(--out), transform 0.5s var(--out);
+  transition: opacity var(--motion-reveal) var(--ease-out), transform var(--motion-reveal) var(--ease-out);
 }
 
 .js.is-ready .scene.is-shown [data-reveal] {
   opacity: 1;
   transform: none;
-  transition: opacity 0.9s var(--out), transform 1.1s var(--out);
-  transition-delay: calc(120ms + var(--order, 0) * 85ms);
+  transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+  transition-delay: calc(120ms + var(--order, 0) * 70ms);
 }
 
 @keyframes reveal-failsafe {
@@ -422,9 +463,99 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 }
 
 /* ==========================================================================
-   01 Hero
+   01 LERENG (hero): visual dulu, teks singkat di sepertiga bawah-kiri
    ========================================================================== */
 
+/* -- lapisan visual (belakang -> depan), paralaks berlapis lewat --mx/--my -- */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-bg__photo,
+.hero-bg__contour,
+.hero-bg__fore {
+  position: absolute;
+  will-change: transform;
+}
+
+/* 1. latar A03/A04: pembungkus = paralaks (6 px), gambar = "mengendap" */
+.hero-bg__photo {
+  inset: 0;
+  display: block;
+  transform: translate3d(calc(var(--mx, 0) * -6px), calc(var(--my, 0) * -6px), 0);
+}
+
+.hero-bg__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  transform: scale(var(--bg-rest));
+  transition: transform 1200ms var(--ease-editorial);
+}
+
+/* keadaan awal reveal hanya dengan JavaScript (tanpa JS: langsung diam) */
+.js .scene--hero:not(.is-shown) .hero-bg__img { transform: scale(1.04); }
+
+/* 2. lapisan gelap solid rendah (gambar sudah lebih gelap di area teks) */
+.hero-bg__shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 19, 18, 0.22);
+}
+
+/* 3. kontur S01: garis punggungan Muria, warna dari CSS (mask), 8 px */
+.hero-bg__contour {
+  inset: 0;
+  background-color: var(--on-night);
+  opacity: 0.09;
+  -webkit-mask: url('../img/home/hero-contour.svg') center / cover no-repeat;
+  mask: url('../img/home/hero-contour.svg') center / cover no-repeat;
+  /* sebingkai dengan latar (object-fit: cover + skala diam yang sama) */
+  transform: translate3d(calc(var(--mx, 0) * -8px), calc(var(--my, 0) * -8px), 0) scale(var(--bg-rest));
+  transition: opacity 600ms var(--ease-out);
+}
+
+@media (orientation: portrait) {
+  .hero-bg__contour {
+    -webkit-mask-image: url('../img/home/hero-contour-mobile.svg');
+    mask-image: url('../img/home/hero-contour-mobile.svg');
+  }
+}
+
+.js .scene--hero:not(.is-shown) .hero-bg__contour { opacity: 0; }
+
+.js .scene--hero.is-shown .hero-bg__contour { transition-delay: 240ms; }
+
+/* 4. lapisan depan A05 (opsional): pojok kanan bawah, keluar bingkai, 14 px */
+.hero-bg__fore {
+  right: -4vw;
+  bottom: calc(var(--dock-h) - 6vh);
+  width: min(44vw, 72vh);
+  transform: translate3d(calc(var(--mx, 0) * -14px), calc(var(--my, 0) * -14px), 0);
+}
+
+.hero-bg__fore-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+}
+
+.js .scene--hero:not(.is-shown) .hero-bg__fore-img {
+  opacity: 0;
+  transform: translate3d(14px, 14px, 0);
+}
+
+.js .scene--hero.is-shown .hero-bg__fore-img { transition-delay: 120ms; }
+
+/* 5. canvas "embun / lubang coblos": hanya di sekitar pointer & ketukan */
 .field {
   position: absolute;
   inset: 0;
@@ -432,81 +563,107 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   width: 100%;
   height: 100%;
   max-width: none;
-  opacity: 0;
-  transition: opacity 1.6s var(--out);
   pointer-events: none;
 }
 
-.field.is-on { opacity: 1; }
+/* 6. teks + CTA: sepertiga bawah-kiri, paralaks 3 px */
+.scene--hero .scene__inner { justify-content: flex-end; }
 
 .hero {
   display: grid;
-  gap: clamp(18px, 3vh, 30px);
+  justify-items: start;
   width: 100%;
-  max-width: 1240px;
-  margin: auto;
-  transform: translate3d(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px), 0);
-}
-
-.hero__title {
-  display: grid;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(3.2rem, min(13.5vw, 21vh), 12.5rem);
-  line-height: 0.88;
-  letter-spacing: -0.045em;
+  max-width: min(640px, 46vw);
+  margin-top: auto;
+  transform: translate3d(calc(var(--mx, 0) * -3px), calc(var(--my, 0) * -3px), 0);
 }
 
 .hero__kicker {
-  display: block;
-  margin-bottom: clamp(14px, 2.4vh, 26px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: clamp(10px, 1.8vh, 16px);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
   color: var(--on-night-2);
 }
 
-/* tiap baris judul adalah "jendela": kata naik dari bawah garis
-   (padding atas/bawah agar ujung huruf & garis tepi angka tidak terpotong) */
+/* registration mark S03 (detail kecil surat suara, sekali saja) */
+.hero__reg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  opacity: 0.7;
+  -webkit-mask: url('../img/home/hero-registration.svg') center / contain no-repeat;
+  mask: url('../img/home/hero-registration.svg') center / contain no-repeat;
+}
+
+/* judul "SMP 1 DAWE": sans semibold kapital, tracking positif (07 §4, §7) */
+.hero__title {
+  font-family: var(--font-ui);
+  font-size: clamp(2.5rem, 4.5vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: 0.03em;
+}
+
+/* baris judul = "jendela": kata naik dari bawah garis */
 .hero__line {
   display: block;
   overflow: hidden;
-  padding-block: 0.1em 0.08em;
-  margin-block: -0.1em -0.08em;
+  padding-block: 0.06em;
+  margin-block: -0.06em;
 }
 
 .hero__word { display: inline-block; }
 
 .js .hero__word[data-reveal] { transform: translate3d(0, 108%, 0); }
 
-.js.is-ready .scene.is-shown .hero__word[data-reveal] {
-  transition: opacity 0.6s var(--out), transform 1.3s var(--out);
-}
-
-.hero__line--year {
-  justify-self: end;
-  font-weight: 300;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--on-night-2);
-}
-
-.hero__lede {
-  max-width: 44ch;
-  font-size: clamp(1rem, 1.6vw, 1.1875rem);
-  line-height: 1.6;
+.hero__support {
+  margin-top: clamp(10px, 1.6vh, 14px);
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  line-height: 1.5;
   color: var(--on-night-2);
+  white-space: nowrap;
 }
+
+/* garis sobek S02 di atas CTA: penghubung ke konsep surat suara */
+.hero__perf {
+  display: block;
+  width: min(360px, 100%);
+  height: 4px;
+  margin-block: clamp(18px, 3vh, 28px) clamp(16px, 2.6vh, 24px);
+  background-color: rgba(242, 241, 236, 0.42);
+  -webkit-mask: url('../img/home/hero-perforation.svg') left center / 240px 4px repeat-x;
+  mask: url('../img/home/hero-perforation.svg') left center / 240px 4px repeat-x;
+}
+
+/* urutan reveal hero (10-MOTION §4): latar 0 -> depan 120 -> kontur 240 ->
+   kicker 360 -> judul 440 -> baris pendukung 500 -> CTA + perforasi 560 */
+.js.is-ready .scene--hero.is-shown .hero__kicker { transition-delay: 360ms; }
+
+.js.is-ready .scene--hero.is-shown .hero__word[data-reveal] {
+  transition: opacity 400ms var(--ease-out), transform 650ms var(--ease-editorial);
+  transition-delay: 440ms;
+}
+
+.js.is-ready .scene--hero.is-shown .hero__support { transition-delay: 500ms; }
+
+.js.is-ready .scene--hero.is-shown .hero__perf,
+.js.is-ready .scene--hero.is-shown .hero__actions { transition-delay: 560ms; }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 10px 22px;
 }
 
-/* tombol beranda: kapsul terang (utama) & garis (sekunder) */
+/* tombol beranda: kapsul terang (CTA utama) */
 .hbtn {
   display: inline-flex;
   align-items: center;
@@ -520,13 +677,17 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
-  transition: transform 0.4s var(--out), background-color 0.3s var(--out), color 0.3s var(--out), border-color 0.3s var(--out);
+  transition:
+    transform var(--motion-ui) var(--ease-out),
+    background-color var(--motion-ui) var(--ease-out),
+    color var(--motion-ui) var(--ease-out),
+    border-color var(--motion-ui) var(--ease-out);
 }
 
 .hbtn .icon {
   width: 18px;
   height: 18px;
-  transition: transform 0.4s var(--out);
+  transition: transform var(--motion-ui) var(--ease-out);
 }
 
 .hbtn--primary {
@@ -540,54 +701,33 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   color: var(--on-night);
 }
 
+/* tautan sekunder hero: teks bergaris bawah tipis, tidak bersaing dengan CTA */
+.hlink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--on-night-2);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--night-line-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: color var(--motion-ui) var(--ease-out), text-decoration-color var(--motion-ui) var(--ease-out);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .hbtn:hover { transform: translate3d(0, -2px, 0); }
   .hbtn--primary:hover .icon { transform: translate3d(4px, 0, 0); }
   .hbtn--ghost:hover { border-color: var(--on-night); }
+
+  .hlink:hover {
+    color: var(--on-night);
+    text-decoration-color: var(--on-night);
+  }
 }
 
 .hbtn:active { transform: scale(0.97); }
-
-/* pita warna pasangan calon */
-.hero__bands {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 6px;
-  width: 100%;
-  max-width: 1240px;
-  margin: clamp(18px, 3vh, 32px) auto 0;
-  transform: translate3d(calc(var(--mx, 0) * -18px), 0, 0);
-}
-
-.hero__band {
-  display: flex;
-  align-items: center;
-  height: 34px;
-  padding-inline: 12px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  transform-origin: left center;
-}
-
-.js.is-ready .scene.is-shown .hero__band {
-  animation: band-in 1.2s var(--out) both;
-  animation-delay: calc(500ms + var(--band, 0) * 90ms);
-}
-
-.hero__band:nth-child(2) { --band: 1; }
-.hero__band:nth-child(3) { --band: 2; }
-.hero__band:nth-child(4) { --band: 3; }
-
-@keyframes band-in {
-  from { transform: scaleX(0); }
-  to { transform: none; }
-}
 
 /* petunjuk lanjut ke scene berikutnya */
 .scene-next {
@@ -603,7 +743,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   font-family: var(--font-mono);
   font-size: 0.625rem;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.2em;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -611,46 +751,38 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 .scene-next .icon {
   width: 18px;
   height: 18px;
-  animation: nudge 2.4s var(--out) infinite;
+  animation: nudge 2.4s var(--ease-out) infinite;
 }
 
 .scene-next:hover { color: var(--on-night); }
 
-.scene-next__text--coarse { display: none; }
-
-@media (pointer: coarse) {
-  .scene-next__text--fine { display: none; }
-  .scene-next__text--coarse { display: inline; }
-}
-
 @keyframes nudge {
   0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, 5px, 0); }
+  50% { transform: translate3d(0, 4px, 0); }
 }
 
 /* ==========================================================================
-   02 Pintu masuk: Siswa / Guru
+   02 PEMILIH: pintu masuk Siswa / Guru
    ========================================================================== */
 
 .entry {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: clamp(12px, 2vh, 20px);
+  gap: clamp(12px, 2.2vh, 22px);
   width: 100%;
   max-width: 1480px;
   min-height: 0;
   margin-inline: auto;
 }
 
+/* judul section: Newsreader, kalimat biasa (07 §5) */
 .entry__title {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--on-night-2);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, min(3.4vw, 5.6vh), 3rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
 }
 
 .entry__portals {
@@ -676,18 +808,21 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   background: var(--night-3);
   color: var(--on-night);
   text-decoration: none;
-  transition: flex-grow 0.9s var(--out), transform 0.5s var(--out);
+  transition:
+    flex-grow 680ms var(--ease-editorial),
+    transform var(--motion-fast) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
-  /* ukuran kata SISWA/GURU mengikuti lebar portal sendiri (melebar/menyempit saat hover) */
+  /* ukuran kata SISWA/GURU mengikuti lebar portal sendiri */
   container-type: inline-size;
 }
 
+/* gambar mengikuti pointer maksimum 10 px; skala 1,03 -> 1,06 saat aktif */
 .portal__media {
   position: absolute;
   inset: 0;
   z-index: -2;
-  transform: scale(1.1) translate3d(calc(var(--px, 0) * -26px), calc(var(--py, 0) * -26px), 0);
-  transition: transform 1.3s var(--out);
+  transform: translate3d(calc(var(--px, 0) * -20px), calc(var(--py, 0) * -20px), 0) scale(1.03);
+  transition: transform 700ms var(--ease-out);
 }
 
 .portal__media picture,
@@ -705,8 +840,8 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgba(8, 8, 11, 0.5);
-  transition: background-color 0.7s var(--out);
+  background: rgba(16, 19, 18, 0.48);
+  transition: background-color 600ms var(--ease-out);
 }
 
 .portal__no {
@@ -715,28 +850,30 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   left: clamp(16px, 2.4vw, 28px);
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(8, 8, 11, 0.72);
+  background: rgba(16, 19, 18, 0.72);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.16em;
 }
 
+/* label SISWA/GURU: Plus Jakarta Sans 600 kapital, tracking positif;
+   diperkecil dari Stage 5 agar gambar portal lebih terlihat (07 §7) */
 .portal__who {
   position: absolute;
   left: clamp(16px, 2.4vw, 28px);
-  bottom: clamp(10px, 1.8vw, 20px);
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, min(10vw, 16vh), 10rem);
-  font-weight: 400;
-  line-height: 0.9;
-  letter-spacing: -0.03em;
+  bottom: clamp(14px, 2vw, 24px);
+  font-family: var(--font-ui);
+  font-size: clamp(2.2rem, min(8vw, 14vh), 6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  transition: letter-spacing 0.9s var(--out);
+  transition: transform 600ms var(--ease-out);
 }
 
 @supports (width: 1cqi) {
-  .portal__who { font-size: clamp(2.4rem, min(20cqi, 17vh), 10rem); }
+  .portal__who { font-size: clamp(2.4rem, min(16cqi, 14vh), 6rem); }
 }
 
 .portal__go {
@@ -747,36 +884,45 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   place-items: center;
   width: 56px;
   height: 56px;
-  border: 1px solid rgba(244, 242, 236, 0.4);
+  border: 1px solid rgba(242, 241, 236, 0.4);
   border-radius: 50%;
-  background: rgba(8, 8, 11, 0.4);
-  transition: transform 0.6s var(--out), background-color 0.4s var(--out), color 0.4s var(--out);
+  background: rgba(16, 19, 18, 0.4);
+  transition:
+    transform var(--motion-reveal) var(--ease-out),
+    background-color var(--motion-ui) var(--ease-out),
+    color var(--motion-ui) var(--ease-out);
 }
 
 .portal__go .icon { width: 22px; height: 22px; }
 
 @media (hover: hover) and (pointer: fine) {
-  .entry__portals:hover .portal { flex-grow: 0.78; }
+  .entry__portals:hover .portal { flex-grow: 0.85; }
 
   .entry__portals .portal:hover,
-  .entry__portals .portal:focus-visible { flex-grow: 1.32; }
+  .entry__portals .portal:focus-visible { flex-grow: 1.2; }
+
+  .portal:hover .portal__media,
+  .portal:focus-visible .portal__media {
+    transform: translate3d(calc(var(--px, 0) * -20px), calc(var(--py, 0) * -20px), 0) scale(1.06);
+  }
 
   .portal:hover .portal__shade,
-  .portal:focus-visible .portal__shade { background: rgba(8, 8, 11, 0.3); }
+  .portal:focus-visible .portal__shade { background: rgba(16, 19, 18, 0.3); }
 
-  .entry__portals:hover .portal:not(:hover) .portal__shade { background: rgba(8, 8, 11, 0.7); }
+  .entry__portals:hover .portal:not(:hover) .portal__shade { background: rgba(16, 19, 18, 0.62); }
 
   .portal:hover .portal__who,
-  .portal:focus-visible .portal__who { letter-spacing: -0.01em; }
+  .portal:focus-visible .portal__who { transform: translate3d(6px, 0, 0); }
 
   .portal:hover .portal__go,
   .portal:focus-visible .portal__go {
     background: var(--on-night);
     color: var(--night);
-    transform: rotate(45deg);
+    transform: translate3d(4px, -4px, 0);
   }
 }
 
+/* sentuh: umpan balik tekan sederhana, tanpa perilaku mirip hover */
 .portal:active { transform: scale(0.985); }
 
 .portal:focus-visible {
@@ -787,7 +933,8 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 .scene-next--compact { margin-top: clamp(8px, 1.6vh, 16px); }
 
 /* ==========================================================================
-   03 Perolehan suara (live count publik) / pasangan calon
+   03 SUARA: perolehan suara (live count publik) / pasangan calon.
+   Hanya palet netral + warna aksen pasangan; semua pasangan setara.
    ========================================================================== */
 
 .live {
@@ -808,10 +955,10 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 
 .live__title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, min(5vw, 7vh), 3.8rem);
+  font-size: clamp(2rem, min(4.6vw, 6.4vh), 3.5rem);
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.015em;
 }
 
 .live__tag {
@@ -828,27 +975,33 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   text-transform: uppercase;
 }
 
+/* Lampu status netral (tanpa hijau/kuning: tidak bersaing dengan warna
+   pasangan, dan tidak bergantung pada warna): berlangsung = titik penuh
+   berdenyut, belum dibuka = cincin kosong, selesai/tanpa jadwal = redup. */
 .live__led,
 .dock__led {
   flex: 0 0 auto;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--led-off);
+  background: var(--on-night-3);
 }
 
 .live--ongoing .live__led,
 .dock--ongoing .dock__led {
-  background: var(--led-on);
+  background: var(--on-night);
   animation: led 1.8s ease-in-out infinite;
 }
 
 .live--upcoming .live__led,
-.dock--upcoming .dock__led { background: var(--led-wait); }
+.dock--upcoming .dock__led {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--on-night-2);
+}
 
 @keyframes led {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(127, 203, 154, 0.5); }
-  50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(127, 203, 154, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(242, 241, 236, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(242, 241, 236, 0); }
 }
 
 .live__grid {
@@ -880,7 +1033,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   width: 100%;
   aspect-ratio: 4 / 5;
   /* setinggi mungkin tanpa membuat scene perlu digulir di layar laptop */
-  max-height: clamp(140px, calc(100svh - 550px), 440px);
+  max-height: clamp(140px, calc(100svh - 520px), 440px);
   overflow: hidden;
   border-radius: 16px;
   background: var(--accent);
@@ -955,30 +1108,28 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: 0 0 0 1px rgba(244, 242, 236, 0.25);
+  box-shadow: 0 0 0 1px rgba(242, 241, 236, 0.25);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.1em;
 }
 
+/* persentase: Newsreader 400, angka tabular (07 §5, §7) */
 .pair__pct {
   order: 1;
   display: flex;
   align-items: baseline;
   margin-top: clamp(8px, 1.4vh, 14px);
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, min(5.6vw, 9vh), 5.6rem);
+  font-size: clamp(2.5rem, min(4.4vw, 7.4vh), 4rem);
   font-weight: 400;
   line-height: 0.95;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-.pair__num {
-  display: inline-block;
-  transition: color 0.6s var(--out);
-}
+.pair__num { display: inline-block; }
 
 .pair__unit {
   margin-left: 0.05em;
@@ -1006,10 +1157,11 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   max-width: 100%;
   height: 100%;
   background: var(--accent);
-  box-shadow: 0 0 0 1px rgba(244, 242, 236, 0.18) inset;
-  transition: width 1.4s var(--out);
+  box-shadow: 0 0 0 1px rgba(242, 241, 236, 0.18) inset;
+  transition: width 750ms var(--ease-out);
 }
 
+/* nama: ketua Newsreader 500, wakil Plus Jakarta Sans 400; sama untuk semua */
 .pair__names {
   order: 3;
   margin-top: 10px;
@@ -1022,7 +1174,9 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 .pair__wakil { display: block; }
 
 .pair__ketua {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 500;
   color: var(--on-night);
 }
 
@@ -1036,12 +1190,13 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   color: var(--on-night-3);
 }
 
-/* nilai berubah: angka bergulir (home.js) + garis aksen berdenyut sekali */
-.pair.is-changed .pair__bar { animation: bar-pulse 1.6s var(--out); }
+/* nilai berubah: angka bergulir (home.js) + garis aksen berdenyut sekali;
+   foto tetap diam, layout tidak bergeser, tanpa kilatan */
+.pair.is-changed .pair__bar { animation: bar-pulse 900ms var(--ease-out); }
 
 @keyframes bar-pulse {
   0% { transform: scaleY(1); }
-  25% { transform: scaleY(2.4); }
+  30% { transform: scaleY(2); }
   100% { transform: scaleY(1); }
 }
 
@@ -1057,7 +1212,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--on-night-2);
 }
@@ -1066,10 +1221,10 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   display: flex;
   align-items: baseline;
   font-family: var(--font-display);
-  font-size: clamp(3rem, min(6vw, 10vh), 6.2rem);
+  font-size: clamp(2.75rem, min(5vw, 8.4vh), 4.75rem);
   font-weight: 400;
   line-height: 0.95;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.025em;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
@@ -1100,7 +1255,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   width: calc(var(--share, 0) * 1%);
   max-width: 100%;
   background: var(--on-night);
-  transition: width 1.4s var(--out);
+  transition: width 750ms var(--ease-out);
 }
 
 .turnout__count {
@@ -1169,7 +1324,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   color: var(--on-night-2);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -1217,7 +1372,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   border-radius: 2px;
   background: currentColor;
   opacity: 0.55;
-  transition: width 0.6s var(--out), opacity 0.4s var(--out), background-color 0.4s;
+  transition: width 600ms var(--ease-out), opacity var(--motion-reveal) var(--ease-out);
 }
 
 .pager__link[aria-current="true"] { color: var(--on-night); }
@@ -1236,7 +1391,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   white-space: nowrap;
   opacity: 0;
   transform: translate3d(8px, 0, 0);
-  transition: opacity 0.4s var(--out), transform 0.5s var(--out);
+  transition: opacity var(--motion-reveal) var(--ease-out), transform 500ms var(--ease-out);
   pointer-events: none;
 }
 
@@ -1260,7 +1415,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   z-index: 30;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   border-top: 1px solid var(--night-line);
-  background: rgba(10, 10, 13, 0.94);
+  background: rgba(23, 27, 25, 0.94); /* --night-2 */
   color: var(--on-night);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -1419,6 +1574,8 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 
 /* -- tablet & HP (lebar <= 900px) -- */
 @media (max-width: 900px) {
+  .hero { max-width: min(560px, 100%); }
+
   .live__grid { grid-template-columns: minmax(0, 1fr); }
 
   .turnout {
@@ -1444,20 +1601,37 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   }
 
   .site-nav--immersive .site-nav__row { min-height: 56px; }
-  .site-nav--immersive .site-nav__logo { height: 28px; }
+  .site-nav--immersive .brandmark { --brand-h: 28px; }
 
-  .hero__title { font-size: clamp(3.2rem, 16.5vw, 5.4rem); }
-  .hero__line--year { -webkit-text-stroke-width: 1px; }
+  /* judul HP tegak 32-48 px; blok teks + CTA selebar layar tepat di atas dock */
+  .hero__title { font-size: clamp(2rem, 10vw, 3rem); }
+  .hero__support { white-space: normal; }
+  .hero__perf { width: 100%; }
 
-  .hero__actions { display: grid; }
+  .hero__actions {
+    display: grid;
+    width: 100%;
+    justify-items: center;
+    gap: 4px;
+  }
+
   .hbtn { width: 100%; }
 
-  .hero__band { height: 28px; font-size: 0.6875rem; }
+  /* lapisan depan boleh hilang di HP tegak bila membuat sesak */
+  .hero-bg__fore { display: none; }
+
+  .entry__title { font-size: clamp(1.75rem, 8vw, 2.5rem); }
 
   /* pintu masuk bertumpuk: dua portal lebar, masing-masing setengah layar */
   .entry__portals { flex-direction: column; }
   .portal { min-height: 160px; }
   .portal__go { width: 48px; height: 48px; }
+
+  @supports (width: 1cqi) {
+    .portal__who { font-size: clamp(2rem, 14cqi, 3.5rem); }
+  }
+
+  .live__title { font-size: clamp(1.75rem, 8vw, 2.5rem); }
 
   .live__pairs {
     grid-template-columns: repeat(var(--cols-sm, 3), minmax(0, 1fr));
@@ -1476,8 +1650,9 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
     font-size: 0.625rem;
   }
 
-  .pair__pct { font-size: clamp(1.7rem, 8.4vw, 2.6rem); }
+  .pair__pct { font-size: clamp(1.75rem, 8.4vw, 2.5rem); }
   .pair__names { font-size: 0.75rem; }
+  .pair__ketua { font-size: 0.875rem; }
   .pair__wakil { color: var(--on-night-3); }
 
   .live__foot { display: grid; gap: 6px; }
@@ -1546,6 +1721,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
   }
+
   .pager__link { min-height: 26px; padding: 2px 6px; }
 
   .pager__tick {
@@ -1567,18 +1743,25 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   }
 
   .site-nav--immersive .site-nav__row { min-height: 48px; }
-  .site-nav--immersive .site-nav__logo { height: 24px; }
+  .site-nav--immersive .brandmark { --brand-h: 24px; }
 
-  .hero__title { font-size: clamp(2.4rem, min(10vw, 17vh), 6rem); }
-  .hero__kicker { margin-bottom: 8px; }
-  .hero__lede,
-  .hero__bands,
+  /* hanya kicker, judul, dan CTA */
+  .hero { max-width: min(560px, 60vw); }
+  .hero__title { font-size: clamp(1.75rem, 7vh, 2.5rem); }
+  .hero__kicker { margin-bottom: 6px; }
+  .hero__support,
   .scene-next { display: none; }
-  .hero__actions { display: flex; }
+  .hero__perf { margin-block: 12px 10px; }
+  .hero__actions { display: flex; width: auto; }
   .hbtn { width: auto; min-height: 44px; }
 
+  .entry__title { font-size: clamp(1.5rem, 7vh, 2rem); }
   .entry__portals { flex-direction: row; }
   .portal { min-height: 150px; }
+
+  @supports (width: 1cqi) {
+    .portal__who { font-size: clamp(1.75rem, min(14cqi, 12vh), 3rem); }
+  }
 
   .live__grid {
     grid-template-columns: minmax(0, 1fr) minmax(170px, 240px);
@@ -1589,7 +1772,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 
   .live__pairs { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
   .pair__photo { max-height: 34vh; }
-  .pair__pct { font-size: clamp(1.6rem, 4.4vw, 2.6rem); }
+  .pair__pct { font-size: clamp(1.6rem, 4.4vw, 2.5rem); }
 
   .dock__row {
     display: flex;
@@ -1604,13 +1787,15 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 /* -- layar lebar: ruang lebih lega -- */
 @media (min-width: 1400px) and (min-height: 820px) {
   .page-home { --nav-h: calc(84px + env(safe-area-inset-top, 0px)); }
-  .site-nav--immersive .site-nav__logo { height: 40px; }
+  .site-nav--immersive .brandmark { --brand-h: 40px; }
   .dock__row { min-height: 58px; }
 }
 
 /* ==========================================================================
-   Gerak dikurangi: tanpa paralaks/3D; scene berganti dengan pudar singkat
-   (app.css memendekkan semua transisi & animasi).
+   Gerak dikurangi (10-MOTION §14): tanpa paralaks/tilt/skala latar; scene
+   berganti langsung; isi langsung terlihat; canvas mati; layar pembuka tetap
+   tampil dengan durasi sama, statis, keluar = pudar 200 ms tanpa logo
+   terbang. (app.css memendekkan semua transisi & animasi lain.)
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .has-scenes .scene,
@@ -1619,8 +1804,13 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   .has-scenes .scene.is-active,
   .has-scenes .scene .scene__inner,
   .hero,
-  .hero__bands,
-  .portal__media { transform: none; }
+  .hero-bg__photo,
+  .hero-bg__img,
+  .hero-bg__contour,
+  .hero-bg__fore,
+  .hero-bg__fore-img,
+  .splash__img,
+  .portal__media { transform: none !important; }
 
   .has-scenes .scene:not(.is-active) { opacity: 0; }
 
@@ -1630,6 +1820,23 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
     transform: none;
   }
 
-  .splash__logo { opacity: 1; transform: none; }
+  .js .scene--hero:not(.is-shown) .hero-bg__contour { opacity: 0.09; }
+  .js .scene--hero:not(.is-shown) .hero-bg__fore-img { opacity: 1; }
+
+  .field { display: none; }
+
+  .brandmark--splash,
+  .splash__bar,
+  .splash__pct {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .splash.is-leaving {
+    opacity: 0;
+    transition: opacity 200ms linear !important;
+  }
+
   .dock__cursor { animation: none; }
 }

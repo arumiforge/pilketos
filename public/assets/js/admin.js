@@ -1,5 +1,5 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
  * Panel admin (Stage 3): drawer menu HP, dialog konfirmasi, pemeriksaan
  * file sebelum unggah, pratinjau warna aksen, filter otomatis, dan tombol
  * tampilkan kode unik. Stage 4: tombol layar penuh & cetak di hasil akhir.

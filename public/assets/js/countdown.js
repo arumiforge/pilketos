@@ -25,6 +25,19 @@
     return text;
   }
 
+  /**
+   * Status pemilihan di server berubah: muat ulang. Event diberitahukan dulu
+   * agar beranda tidak mengulang layar pembuka (home.js, Stage 6).
+   */
+  function reloadForStatus() {
+    try {
+      document.dispatchEvent(new CustomEvent('osis:status-reload'));
+    } catch (e) {
+      /* browser lama tanpa CustomEvent: muat ulang biasa */
+    }
+    window.location.reload();
+  }
+
   function split(ms) {
     var total = Math.max(0, Math.floor(ms / SECOND));
     return {
@@ -226,7 +239,7 @@
 
     this.fetchClock().then(function (clock) {
       if (clock && clock.status && clock.status !== self.status) {
-        window.location.reload();
+        reloadForStatus();
         return;
       }
 
@@ -275,7 +288,7 @@
     if (away > 30 * SECOND) {
       this.fetchClock().then(function (clock) {
         if (clock && clock.status && clock.status !== self.status) {
-          window.location.reload();
+          reloadForStatus();
           return;
         }
         if (clock && clock.now) {

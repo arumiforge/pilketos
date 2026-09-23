@@ -37,7 +37,7 @@ $status = $election['status'] ?? null;
     <div class="ballot__sheet">
       <p class="ballot__sheet-title" aria-hidden="true">
         <span>Pemilihan Ketua dan Wakil Ketua OSIS</span>
-        <span>SMP 1 Dawe &middot; 2026</span>
+        <span>SMP 1 DAWE &middot; 2026</span>
       </p>
 
       <?php if ($candidates === []): ?>

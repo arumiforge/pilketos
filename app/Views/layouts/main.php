@@ -4,8 +4,11 @@
  *
  * @var bool        $immersive Beranda imersif (redesign beranda): latar gelap,
  *                             viewport-fit=cover (safe-area HP), footer dirender
- *                             di dalam scene terakhir, layar pembuka sekali per
- *                             sesi tab (penanda non-sensitif di sessionStorage).
+ *                             di dalam scene terakhir. Layar pembuka selalu tampil
+ *                             (Stage 6), kecuali setelah muat ulang otomatis karena
+ *                             status pemilihan berubah: penanda sekali pakai
+ *                             sessionStorage "osis2026.skipIntro" (non-sensitif)
+ *                             dibaca & dihapus di sini sebelum render pertama.
  * @var string|null $bodyClass
  */
 $immersive = (bool) ($immersive ?? false);
@@ -15,14 +18,16 @@ $immersive = (bool) ($immersive ?? false);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1<?= $immersive ? ', viewport-fit=cover' : '' ?>">
-<meta name="description" content="Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe Tahun 2026">
-<meta name="theme-color" content="<?= $immersive ? '#0F0E13' : '#FAF9F6' ?>">
+<meta name="description" content="Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 DAWE 2026">
+<meta name="theme-color" content="<?= $immersive ? '#101312' : '#FAF9F6' ?>">
 <?= csrf_meta() ?>
-<title><?= isset($title) ? esc($title) . ' — Pemilihan OSIS SMP 1 Dawe' : 'Pemilihan Ketua OSIS — SMP 1 Dawe 2026' ?></title>
+<title><?= isset($title) ? esc($title) . ' — Pemilihan OSIS SMP 1 DAWE' : 'Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 DAWE 2026' ?></title>
 <script <?= csp_script_nonce() ?>>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');<?php if ($immersive): ?>
-try { if (window.sessionStorage.getItem('osis2026.intro') === '1') { document.documentElement.className += ' intro-seen'; } } catch (e) {}<?php endif; ?></script>
-<link rel="preload" href="<?= base_url('assets/fonts/inter-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
+try { if (window.sessionStorage.getItem('osis2026.skipIntro') === '1') { window.sessionStorage.removeItem('osis2026.skipIntro'); document.documentElement.className += ' intro-seen'; } } catch (e) {}<?php endif; ?></script>
+<link rel="preload" href="<?= base_url('assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
+<?php if (! $immersive): ?>
 <link rel="preload" href="<?= base_url('assets/fonts/newsreader-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
+<?php endif; ?>
 <link rel="stylesheet" href="<?= asset_url('assets/css/app.css') ?>">
 <?= $this->renderSection('head') ?>
 </head>

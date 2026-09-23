@@ -190,7 +190,7 @@ final class ResultsLockTest extends CIUnitTestCase
     {
         $this->finish();
         $form = [
-            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe',
+            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE',
             'tahun'    => '2026',
             'start_at' => '2026-10-01T07:00',
             'end_at'   => '2026-10-01T15:00',
@@ -219,12 +219,12 @@ final class ResultsLockTest extends CIUnitTestCase
         $this->finish();
 
         $this->postAdmin('admin/election', [
-            'nama'     => 'Pemilihan OSIS SMP 1 Dawe',
+            'nama'     => 'Pemilihan OSIS SMP 1 DAWE',
             'tahun'    => '2026',
             'start_at' => '2026-10-01T07:00',
             'end_at'   => '2026-10-01T12:00',
         ]);
 
-        $this->seeInDatabase('elections', ['id' => 1, 'nama' => 'Pemilihan OSIS SMP 1 Dawe', 'status' => 'FINISHED']);
+        $this->seeInDatabase('elections', ['id' => 1, 'nama' => 'Pemilihan OSIS SMP 1 DAWE', 'status' => 'FINISHED']);
     }
 }

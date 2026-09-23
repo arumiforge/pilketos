@@ -5,16 +5,20 @@
  * Pengguna yang sudah login tetap mendapat Dasbor (kiri) dan Keluar (kanan):
  * penting di komputer lab yang dipakai bergantian.
  *
- * Logo diganti lewat Config\Homepage ($logoOnLight / $logoOnDark); ukuran
- * intrinsik dibaca otomatis (asset_size) untuk atribut width/height.
+ * Stage 6: logo = lockup acara PILKETOS 2026 (Config\Homepage $logoOnLight /
+ * $logoOnDark) + lambang resmi SMP 1 DAWE bila dipasang ($schoolEmblem),
+ * apa adanya, dipisah garis tipis. Ukuran intrinsik dibaca otomatis
+ * (asset_size) untuk atribut width/height.
  *
  * @var bool $immersive Beranda gelap: navigasi melayang + logo versi terang.
  */
-$navUser     = session()->get('user_type');
-$navSignedIn = in_array($navUser, ['student', 'teacher', 'admin'], true);
-$navBrand    = config(\Config\Homepage::class);
-$navLogo     = ($immersive ?? false) ? $navBrand->logoOnDark : $navBrand->logoOnLight;
-$navLogoSize = asset_size($navLogo);
+$navUser       = session()->get('user_type');
+$navSignedIn   = in_array($navUser, ['student', 'teacher', 'admin'], true);
+$navBrand      = config(\Config\Homepage::class);
+$navLogo       = ($immersive ?? false) ? $navBrand->logoOnDark : $navBrand->logoOnLight;
+$navLogoSize   = asset_size($navLogo);
+$navEmblem     = ($navBrand->schoolEmblem ?? '') !== '' ? $navBrand->schoolEmblem : null;
+$navEmblemSize = $navEmblem !== null ? asset_size($navEmblem) : null;
 ?>
 <header class="site-nav<?= ($immersive ?? false) ? ' site-nav--immersive' : '' ?>" data-site-nav>
   <div class="site-nav__row">
@@ -28,10 +32,18 @@ $navLogoSize = asset_size($navLogo);
     <?php endif; ?>
 
     <a class="site-nav__brand" href="<?= base_url('/') ?>">
-      <img class="site-nav__logo" src="<?= asset_url($navLogo) ?>"
-           alt="Pemilihan Ketua OSIS SMP 1 Dawe 2026, ke beranda"
-           <?= $navLogoSize !== null ? 'width="' . $navLogoSize[0] . '" height="' . $navLogoSize[1] . '"' : '' ?>
-           decoding="async" data-nav-logo>
+      <span class="brandmark" data-nav-brand>
+        <?php if ($navEmblem !== null): ?>
+          <img class="brandmark__emblem" src="<?= asset_url($navEmblem) ?>" alt=""
+               <?= $navEmblemSize !== null ? 'width="' . $navEmblemSize[0] . '" height="' . $navEmblemSize[1] . '"' : '' ?>
+               decoding="async" data-nav-logo>
+          <span class="brandmark__rule" aria-hidden="true"></span>
+        <?php endif; ?>
+        <img class="brandmark__logo site-nav__logo" src="<?= asset_url($navLogo) ?>"
+             alt="Pemilihan Ketua OSIS SMP 1 DAWE 2026, ke beranda"
+             <?= $navLogoSize !== null ? 'width="' . $navLogoSize[0] . '" height="' . $navLogoSize[1] . '"' : '' ?>
+             decoding="async" data-nav-logo>
+      </span>
     </a>
 
     <?php if ($navSignedIn): ?>

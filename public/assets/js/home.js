@@ -1,12 +1,16 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
- * Beranda imersif (redesign beranda, STAGE5-NOTES.md).
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
+ * Beranda imersif (Stage 5, STAGE5-NOTES.md) + sistem gerak Stage 6
+ * (STAGE6-NOTES.md, 10-MOTION-AND-INTERACTION-SYSTEM-PILKETOS.md).
  *
- * 1. Layar pembuka: bilah muat mengikuti asset yang benar-benar dimuat (font,
- *    logo, latar, gambar scene), tampil minimal ~1,5 detik dan paling lama
- *    ~5 detik; lalu logo "terbang" ke logo navigasi dan layar pembuka memudar
- *    ke beranda. Sekali per sesi tab (sessionStorage "osis2026.intro",
- *    penanda non-sensitif; dibaca juga oleh layouts/main.php).
+ * 1. Layar pembuka: SELALU tampil setiap kali beranda dimuat penuh, durasi
+ *    sama (minimal 1,5 detik, maksimal 5,2 detik) mengikuti aset layar
+ *    pertama yang benar-benar dimuat (lockup, latar pembuka, latar hero,
+ *    font layar pertama). Keluar = "kabut tersingkap": latar kabut memudar
+ *    menjadi hero yang jernih di bingkai yang sama sementara lockup terbang
+ *    ke navigasi. Pengecualian satu-satunya: muat ulang otomatis karena
+ *    status pemilihan berubah (penanda sekali pakai sessionStorage
+ *    "osis2026.skipIntro", non-sensitif; dibaca layouts/main.php).
  * 2. Scene layar penuh, satu per satu: roda mouse & trackpad (satu gestur =
  *    satu scene; inersia trackpad tidak melompati scene), geser sentuh,
  *    keyboard (panah, PageUp/PageDown, spasi, Home/End), navigasi scene,
@@ -16,8 +20,10 @@
  * 3. Live count publik: GET live-count sesuai irama dari server (30 detik),
  *    dijeda saat tab tidak aktif, angka bergulir halus saat berubah, muat
  *    ulang bila status pemilihan berubah (server merender keadaan baru).
- * 4. Bidang titik interaktif di hero (canvas 2D: "surat suara berlubang"),
- *    paralaks pointer halus, portal Siswa/Guru yang mengikuti pointer.
+ * 4. Hero berlapis: paralaks pointer berlapis (latar 6 px, kontur 8 px,
+ *    lapisan depan 14 px, teks 3 px; desktop saja), canvas "embun / lubang
+ *    coblos" yang hanya terlihat di sekitar pointer dan saat diketuk; portal
+ *    Siswa/Guru yang mengikuti pointer.
  *
  * Semua gerak mengikuti prefers-reduced-motion. Teks dari server hanya
  * lewat textContent. Tanpa JavaScript beranda tetap halaman bergulir biasa.
@@ -35,7 +41,7 @@
 
   var reduced = window.App && window.App.reducedMotion ? window.App.reducedMotion() : false;
   var finePointer = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
-  var INTRO_KEY = 'osis2026.intro';
+  var SKIP_INTRO_KEY = 'osis2026.skipIntro';
 
   /* -- util ----------------------------------------------------------------- */
   function now() {
@@ -58,11 +64,16 @@
     return text;
   }
 
-  function sessionSet(key, value) {
+  /**
+   * Muat ulang otomatis karena status pemilihan berubah (live count atau
+   * hitung mundur): layar pembuka tidak diulang. Penanda sekali pakai, dibaca
+   * & dihapus oleh skrip inline layouts/main.php pada pemuatan berikutnya.
+   */
+  function skipNextIntro() {
     try {
-      window.sessionStorage.setItem(key, value);
+      window.sessionStorage.setItem(SKIP_INTRO_KEY, '1');
     } catch (e) {
-      /* penyimpanan diblokir: layar pembuka tampil lagi, tidak apa-apa */
+      /* penyimpanan diblokir: layar pembuka tampil, tidak apa-apa */
     }
   }
 
@@ -145,7 +156,7 @@
     this.busy = false;
     this.locked = false;
     this.pending = null;
-    this.duration = reduced ? 0 : 1050;
+    this.duration = reduced ? 0 : 800; /* --motion-scene */
     this.pager = toArray(document.querySelectorAll('[data-pager] [data-scene-link]'));
     this.announcer = document.querySelector('[data-scene-announce]');
     this.handlers = [];
@@ -694,7 +705,7 @@
     this.el = el;
     this.fill = el.querySelector('[data-splash-fill]');
     this.pct = el.querySelector('[data-splash-pct]');
-    this.logo = el.querySelector('[data-splash-logo]');
+    this.brand = el.querySelector('[data-splash-brand]');
     this.bg = el.querySelector('[data-splash-bg]');
     this.shown = 0;
     this.loaded = 0;
@@ -703,6 +714,7 @@
     this.startedAt = now();
   }
 
+  /* --motion-splash-min / --motion-splash-max (10-MOTION §2, §10.2) */
   Intro.MIN = 1500;
   Intro.MAX = 5200;
 
@@ -722,26 +734,30 @@
       });
     }
 
-    // Yang ditunggu: logo, latar, gambar scene, font, dan halaman selesai dimuat.
-    [this.logo, this.bg].concat(toArray(document.querySelectorAll('[data-nav-logo], [data-preload]'))).forEach(function (img) {
+    // Yang ditunggu (10-MOTION §10.4): lockup (pembuka & navigasi), latar
+    // pembuka, latar hero yang dipilih <picture>, dan font layar pertama.
+    // Gambar portal & foto pasangan TIDAK ditunggu (dimuat prioritas rendah),
+    // sehingga durasi tetap sama dan tidak tertahan aset scene lain.
+    // (DOMContentLoaded sudah terjadi saat init dijalankan.)
+    var images = toArray(this.el.querySelectorAll('[data-splash-wait]'))
+      .concat([this.bg])
+      .concat(toArray(document.querySelectorAll('[data-nav-logo], [data-hero-img]')));
+
+    images.forEach(function (img) {
       if (img) {
         waits.push(function (next) {
           whenImage(img, next);
         });
       }
     });
-    if (document.fonts && document.fonts.ready) {
+    if (document.fonts && document.fonts.load && window.Promise) {
       waits.push(function (next) {
-        document.fonts.ready.then(next, next);
+        Promise.all([
+          document.fonts.load('600 16px "Plus Jakarta Sans"'),
+          document.fonts.load('500 16px "JetBrains Mono"')
+        ]).then(next, next);
       });
     }
-    waits.push(function (next) {
-      if (document.readyState === 'complete') {
-        next();
-      } else {
-        window.addEventListener('load', next);
-      }
-    });
 
     this.total = waits.length;
     waits.forEach(function (wait) {
@@ -754,22 +770,28 @@
       });
     });
 
+    // Bilah dipacu waktu (tidak lebih cepat dari MIN) dan dibatasi aset nyata
+    // (paling lama MAX). Gerak dikurangi: durasi sama, terisi bertahap linear.
     var tick = function () {
       if (self.finished) {
         return;
       }
       var elapsed = now() - self.startedAt;
       var real = self.total > 0 ? self.loaded / self.total : 1;
-      var paced = reduced ? 1 : Math.min(1, elapsed / Intro.MIN);
+      var paced = Math.min(1, elapsed / Intro.MIN);
       var goal = elapsed >= Intro.MAX ? 1 : Math.min(real, paced);
 
-      self.shown += (goal - self.shown) * (reduced ? 1 : 0.12);
-      if (goal - self.shown < 0.003) {
+      if (reduced) {
         self.shown = goal;
+      } else {
+        self.shown += (goal - self.shown) * 0.12;
+        if (goal - self.shown < 0.003) {
+          self.shown = goal;
+        }
       }
       self.render();
 
-      if (self.shown >= 1 && elapsed >= (reduced ? 250 : Intro.MIN)) {
+      if (self.shown >= 1 && elapsed >= Intro.MIN) {
         self.finish();
         return;
       }
@@ -787,39 +809,38 @@
     }
   };
 
+  /**
+   * Keluar "kabut tersingkap" (10-MOTION §10.3): pada t0 bilah memudar, latar
+   * kabut memudar di atas hero yang sudah dirender, lockup terbang ke lockup
+   * navigasi (shared element); reveal hero dimulai t0+260 ms, sebelum layar
+   * pembuka benar-benar hilang. Gerak dikurangi: pudar 200 ms, tanpa terbang.
+   */
   Intro.prototype.finish = function () {
     var self = this;
-    var navLogo = document.querySelector('[data-nav-logo]');
-    var duration = reduced ? 200 : 1000;
+    var navBrand = document.querySelector('[data-nav-brand]');
+    var brand = this.brand;
 
     this.finished = true;
-    sessionSet(INTRO_KEY, '1');
 
-    if (!reduced && this.logo && navLogo) {
-      var a = this.logo.getBoundingClientRect();
-      var b = navLogo.getBoundingClientRect();
+    if (!reduced && brand && navBrand) {
+      var a = brand.getBoundingClientRect();
+      var b = navBrand.getBoundingClientRect();
 
-      if (a.width > 0 && b.width > 0) {
-        // Logo pembuka "mendarat" tepat di logo navigasi (shared element).
-        this.logo.style.animation = 'none';
-        this.logo.style.opacity = '1';
-        this.logo.style.transform = 'none';
-        void this.logo.offsetWidth;
+      if (a.height > 0 && b.height > 0) {
+        brand.style.animation = 'none';
+        brand.style.opacity = '1';
+        brand.style.transform = 'none';
+        void brand.offsetWidth;
         this.el.classList.add('is-leaving');
-        this.logo.style.transform = 'translate3d(' +
+        brand.style.transform = 'translate3d(' +
           ((b.left + b.width / 2) - (a.left + a.width / 2)).toFixed(1) + 'px,' +
           ((b.top + b.height / 2) - (a.top + a.height / 2)).toFixed(1) + 'px,0) scale(' +
-          (b.width / a.width).toFixed(4) + ')';
+          (b.height / a.height).toFixed(4) + ')';
       }
     }
 
-    if (!this.el.classList.contains('is-leaving')) {
-      this.el.classList.add('is-leaving');
-      if (this.logo) {
-        this.logo.style.transition = 'opacity 0.2s linear';
-        this.logo.style.opacity = '0';
-      }
-    }
+    // Gerak dikurangi / tanpa navigasi: seluruh layar pembuka memudar.
+    this.el.classList.add('is-leaving');
 
     window.setTimeout(function () {
       self.done();
@@ -832,7 +853,7 @@
           self.el.parentNode.removeChild(self.el);
         }
       }, 80);
-    }, duration);
+    }, reduced ? 200 : 820);
   };
 
   /* ==========================================================================
@@ -974,6 +995,7 @@
 
   Live.prototype.reload = function (data) {
     this.stopped = true;
+    skipNextIntro();
     if (this.announcer) {
       this.announcer.textContent = data.status === 'FINISHED'
         ? 'Pemilihan telah selesai. Halaman dimuat ulang.'
@@ -1047,7 +1069,7 @@
       if (start === null) {
         start = t;
       }
-      var k = Math.min(1, (t - start) / 1200);
+      var k = Math.min(1, (t - start) / 750); /* 600-900 ms (10-MOTION §9) */
       var eased = 1 - Math.pow(1 - k, 3);
       target.el.textContent = fmt.format(from + (value - from) * eased);
       target.raf = k < 1 ? window.requestAnimationFrame(frame) : 0;
@@ -1056,58 +1078,66 @@
   };
 
   /* ==========================================================================
-     Bidang titik hero: kisi "surat suara berlubang" yang tertekan pointer
-     (seperti paku menekan kertas) dan beriak saat ditusuk (klik/ketuk).
+     Canvas hero "embun / lubang coblos" (10-MOTION §6): titik hanya terlihat
+     di sekitar pointer (radius 140 px) dan sebagai riak saat diketuk; tidak
+     ada bidang titik penuh atau gerak terus-menerus. Diredam di area fokus
+     gambar & di belakang teks. Berjalan hanya saat ada interaksi, hero aktif,
+     dan tab terlihat; DPR maks 2; mati saat gerak dikurangi.
      ========================================================================== */
   function Field(canvas, scene) {
     this.canvas = canvas;
     this.scene = scene;
+    this.text = scene.querySelector('.hero');
     this.ctx = canvas.getContext('2d');
-    this.pointer = { x: -1e4, y: -1e4, tx: -1e4, ty: -1e4, on: false };
+    this.pointer = { x: -1e4, y: -1e4, tx: -1e4, ty: -1e4, on: false, a: 0 };
     this.ripples = [];
     this.active = false;
     this.visible = !document.hidden;
     this.raf = 0;
-    this.last = 0;
-    this.idle = finePointer && !reduced && (navigator.hardwareConcurrency || 4) >= 4;
+    this.radius = 140;
     this.frame = this.frame.bind(this);
   }
+
+  Field.GAP = 22;
+  Field.ALPHA = 0.35;
+  Field.RIPPLE_MS = 1400;
 
   Field.prototype.init = function () {
     var self = this;
     var resizeTimer = null;
 
     this.resize();
-    this.canvas.classList.add('is-on');
 
-    if (reduced) {
-      return; // bidang diam, tanpa interaksi
-    }
-
-    var move = function (event) {
-      var rect = self.rect;
+    var place = function (event) {
+      var rect = self.canvas.getBoundingClientRect();
       self.pointer.tx = event.clientX - rect.left;
       self.pointer.ty = event.clientY - rect.top;
+    };
+
+    // Titik mengikuti pointer halus (mouse/pena) saja: di layar sentuh hanya
+    // riak saat diketuk, tanpa perilaku mirip hover.
+    this.scene.addEventListener('pointermove', function (event) {
+      if (event.pointerType === 'touch') {
+        return;
+      }
+      place(event);
       if (!self.pointer.on) {
         self.pointer.x = self.pointer.tx;
         self.pointer.y = self.pointer.ty;
       }
       self.pointer.on = true;
       self.kick();
-    };
-
-    this.scene.addEventListener('pointermove', move);
+    });
     this.scene.addEventListener('pointerdown', function (event) {
-      move(event);
+      place(event);
       self.ripples.push({ x: self.pointer.tx, y: self.pointer.ty, t0: now() });
-      if (self.ripples.length > 4) {
+      if (self.ripples.length > 3) {
         self.ripples.shift();
       }
       self.kick();
     });
     this.scene.addEventListener('pointerleave', function () {
       self.pointer.on = false;
-      self.pointer.tx = self.pointer.ty = -1e4;
       self.kick();
     });
 
@@ -1133,37 +1163,60 @@
     var height = this.canvas.clientHeight;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    this.rect = this.canvas.getBoundingClientRect();
     if (width === this.w && height === this.h && dpr === this.dpr) {
       return;
     }
-
     this.w = width;
     this.h = height;
     this.dpr = dpr;
     this.canvas.width = Math.max(1, Math.round(width * dpr));
     this.canvas.height = Math.max(1, Math.round(height * dpr));
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.gap = width < 640 ? 24 : 28;
-    this.cols = Math.floor(width / this.gap) + 2;
-    this.rows = Math.floor(height / this.gap) + 2;
-    this.ox = (width - (this.cols - 1) * this.gap) / 2;
-    this.oy = (height - (this.rows - 1) * this.gap) / 2;
-    this.draw(now());
+    this.ox = (width % Field.GAP) / 2;
+    this.oy = (height % Field.GAP) / 2;
+    this.ctx.clearRect(0, 0, width, height);
   };
 
   Field.prototype.setActive = function (active) {
     this.active = active;
     if (active && this.w !== undefined) {
-      this.resize(); // posisi pointer & ukuran saat hero kembali tampil penuh
+      this.resize();
+    }
+    if (!active) {
+      this.pointer.on = false;
+      this.ripples = [];
+      this.pointer.a = 0;
+      this.ctx.clearRect(0, 0, this.w || 0, this.h || 0);
     }
     this.kick();
   };
 
   Field.prototype.kick = function () {
-    if (!this.raf && this.active && this.visible && !reduced) {
+    if (!this.raf && this.active && this.visible) {
       this.raf = window.requestAnimationFrame(this.frame);
     }
+  };
+
+  /**
+   * Peredam: area fokus gambar (punggungan & atap sekolah, dokumen 08 §5)
+   * dan blok teks hero; titik tetap ada tetapi jauh lebih samar di sana.
+   */
+  Field.prototype.dampers = function () {
+    var zones = [];
+    var w = this.w;
+    var h = this.h;
+
+    if (w >= h) {
+      zones.push([w * 0.5, h * 0.15, w * 0.88, h * 0.6]);
+    } else {
+      zones.push([w * 0.1, h * 0.12, w * 0.9, h * 0.5]);
+    }
+    if (this.text) {
+      var c = this.canvas.getBoundingClientRect();
+      var r = this.text.getBoundingClientRect();
+      zones.push([r.left - c.left - 12, r.top - c.top - 12, r.right - c.left + 12, r.bottom - c.top + 12]);
+    }
+    return zones;
   };
 
   Field.prototype.frame = function (t) {
@@ -1174,133 +1227,194 @@
 
     var p = this.pointer;
     var ripples = this.ripples;
-    var settling = p.on && (Math.abs(p.tx - p.x) > 0.5 || Math.abs(p.ty - p.y) > 0.5);
 
     p.x += (p.tx - p.x) * 0.2;
     p.y += (p.ty - p.y) * 0.2;
-    if (!p.on) {
-      p.x = p.tx;
-      p.y = p.ty;
+    p.a += ((p.on ? 1 : 0) - p.a) * 0.18;
+    if (!p.on && p.a < 0.01) {
+      p.a = 0;
     }
 
     for (var i = ripples.length - 1; i >= 0; i--) {
-      if (t - ripples[i].t0 > 1400) {
+      if (t - ripples[i].t0 > Field.RIPPLE_MS) {
         ripples.splice(i, 1);
       }
     }
 
-    var busy = p.on || ripples.length > 0 || settling;
-    // Tanpa interaksi: gelombang diam ~30 fps agar hemat baterai.
-    if (!busy && this.idle && t - this.last < 32) {
-      this.raf = window.requestAnimationFrame(this.frame);
-      return;
-    }
-
-    this.last = t;
     this.draw(t);
 
-    if (busy || this.idle) {
+    var moving = Math.abs(p.tx - p.x) > 0.5 || Math.abs(p.ty - p.y) > 0.5;
+    var fading = p.on ? p.a < 0.99 : p.a > 0;
+    if (moving || fading || ripples.length > 0) {
       this.raf = window.requestAnimationFrame(this.frame);
     }
   };
 
   Field.prototype.draw = function (t) {
     var ctx = this.ctx;
-    var gap = this.gap;
+    var gap = Field.GAP;
     var p = this.pointer;
-    var radius = Math.min(170, Math.max(110, this.w * 0.16));
-    var radius2 = radius * radius;
-    var time = t * 0.001;
-    var waves = [];
-
-    this.ripples.forEach(function (r) {
-      var age = (t - r.t0) / 1400;
-      waves.push({ x: r.x, y: r.y, radius: age * 520, strength: 1 - age });
-    });
+    var radius = this.radius;
+    var sources = [];
+    var zones = this.dampers();
 
     ctx.clearRect(0, 0, this.w, this.h);
-    ctx.fillStyle = '#F4F2EC';
 
-    for (var j = 0; j < this.rows; j++) {
-      var y0 = this.oy + j * gap;
+    if (p.a > 0) {
+      sources.push({ x: p.x, y: p.y, reach: radius });
+    }
+    var waves = this.ripples.map(function (r) {
+      var age = (t - r.t0) / Field.RIPPLE_MS;
+      var wave = { x: r.x, y: r.y, radius: age * 420, strength: 1 - age };
+      sources.push({ x: r.x, y: r.y, reach: wave.radius + 30 });
+      return wave;
+    });
+    if (sources.length === 0) {
+      return;
+    }
 
-      for (var i = 0; i < this.cols; i++) {
-        var x0 = this.ox + i * gap;
-        var x = x0;
-        var y = y0;
+    // Hanya sel kisi di sekitar sumber yang dihitung (bukan seluruh hero).
+    var x0 = Infinity;
+    var y0 = Infinity;
+    var x1 = -Infinity;
+    var y1 = -Infinity;
+    sources.forEach(function (src) {
+      x0 = Math.min(x0, src.x - src.reach);
+      y0 = Math.min(y0, src.y - src.reach);
+      x1 = Math.max(x1, src.x + src.reach);
+      y1 = Math.max(y1, src.y + src.reach);
+    });
+    var i0 = Math.max(0, Math.floor((x0 - this.ox) / gap));
+    var i1 = Math.min(Math.ceil(this.w / gap), Math.ceil((x1 - this.ox) / gap));
+    var j0 = Math.max(0, Math.floor((y0 - this.oy) / gap));
+    var j1 = Math.min(Math.ceil(this.h / gap), Math.ceil((y1 - this.oy) / gap));
+
+    ctx.fillStyle = '#F2F1EC'; /* --on-night (Kabut) */
+
+    for (var j = j0; j <= j1; j++) {
+      var cy = this.oy + j * gap;
+      for (var i = i0; i <= i1; i++) {
+        var cx = this.ox + i * gap;
+        var x = cx;
+        var y = cy;
         var glow = 0;
 
-        if (this.idle) {
-          y += Math.sin(x0 * 0.011 + time * 0.8) * Math.cos(y0 * 0.013 + time * 0.6) * 1.8;
-        }
-
-        var dx = x0 - p.x;
-        var dy = y0 - p.y;
-        var d2 = dx * dx + dy * dy;
-        if (d2 < radius2) {
-          var d = Math.sqrt(d2) || 1;
-          var f = 1 - d / radius;
-          f *= f;
-          x += dx / d * f * 18;
-          y += dy / d * f * 18;
-          glow = f;
+        if (p.a > 0) {
+          var dx = cx - p.x;
+          var dy = cy - p.y;
+          var d = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (d < radius) {
+            var f = 1 - d / radius;
+            f *= f;
+            x += dx / d * f * 10;
+            y += dy / d * f * 10;
+            glow = f * p.a;
+          }
         }
 
         for (var k = 0; k < waves.length; k++) {
           var w = waves[k];
-          var wx = x0 - w.x;
-          var wy = y0 - w.y;
+          var wx = cx - w.x;
+          var wy = cy - w.y;
           var wd = Math.sqrt(wx * wx + wy * wy) || 1;
-          var band = 1 - Math.abs(wd - w.radius) / 36;
+          var band = 1 - Math.abs(wd - w.radius) / 30;
           if (band > 0) {
             var amp = band * w.strength;
-            x += wx / wd * amp * 9;
-            y += wy / wd * amp * 9;
+            x += wx / wd * amp * 6;
+            y += wy / wd * amp * 6;
             glow = Math.max(glow, amp);
           }
         }
 
-        var size = 1.3 + glow * 2.4;
-        ctx.globalAlpha = 0.2 + glow * 0.65;
-        ctx.fillRect(x - size / 2, y - size / 2, size, size);
+        if (glow < 0.02) {
+          continue;
+        }
+
+        var damp = 1;
+        for (var z = 0; z < zones.length; z++) {
+          var zone = zones[z];
+          if (cx >= zone[0] && cx <= zone[2] && cy >= zone[1] && cy <= zone[3]) {
+            damp = 0.3;
+            break;
+          }
+        }
+
+        var size = 1.2 + glow * 1.8;
+        ctx.globalAlpha = Field.ALPHA * glow * damp;
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2 + 0.3, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
     ctx.globalAlpha = 1;
   };
 
   /* ==========================================================================
-     Paralaks pointer & portal
+     Paralaks berlapis hero (10-MOTION §5): latar 6 px, kontur 8 px, lapisan
+     depan 14 px, teks 3 px (nilai di home.css lewat --mx/--my). Pointer
+     halus saja; lerp 0,08 per frame; berhenti saat hero tidak aktif atau tab
+     tersembunyi. HP/tablet: tanpa paralaks, tanpa sensor orientasi.
      ========================================================================== */
-  function initParallax(root) {
-    if (!finePointer || reduced) {
-      return;
-    }
-    var target = { x: 0, y: 0 };
-    var current = { x: 0, y: 0 };
-    var raf = 0;
-
-    var frame = function () {
-      current.x += (target.x - current.x) * 0.07;
-      current.y += (target.y - current.y) * 0.07;
-      root.style.setProperty('--mx', current.x.toFixed(4));
-      root.style.setProperty('--my', current.y.toFixed(4));
-      raf = Math.abs(target.x - current.x) > 0.001 || Math.abs(target.y - current.y) > 0.001
-        ? window.requestAnimationFrame(frame)
-        : 0;
-    };
-
-    window.addEventListener('pointermove', function (event) {
-      if (event.pointerType !== 'mouse') {
-        return;
-      }
-      target.x = clamp(event.clientX / window.innerWidth * 2 - 1, -1, 1);
-      target.y = clamp(event.clientY / window.innerHeight * 2 - 1, -1, 1);
-      if (!raf) {
-        raf = window.requestAnimationFrame(frame);
-      }
-    });
+  function Parallax(scene) {
+    this.scene = scene;
+    this.target = { x: 0, y: 0 };
+    this.current = { x: 0, y: 0 };
+    this.active = false;
+    this.raf = 0;
+    this.frame = this.frame.bind(this);
   }
 
+  Parallax.prototype.init = function () {
+    var self = this;
+
+    window.addEventListener('pointermove', function (event) {
+      if (event.pointerType !== 'mouse' || !self.active) {
+        return;
+      }
+      self.target.x = clamp(event.clientX / window.innerWidth * 2 - 1, -1, 1);
+      self.target.y = clamp(event.clientY / window.innerHeight * 2 - 1, -1, 1);
+      self.kick();
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        window.cancelAnimationFrame(self.raf);
+        self.raf = 0;
+      }
+    });
+  };
+
+  Parallax.prototype.setActive = function (active) {
+    this.active = active;
+    if (!active) {
+      this.target.x = 0;
+      this.target.y = 0;
+      this.kick();
+    }
+  };
+
+  Parallax.prototype.kick = function () {
+    if (!this.raf && !document.hidden) {
+      this.raf = window.requestAnimationFrame(this.frame);
+    }
+  };
+
+  Parallax.prototype.frame = function () {
+    var c = this.current;
+    var t = this.target;
+
+    this.raf = 0;
+    c.x += (t.x - c.x) * 0.08;
+    c.y += (t.y - c.y) * 0.08;
+    this.scene.style.setProperty('--mx', c.x.toFixed(4));
+    this.scene.style.setProperty('--my', c.y.toFixed(4));
+
+    if (Math.abs(t.x - c.x) > 0.001 || Math.abs(t.y - c.y) > 0.001) {
+      this.kick();
+    }
+  };
+
+  /* -- portal Siswa/Guru: gambar mengikuti pointer (maks 10 px, home.css) -- */
   function initPortals() {
     if (!finePointer || reduced) {
       return;
@@ -1328,17 +1442,31 @@
     deck.start();
     deck.bind();
 
+    var hero = stage.querySelector('.scene--hero');
+    var heroIndex = deck.indexOfElement(hero);
+
     var canvas = stage.querySelector('[data-field]');
     var field = null;
-    if (canvas && canvas.getContext) {
+    if (canvas && canvas.getContext && !reduced) {
       field = new Field(canvas, canvas.closest('[data-scene]'));
       deck.onChange(function (index) {
-        field.setActive(index === deck.indexOfElement(canvas));
+        field.setActive(index === heroIndex);
       });
     }
 
-    initParallax(stage);
+    if (hero && finePointer && !reduced) {
+      var parallax = new Parallax(hero);
+      parallax.init();
+      deck.onChange(function (index) {
+        parallax.setActive(index === heroIndex);
+      });
+    }
+
     initPortals();
+
+    // Muat ulang oleh hitung mundur (countdown.js) karena status berubah:
+    // sama dengan live count, layar pembuka tidak diulang.
+    document.addEventListener('osis:status-reload', skipNextIntro);
 
     var liveEl = stage.querySelector('[data-live]');
     if (liveEl && window.fetch && window.Intl) {

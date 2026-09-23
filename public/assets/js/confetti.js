@@ -1,5 +1,5 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
  * Confetti halaman hasil akhir (Stage 4, MASTER section 17).
  *
  * Server hanya merender <canvas data-confetti> (dan memuat file ini) bila

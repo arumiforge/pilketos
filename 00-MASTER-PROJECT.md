@@ -1,9 +1,9 @@
 # MASTER PROJECT
-## Sistem Pemilihan Ketua OSIS SMP 1 Dawe Tahun 2026
+## Sistem Pemilihan Ketua OSIS SMP 1 DAWE Tahun 2026
  
 ## 1. KONTEKS UTAMA
  
-Bangun aplikasi web e-voting untuk Pemilihan Ketua OSIS dan Wakil Ketua OSIS SMP 1 Dawe Tahun 2026.
+Bangun aplikasi web e-voting untuk Pemilihan Ketua OSIS dan Wakil Ketua OSIS SMP 1 DAWE Tahun 2026.
  
 Sistem memiliki dua role aplikasi:
 - Siswa
@@ -103,6 +103,8 @@ Setiap pasangan calon justru memiliki identitas visual sendiri.
 Jangan menggunakan emoji apa pun di UI, copywriting, toast, tombol, empty state, atau dashboard.
  
 Gunakan icon library jika membutuhkan ikon, atau SVG yang dibuat secara konsisten.
+
+Keputusan Stage 6 (dokumen `06`–`10-*-PILKETOS.md`): identitas visual eksklusif SMP 1 DAWE, "Surat Suara dari Lereng Muria" (tempat = dunia visual, surat suara = bahasa interaksi). Palet netral "Pagi Muria" (kroma rendah); warna identitas sekolah (parijoto) hanya pada bilah muat layar pembuka dan otomatis netral bila mirip warna pasangan mana pun (CIEDE2000 < 20). Font seluruh aplikasi: Plus Jakarta Sans (UI) + Newsreader (editorial) + JetBrains Mono (status). Nama sekolah selalu ditulis literal "SMP 1 DAWE". Logo = lockup acara PILKETOS 2026 + lambang resmi sekolah apa adanya (bila dipasang). Detail di `STAGE6-NOTES.md`.
  
 ## 5. HERO BERANDA
  
@@ -110,7 +112,7 @@ Beranda harus mempunyai hero utama yang kuat.
  
 Konten:
 - Pemilihan Ketua & Wakil Ketua OSIS
-- SMP 1 Dawe
+- SMP 1 DAWE
 - Tahun 2026
 - status pemilihan;
 - waktu mulai;
@@ -131,6 +133,8 @@ Gunakan:
 Jangan menggunakan gradient hanya untuk membuat countdown terlihat modern.
 
 Keputusan Stage 5 (redesign beranda, `05-HOMEPAGE-REDESIGN.md`): beranda menjadi tiga scene layar penuh yang berpindah satu per satu (pembuka, pintu masuk Siswa/Guru, perolehan suara) dengan transisi kedalaman; logo lengkap di tengah navigasi tanpa tombol masuk (masuk lewat portal Siswa/Guru bergambar); status, jadwal, dan countdown jam server dipindah ke panel bawah bergaya terminal; layar pembuka sekali per sesi tab; footer rata tengah. Tanpa JavaScript beranda tetap halaman bergulir biasa. Detail di `STAGE5-NOTES.md`.
+
+Keputusan Stage 6: hero mengutamakan visual (latar lereng Muria + atap sekolah, kontur, lapisan depan opsional) dengan teks singkat "PILKETOS 2026 / SMP 1 DAWE" + CTA; pita warna pasangan, lede, dan tahun bergaris tepi dihapus dari hero; hero dan layar pembuka tidak menampilkan warna, nomor, atau foto pasangan. Layar pembuka **selalu** tampil setiap kali beranda dimuat (1,5–5,2 detik, tanpa tombol lewati), kecuali setelah muat ulang otomatis karena status pemilihan berubah; keluar dengan transisi "kabut tersingkap". Transisi scene 800 ms, lebih tenang. Detail di `STAGE6-NOTES.md`.
  
 ## 6. TIGA PASANGAN CALON
  

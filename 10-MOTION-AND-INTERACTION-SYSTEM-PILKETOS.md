@@ -190,6 +190,8 @@ Supaya durasi tetap sama dan tidak tertahan oleh aset scene lain:
 
 ### 10.5 Titik perubahan kode (untuk tahap implementasi)
 
+> Status: diterapkan di Stage 6 (`STAGE6-NOTES.md` bagian 8.4). Tambahan: muat ulang oleh hitung mundur (`countdown.js`, status berubah) diperlakukan sama dengan muat ulang otomatis live count.
+
 | File | Perubahan |
 |---|---|
 | `app/Views/layouts/main.php` (baris 23) | hapus pembacaan `sessionStorage 'osis2026.intro'` → kelas `intro-seen`; ganti dengan pembacaan flag sekali-pakai `osis2026.skipIntro`: bila ada, tambah `intro-seen` **dan hapus flag** |

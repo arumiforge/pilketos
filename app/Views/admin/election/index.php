@@ -13,7 +13,7 @@ $old    = session()->getFlashdata('_ci_old_input')['post'] ?? [];
 $status = $election['status'] ?? null;
 $local  = static fn (?string $datetime): string => $datetime ? str_replace(' ', 'T', substr($datetime, 0, 16)) : '';
 $values = [
-    'nama'     => $old['nama'] ?? ($election['nama'] ?? 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe'),
+    'nama'     => $old['nama'] ?? ($election['nama'] ?? 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE'),
     'tahun'    => $old['tahun'] ?? (string) ($election['tahun'] ?? $now->getYear()),
     'start_at' => $old['start_at'] ?? $local($election['start_at'] ?? null),
     'end_at'   => $old['end_at'] ?? $local($election['end_at'] ?? null),

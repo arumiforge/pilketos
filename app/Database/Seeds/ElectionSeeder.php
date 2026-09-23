@@ -24,7 +24,7 @@ class ElectionSeeder extends Seeder
 
         $now      = Time::now();
         $election = [
-            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe',
+            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE',
             'tahun'    => 2026,
             'start_at' => $now->subDays(1)->setSecond(0)->toDateTimeString(),
             'end_at'   => $now->addDays(7)->setSecond(0)->toDateTimeString(),

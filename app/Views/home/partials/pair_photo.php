@@ -16,13 +16,13 @@ $pairPeople = [
   <?php if ($pair['hero'] !== null): ?>
     <img class="pair__img" src="<?= esc($pair['hero'], 'attr') ?>"
          alt="Foto pasangan <?= esc($pair['label'], 'attr') ?>: <?= esc($pair['ketua'], 'attr') ?> dan <?= esc($pair['wakil'], 'attr') ?>"
-         decoding="async" data-preload>
+         decoding="async" fetchpriority="low">
   <?php else: ?>
     <?php foreach ($pairPeople as $person): ?>
       <?php if ($person['photo'] !== null): ?>
         <img class="pair__img pair__img--half" src="<?= esc($person['photo'], 'attr') ?>"
              alt="Foto <?= esc($person['name'], 'attr') ?>, calon <?= esc($person['role'], 'attr') ?> pasangan <?= esc($pair['label'], 'attr') ?>"
-             decoding="async" data-preload>
+             decoding="async" fetchpriority="low">
       <?php else: ?>
         <span class="pair__mono" role="img"
               aria-label="<?= esc($person['name'], 'attr') ?>, calon <?= esc($person['role'], 'attr') ?> pasangan <?= esc($pair['label'], 'attr') ?> (foto belum tersedia)">

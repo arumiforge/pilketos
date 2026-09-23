@@ -10,7 +10,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>Maaf, terjadi kesalahan — Pemilihan OSIS SMP 1 Dawe</title>
+    <title>Maaf, terjadi kesalahan — Pemilihan OSIS SMP 1 DAWE</title>
     <style <?= function_exists('csp_style_nonce') ? csp_style_nonce() : '' ?>>
         :root { --ink: #15141A; --paper: #FAF9F6; --line: #DCD8CD; --muted: #514E45; }
         * { box-sizing: border-box; }
@@ -22,7 +22,7 @@
             padding: 24px 16px;
             background: var(--paper);
             color: var(--ink);
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.55;
         }
         main { width: 100%; max-width: 560px; border-top: 6px double var(--ink); padding-top: 20px; }
@@ -41,7 +41,7 @@
     <h1>Maaf, terjadi kesalahan</h1>
     <p>Server sedang mengalami gangguan sehingga permintaan belum dapat diselesaikan. Tunggu sebentar lalu coba lagi. Bila masalah berlanjut, hubungi panitia pemilihan.</p>
     <p>Suara yang sudah berhasil disimpan tidak hilang: buka kembali dasbor untuk melihat status hak suara.</p>
-    <p class="foot">Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 Dawe 2026 &middot; <a href="<?= esc(function_exists('base_url') ? base_url('/') : '/', 'attr') ?>">Kembali ke beranda</a></p>
+    <p class="foot">Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 DAWE 2026 &middot; <a href="<?= esc(function_exists('base_url') ? base_url('/') : '/', 'attr') ?>">Kembali ke beranda</a></p>
 </main>
 </body>
 </html>

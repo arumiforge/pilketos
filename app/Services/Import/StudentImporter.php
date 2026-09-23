@@ -60,7 +60,7 @@ final class StudentImporter extends VoterImporter
     protected function instructions(): array
     {
         return [
-            'Petunjuk impor data siswa - Pemilihan Ketua OSIS SMP 1 Dawe 2026',
+            'Petunjuk impor data siswa - Pemilihan Ketua OSIS SMP 1 DAWE 2026',
             '1. Isi data mulai baris 2 pada sheet pertama ("Data Siswa"). Jangan mengubah, menghapus, atau memindahkan baris judul.',
             '2. NISN wajib 10 digit dan diketik sebagai teks agar angka 0 di depan tidak hilang (kolom sudah berformat Teks).',
             '3. jenis_kelamin: L atau P. Jangan dikosongkan; sistem tidak menebak jenis kelamin dari nama.',
