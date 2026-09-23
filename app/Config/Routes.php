@@ -68,6 +68,9 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->get('analytics', 'Admin\AnalyticsController::index');
     $routes->get('analytics/votes', 'Admin\AnalyticsController::votes');
 
+    // Hasil akhir + confetti (Stage 4): aktif hanya saat pemilihan FINISHED
+    $routes->get('results', 'Admin\ResultController::index');
+
     // Pasangan calon + tema
     $routes->get('candidates', 'Admin\CandidateController::index');
     $routes->get('candidates/new', 'Admin\CandidateController::new');

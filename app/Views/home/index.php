@@ -37,6 +37,9 @@
   <div class="container">
     <?php if ($election): ?>
       <?= view('partials/countdown', ['election' => $election, 'variant' => 'hero']) ?>
+      <?php if ($status === 'FINISHED'): ?>
+        <p class="clock-band__note">Pencoblosan sudah ditutup. Hasil resmi diumumkan oleh panitia pemilihan OSIS.</p>
+      <?php endif; ?>
     <?php else: ?>
       <p class="clock-band__empty">Jadwal pemilihan belum tersedia. Silakan cek kembali nanti.</p>
     <?php endif; ?>
@@ -85,5 +88,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/countdown.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/countdown.js') ?>" defer></script>
 <?= $this->endSection() ?>

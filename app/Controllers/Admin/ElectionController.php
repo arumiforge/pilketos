@@ -17,6 +17,9 @@ use DateTimeZone;
  * end_at diganti waktu server sekarang; membuka sekarang = start_at diganti
  * waktu server sekarang. Jam browser tidak pernah dipakai. Setiap perubahan
  * dicatat di audit log.
+ *
+ * Stage 4: jadwal yang membuka kembali pemilihan FINISHED (hasil akhir sudah
+ * final) hanya disimpan dengan konfirmasi eksplisit (confirm_reopen=1).
  */
 class ElectionController extends AdminController
 {
@@ -158,6 +161,17 @@ class ElectionController extends AdminController
             return redirect()->to('admin/election')->with('success', 'Tidak ada perubahan jadwal.');
         }
 
+        $statusBefore = $model->resolveStatus($election);
+
+        // Stage 4: hasil akhir sudah final. Membuka kembali (FINISHED -> belum
+        // selesai) menarik hasil akhir, jadi wajib dikonfirmasi eksplisit.
+        if ($statusBefore === ElectionModel::STATUS_FINISHED && $status !== ElectionModel::STATUS_FINISHED
+            && $this->request->getPost('confirm_reopen') !== '1') {
+            return redirect()->to('admin/election')->withInput()->with('errors', [
+                'confirm_reopen' => 'Jadwal baru membuka kembali pemilihan yang sudah selesai. Centang konfirmasi pembukaan kembali untuk melanjutkan.',
+            ]);
+        }
+
         try {
             // UPDATE baris election menunggu suara yang sedang diproses
             // (VoteService memegang shared lock pada baris ini).
@@ -173,7 +187,6 @@ class ElectionController extends AdminController
 
         $this->forgetElection();
 
-        $statusBefore = $model->resolveStatus($election);
         $this->audit(AuditLogModel::SCHEDULE_UPDATE, sprintf(
             '%s. %s.',
             ucfirst(implode('; ', $diff)),

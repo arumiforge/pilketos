@@ -7,7 +7,7 @@
     <div class="card card--auth stack">
       <div>
         <p class="eyebrow">Masuk Guru</p>
-        <h2>Selamat datang, silakan masuk untuk memilih</h2>
+        <h1 class="card__title">Selamat datang, silakan masuk untuk memilih</h1>
       </div>
 
       <form action="<?= base_url('teacher/login') ?>" method="post" class="stack" novalidate>

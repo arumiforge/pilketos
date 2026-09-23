@@ -55,7 +55,8 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
         <h2 class="panel__title" id="schedule-title"><?= $election ? 'Ubah jadwal' : 'Buat pemilihan' ?></h2>
       </header>
       <form action="<?= site_url('admin/election') ?>" method="post" class="stack" novalidate
-            <?php if ($status === 'ONGOING'): ?>data-confirm="Pemilihan sedang berlangsung. Simpan perubahan jadwal? Pemilih langsung mengikuti jadwal baru." data-confirm-button="Simpan jadwal"<?php endif; ?>>
+            <?php if ($status === 'ONGOING'): ?>data-confirm="Pemilihan sedang berlangsung. Simpan perubahan jadwal? Pemilih langsung mengikuti jadwal baru." data-confirm-button="Simpan jadwal"<?php endif; ?>
+            <?php if ($status === 'FINISHED'): ?>data-confirm="Pemilihan sudah selesai dan hasil akhir sudah final. Simpan jadwal baru? Bila waktu selesai dipindah ke masa depan, pencoblosan dibuka kembali." data-confirm-button="Simpan jadwal" data-confirm-danger<?php endif; ?>>
         <?= csrf_field() ?>
         <div class="field">
           <label for="nama">Nama pemilihan</label>
@@ -80,6 +81,13 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
           </div>
         </div>
         <p class="field-hint">Waktu selesai harus setelah waktu mulai. Tepat pada waktu selesai, pencoblosan ditolak server.</p>
+        <?php if ($status === 'FINISHED'): ?>
+          <label class="check check--block">
+            <input type="checkbox" name="confirm_reopen" value="1"<?= $invalid('confirm_reopen') ?>>
+            <span>Saya memahami: bila jadwal baru membuat pemilihan belum selesai, hasil akhir ditarik, pencoblosan dibuka kembali, dan perubahan ini tercatat di audit log.</span>
+          </label>
+          <?= $error('confirm_reopen') ?>
+        <?php endif; ?>
         <button type="submit" class="btn" data-loading-text="Menyimpan..."><?= icon('check') ?> <?= $election ? 'Simpan jadwal' : 'Buat pemilihan' ?></button>
       </form>
     </section>
@@ -111,7 +119,7 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
         <?php else: ?>
           <div class="quick-action">
             <h3>Pemilihan sudah selesai</h3>
-            <p>Hasil akhir ada di <a href="<?= site_url('admin/dashboard') ?>">dasbor</a>. Untuk membuka kembali, ubah waktu selesai ke waktu mendatang (tercatat di audit log).</p>
+            <p>Lihat <a href="<?= site_url('admin/results') ?>">hasil akhir</a>. Untuk membuka kembali, ubah waktu selesai ke waktu mendatang dan centang konfirmasi pembukaan kembali (tercatat di audit log).</p>
           </div>
         <?php endif; ?>
 

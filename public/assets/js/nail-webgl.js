@@ -367,7 +367,11 @@
     return !gl.isContextLost();
   };
 
-  /** Lepas semua resource GPU (dipanggil saat beralih ke mode ringan). */
+  /**
+   * Lepas semua resource GPU (dipanggil saat beralih ke mode ringan atau
+   * halaman ditinggal). Stage 4: konteks WebGL ikut dilepas segera lewat
+   * WEBGL_lose_context agar memori GPU HP kelas bawah tidak menunggu GC.
+   */
   Renderer.prototype.destroy = function () {
     var gl = this.gl;
     this.canvas.removeEventListener('webglcontextlost', this.onLost);
@@ -376,6 +380,10 @@
       gl.deleteBuffer(this.buffers.normal);
       gl.deleteBuffer(this.buffers.index);
       gl.deleteProgram(this.program);
+      var lose = gl.getExtension('WEBGL_lose_context');
+      if (lose) {
+        lose.loseContext();
+      }
     }
     this.lost = true;
   };

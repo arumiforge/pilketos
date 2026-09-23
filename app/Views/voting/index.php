@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('head') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/voting.css') ?>">
+<link rel="stylesheet" href="<?= asset_url('assets/css/voting.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -90,9 +90,9 @@ $status = $election['status'] ?? null;
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/countdown.js') ?>" defer></script>
-<script src="<?= base_url('assets/js/candidates.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/countdown.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/candidates.js') ?>" defer></script>
 <?php if ($canVote && $candidates !== []): ?>
-  <script src="<?= base_url('assets/js/ballot.js') ?>" defer></script>
+  <script src="<?= asset_url('assets/js/ballot.js') ?>" defer></script>
 <?php endif; ?>
 <?= $this->endSection() ?>

@@ -11,6 +11,7 @@ $groups = [
         'dashboard' => ['admin/dashboard', 'grid', 'Dasbor & live count'],
         'analytics' => ['admin/analytics', 'chart', 'Analitik'],
         'votes'     => ['admin/analytics/votes', 'list', 'Detail suara'],
+        'results'   => ['admin/results', 'award', 'Hasil akhir'],
     ],
     'Data' => [
         'candidates' => ['admin/candidates', 'flag', 'Pasangan calon'],

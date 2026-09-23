@@ -2,8 +2,9 @@
  * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
  * Panel admin (Stage 3): drawer menu HP, dialog konfirmasi, pemeriksaan
  * file sebelum unggah, pratinjau warna aksen, filter otomatis, dan tombol
- * tampilkan kode unik. Semua progressive enhancement: tanpa JavaScript
- * seluruh fitur tetap berjalan lewat form biasa dan validasi server.
+ * tampilkan kode unik. Stage 4: tombol layar penuh & cetak di hasil akhir.
+ * Semua progressive enhancement: tanpa JavaScript seluruh fitur tetap
+ * berjalan lewat form biasa dan validasi server.
  *
  * Tidak menyimpan data siswa/guru di localStorage/sessionStorage.
  */
@@ -400,6 +401,56 @@
     });
   }
 
+  /* -- hasil akhir: layar penuh (proyektor) & cetak (Stage 4) -------------- */
+  function initPresentation() {
+    document.querySelectorAll('[data-print]').forEach(function (button) {
+      if (typeof window.print !== 'function') {
+        return;
+      }
+      button.hidden = false;
+      button.addEventListener('click', function () {
+        window.print();
+      });
+    });
+
+    document.querySelectorAll('[data-fullscreen]').forEach(function (button) {
+      var target = document.querySelector(button.getAttribute('data-fullscreen'));
+      var label = button.querySelector('[data-fullscreen-label]');
+      var request = target ? (target.requestFullscreen || target.webkitRequestFullscreen) : null;
+
+      if (!request || !(document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+        return; // tombol tetap tersembunyi
+      }
+
+      function current() {
+        return document.fullscreenElement || document.webkitFullscreenElement || null;
+      }
+
+      function sync() {
+        var on = current() === target;
+        button.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (label) {
+          label.textContent = on ? 'Keluar layar penuh' : 'Layar penuh';
+        }
+      }
+
+      button.hidden = false;
+      button.addEventListener('click', function () {
+        if (current()) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+          return;
+        }
+        var pending = request.call(target);
+        if (pending && typeof pending.catch === 'function') {
+          pending.catch(function () { /* ditolak browser: tetap tampilan biasa */ });
+        }
+      });
+      document.addEventListener('fullscreenchange', sync);
+      document.addEventListener('webkitfullscreenchange', sync);
+      sync();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initDrawer();
     initConfirm();
@@ -407,5 +458,6 @@
     initAccent();
     initSecrets();
     initAutosubmit();
+    initPresentation();
   });
 })();

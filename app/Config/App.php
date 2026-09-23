@@ -197,6 +197,10 @@ class App extends BaseConfig
      *
      * @see http://www.html5rocks.com/en/tutorials/security/content-security-policy/
      * @see http://www.w3.org/TR/CSP/
+     *
+     * Stage 4: aktif di semua environment (kebijakan di ContentSecurityPolicy.php).
+     * Skrip inline di layout memakai csp_script_nonce(). Untuk diagnosis dapat
+     * dimatikan sementara lewat .env: app.CSPEnabled = false
      */
-    public bool $CSPEnabled = false;
+    public bool $CSPEnabled = true;
 }

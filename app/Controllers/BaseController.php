@@ -8,6 +8,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\I18n\Time;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,10 +20,17 @@ use Psr\Log\LoggerInterface;
 abstract class BaseController extends Controller
 {
     /**
+     * Waktu (epoch detik, jam server) request terakhir yang lolos filter auth.
+     * Stage 4: dipakai AuthFilter untuk mengakhiri sesi pemilih yang ditinggal.
+     * Bukan data profil/rahasia.
+     */
+    public const AUTH_SEEN_KEY = 'auth_seen_at';
+
+    /**
      * Seluruh key sesi autentikasi. Dibersihkan setiap login/logout agar
      * tidak ada sisa identitas role lain di sesi yang sama.
      */
-    public const AUTH_SESSION_KEYS = ['user_type', 'admin_id', 'student_id', 'teacher_id', 'isLoggedIn'];
+    public const AUTH_SESSION_KEYS = ['user_type', 'admin_id', 'student_id', 'teacher_id', 'isLoggedIn', self::AUTH_SEEN_KEY];
 
     /**
      * Batas login GAGAL per akun (NISN/NIP/username). Kode unik berupa tanggal
@@ -57,7 +65,8 @@ abstract class BaseController extends Controller
     /**
      * Mulai sesi login baru untuk satu role. Sesi lama di-regenerate
      * (anti session fixation) dan identitas role lain dihapus.
-     * Sesi hanya menyimpan tipe user, id, dan status login.
+     * Sesi hanya menyimpan tipe user, id, status login, dan waktu aktivitas
+     * terakhir (Stage 4, batas idle pemilih).
      *
      * @param 'admin'|'student'|'teacher' $userType
      */
@@ -67,9 +76,10 @@ abstract class BaseController extends Controller
         $session->remove(self::AUTH_SESSION_KEYS);
         $session->regenerate(true);
         $session->set([
-            'user_type'       => $userType,
-            $userType . '_id' => $userId,
-            'isLoggedIn'      => true,
+            'user_type'         => $userType,
+            $userType . '_id'   => $userId,
+            'isLoggedIn'        => true,
+            self::AUTH_SEEN_KEY => Time::now()->getTimestamp(),
         ]);
     }
 

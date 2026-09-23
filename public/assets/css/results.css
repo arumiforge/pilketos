@@ -1,0 +1,565 @@
+/* ==========================================================================
+   SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+   Halaman hasil akhir (Stage 4). Dimuat setelah app.css + admin.css.
+
+   Arah visual: "lembar berita acara" yang lebih seremonial daripada dasbor,
+   tetap hitam/putih/abu-abu editorial. Satu-satunya warna besar adalah aksen
+   SOLID pasangan terpilih, lengkap dengan pola & susunan (layout) miliknya.
+   Tanpa gradient, tanpa emoji, status selalu tertulis (tidak hanya warna).
+   Confetti (confetti.js) di kanvas terpisah, tidak menangkap pointer.
+   ========================================================================== */
+
+.final-page { position: relative; }
+
+/* garis kepala halaman diganti garis ganda "berita acara" pada lembar hasil */
+.final-page > .admin-head {
+  margin-bottom: var(--space-5);
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* -- keadaan terkunci (belum selesai) ------------------------------------- */
+.final-locked {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  padding: var(--space-6) 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.final-locked__seal {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+.final-locked__seal .icon { width: 30px; height: 30px; }
+
+.final-locked__body { display: grid; gap: var(--space-4); max-width: 62ch; }
+
+.final-locked__title {
+  font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 479px) {
+  .final-locked { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* -- lembar hasil --------------------------------------------------------- */
+.final {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.final__masthead {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 6px double var(--ink);
+}
+
+.final__kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+.final__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3.2vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.final__school {
+  font-weight: 300;
+  font-style: italic;
+}
+
+.final__stamp {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.final__stamp > div {
+  padding: var(--space-3) var(--space-4) var(--space-3) 0;
+}
+
+.final__stamp > div + div {
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--line);
+}
+
+.final__stamp dt {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+.final__stamp dd {
+  margin-top: var(--space-1);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.final__of {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+@media (max-width: 559px) {
+  .final__stamp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .final__stamp > div:first-child { grid-column: 1 / -1; }
+
+  .final__stamp > div + div {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .final__stamp > div:nth-child(3) {
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--line);
+  }
+}
+
+.final__section {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+}
+
+/* -- panggung pasangan terpilih ------------------------------------------ */
+.victor {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "label"
+    "no"
+    "people"
+    "names"
+    "tally";
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  background: var(--accent);
+  color: var(--accent-ink);
+  animation: victor-in 0.7s var(--ease) both;
+}
+
+.victor__pattern {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--accent-ink);
+  opacity: 0.14;
+  -webkit-mask-image: url('../img/patterns/grid.svg');
+  mask-image: url('../img/patterns/grid.svg');
+  -webkit-mask-size: 28px 28px;
+  mask-size: 28px 28px;
+}
+
+.victor__pattern--hatch {
+  -webkit-mask-image: url('../img/patterns/hatch.svg');
+  mask-image: url('../img/patterns/hatch.svg');
+  -webkit-mask-size: 14px 14px;
+  mask-size: 14px 14px;
+}
+
+.victor__pattern--dots {
+  -webkit-mask-image: url('../img/patterns/dots.svg');
+  mask-image: url('../img/patterns/dots.svg');
+  -webkit-mask-size: 16px 16px;
+  mask-size: 16px 16px;
+}
+
+.victor__label {
+  grid-area: label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.victor__label .icon { width: 20px; height: 20px; }
+
+.victor__no {
+  grid-area: no;
+  font-family: var(--font-display);
+  font-size: clamp(6.5rem, 22vw, 15rem);
+  font-weight: 600;
+  line-height: 0.78;
+  letter-spacing: -0.06em;
+  font-variant-numeric: lining-nums;
+}
+
+.victor__people {
+  grid-area: people;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.victor__person {
+  flex: 1 1 0;
+  max-width: 220px;
+}
+
+.victor__person img,
+.victor__mono {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border: 4px solid var(--paper);
+  background: var(--paper);
+}
+
+.victor__mono {
+  display: grid;
+  place-items: center;
+  background: var(--accent-ink);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  font-weight: 600;
+}
+
+.victor__person figcaption {
+  margin-top: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.victor__hero {
+  width: min(100%, 520px);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 4px solid var(--paper);
+}
+
+.victor__names {
+  grid-area: names;
+  display: grid;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4.8vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.victor__person-name { display: block; }
+
+.victor__role {
+  display: block;
+  margin-bottom: 0.15em;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.victor__tally {
+  grid-area: tally;
+  padding-top: var(--space-3);
+  border-top: 1px solid currentColor;
+  font-size: 1rem;
+}
+
+.victor__tally strong {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+@media (min-width: 900px) {
+  /* split (bawaan): nomor besar di kiri, foto di tengah, nama di kanan */
+  .victor {
+    grid-template-columns: auto minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-areas:
+      "label label label"
+      "no people names"
+      "no people tally";
+    align-items: end;
+    column-gap: var(--space-6);
+    padding: var(--space-7) var(--space-7) var(--space-6);
+  }
+
+  /* poster: nomor raksasa di atas, foto dan nama sejajar di bawah */
+  .victor--poster {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "label label"
+      "no no"
+      "people names"
+      "people tally";
+  }
+
+  .victor--poster .victor__no { font-size: clamp(9rem, 20vw, 17rem); }
+
+  /* column: satu kolom tegas dengan garis, nomor di kanan atas */
+  .victor--column {
+    grid-template-columns: minmax(0, 1.2fr) auto;
+    grid-template-areas:
+      "label no"
+      "names no"
+      "people people"
+      "tally tally";
+    align-items: start;
+  }
+
+  .victor--column .victor__no { text-align: right; }
+}
+
+@keyframes victor-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* -- catatan seri / tanpa suara ------------------------------------------ */
+.final-note {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line-strong);
+  border-left: 6px solid var(--ink);
+  background: var(--paper-dim);
+  font-size: 1rem;
+}
+
+.final-note .icon { flex: none; margin-top: 2px; }
+
+.final-note--tie { border-left-style: double; }
+
+/* -- klasemen ------------------------------------------------------------- */
+.standings { border-top: 2px solid var(--ink); }
+
+.standing {
+  display: grid;
+  grid-template-columns: 2.2rem 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.standing__rank {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-variant-numeric: lining-nums;
+}
+
+.standing__no {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+}
+
+.standing__names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  font-size: 1.05rem;
+}
+
+.standing__names .pill .icon { width: 14px; height: 14px; }
+
+.standing__track {
+  display: block;
+  height: 10px;
+  margin-top: var(--space-2);
+  background: var(--gray-100);
+  overflow: hidden;
+}
+
+.standing__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: standing-grow 1.1s var(--ease) 0.25s both;
+}
+
+.standing__split {
+  margin-top: var(--space-1);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+.standing__count {
+  display: grid;
+  justify-items: end;
+  text-align: right;
+}
+
+.standing__votes {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.standing__pct {
+  margin-top: var(--space-1);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.standing.is-winner .standing__rank { color: var(--ink); font-weight: 700; }
+.standing.is-winner .standing__names strong { font-weight: 700; }
+.standing.is-winner .standing__track { height: 14px; }
+
+@keyframes standing-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@media (max-width: 559px) {
+  .standing {
+    grid-template-columns: 1.6rem 44px minmax(0, 1fr);
+    grid-template-areas:
+      "rank no body"
+      "rank no count";
+  }
+
+  .standing__rank { grid-area: rank; font-size: 1.2rem; }
+  .standing__no { grid-area: no; width: 44px; height: 44px; font-size: 1.3rem; }
+  .standing__body { grid-area: body; }
+  .standing__count { grid-area: count; justify-items: start; text-align: left; grid-auto-flow: column; gap: var(--space-3); align-items: baseline; }
+}
+
+/* -- partisipasi ---------------------------------------------------------- */
+.turnout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  border-top: 2px solid var(--ink);
+}
+
+.turnout__item {
+  padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.turnout__item dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-700);
+}
+
+.turnout__big {
+  margin-top: var(--space-2);
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.turnout__sub {
+  margin-top: var(--space-2);
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+/* -- rekap & catatan kaki ------------------------------------------------- */
+.final__recap { display: grid; gap: var(--space-5); }
+
+.final__foot {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--ink);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+  max-width: 90ch;
+}
+
+/* -- confetti (kanvas terpisah, tidak menghalangi klik) ------------------ */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* -- layar penuh (proyektor saat pengumuman) ----------------------------- */
+.final-page:fullscreen {
+  overflow-y: auto;
+  padding: var(--space-6) clamp(var(--space-4), 5vw, var(--space-9));
+  background: var(--paper);
+}
+
+.final-page:fullscreen .final { gap: var(--space-8); }
+
+.final-page::backdrop { background: var(--paper); }
+
+/* -- cetak: hemat tinta, tetap terbaca tanpa warna ----------------------- */
+@media print {
+  .final-actions,
+  .confetti { display: none !important; }
+
+  .final { gap: var(--space-5); }
+
+  .victor {
+    background: none;
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    animation: none;
+    break-inside: avoid;
+  }
+
+  .victor__pattern { display: none; }
+
+  .standing__no,
+  .standing__fill,
+  .cand-chip,
+  .stackbar__seg {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .standing,
+  .turnout__item { break-inside: avoid; }
+}

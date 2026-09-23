@@ -37,7 +37,7 @@
   --gray-100:   #F1EFEA;
   --gray-200:   #E3E0D8;
   --gray-300:   #CBC7BB;
-  --gray-500:   #8D897D;
+  --gray-500:   #6E6A5F; /* Stage 4: 5,1:1 di atas --paper (WCAG AA teks kecil) */
   --gray-700:   #514E45;
   --line:       #DCD8CD;
   --line-strong:#B9B4A6;
@@ -398,6 +398,9 @@ summary:focus-visible {
   margin-inline: auto;
 }
 
+/* judul halaman login = h1 (Stage 4, semantik), ukuran tetap seukuran h2 */
+.card__title { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+
 /* -- ikon SVG inline (helper icon()) -- */
 .icon {
   display: inline-block;
@@ -618,6 +621,13 @@ summary:focus-visible {
 }
 
 .clock-band__empty { color: var(--ink-muted); }
+
+/* Stage 4: keterangan setelah pemilihan selesai (hasil diumumkan panitia) */
+.clock-band__note {
+  margin-top: var(--space-4);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
 
 /* -- countdown (partials/countdown.php + countdown.js) -- */
 .countdown__label {

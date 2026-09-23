@@ -21,6 +21,14 @@ class TeacherAuthFilter extends AuthFilter
         return 'Silakan masuk sebagai guru terlebih dahulu.';
     }
 
+    /**
+     * Stage 4: sesi pemilih yang ditinggal 15 menit berakhir otomatis.
+     */
+    protected function idleSeconds(): int
+    {
+        return self::VOTER_IDLE_SECONDS;
+    }
+
     protected function accountIsValid(int $id): bool
     {
         return model(TeacherModel::class)->findActive($id) !== null;

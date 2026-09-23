@@ -8,6 +8,8 @@ Baca:
 4. `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` (handoff Stage 3)
 5. seluruh source file aktual.
 Jangan membuat project baru.
+
+Hasil implementasi aktual dan handoff Stage 4: `STAGE4-NOTES.md` (panduan pemakaian & deployment: `README.md`).
  
 ## OBJECTIVE
  

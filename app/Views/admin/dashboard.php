@@ -7,6 +7,7 @@
  *
  * @var array|null $election
  * @var array      $snapshot AnalyticsService::snapshot()
+ * @var array      $final    FinalResult::build() (Stage 4)
  */
 $status   = $election['status'] ?? null;
 $summary  = $snapshot['summary'];
@@ -28,6 +29,10 @@ $heading  = match ($status) {
     </div>
     <?= $this->include('admin/partials/live_status') ?>
   </header>
+
+  <?php if ($final['available']): ?>
+    <?= view('admin/partials/final_banner', ['final' => $final]) ?>
+  <?php endif; ?>
 
   <?php if (! $election): ?>
     <div class="notice notice--action">
@@ -131,6 +136,6 @@ $heading  = match ($status) {
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/countdown.js') ?>" defer></script>
-<script src="<?= base_url('assets/js/admin-live.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/countdown.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/admin-live.js') ?>" defer></script>
 <?= $this->endSection() ?>

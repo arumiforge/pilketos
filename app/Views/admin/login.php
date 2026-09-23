@@ -7,7 +7,7 @@
     <div class="card card--auth stack">
       <div>
         <p class="eyebrow">Masuk Admin</p>
-        <h2>Masuk ke panel admin</h2>
+        <h1 class="card__title">Masuk ke panel admin</h1>
       </div>
 
       <form action="<?= base_url('admin/login') ?>" method="post" class="stack" novalidate>

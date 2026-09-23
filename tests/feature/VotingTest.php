@@ -247,7 +247,7 @@ final class VotingTest extends CIUnitTestCase
         $result->assertSee('assets/js/ballot.js');
         // WebGL tidak dimuat langsung; ballot.js memuatnya malas bila mode 3D.
         $result->assertDontSee('<script src="' . base_url('assets/js/nail-webgl.js'));
-        $result->assertSee('data-webgl-src="' . base_url('assets/js/nail-webgl.js') . '"');
+        $result->assertSee('data-webgl-src="' . asset_url('assets/js/nail-webgl.js') . '"');
         // Fallback 2D (SVG + CSS) dan kanvas 3D sama-sama tersedia.
         $result->assertSee('data-nail2d');
         $result->assertSee('data-nail3d');

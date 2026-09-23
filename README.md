@@ -1,53 +1,527 @@
 # Pemilihan Ketua & Wakil Ketua OSIS SMP 1 Dawe 2026
 
-Aplikasi e-voting sekolah berbasis CodeIgniter 4 + MySQL untuk siswa dan guru
-(identitas pemilih terpisah, satu suara aktif per pemilih, unlock hanya oleh admin
-dengan audit log).
+Aplikasi e-voting sekolah berbasis **CodeIgniter 4.7 + MySQL/MariaDB** untuk
+siswa dan guru. Pemilih login dengan identitasnya sendiri (NISN atau NIP + kode
+unik), membaca visi-misi tiga pasangan calon, lalu mencoblos dengan paku 3D
+(WebGL) atau paku 2D. Satu pemilih hanya punya satu suara aktif; suara yang
+sudah dikunci hanya dapat dibuka admin dengan alasan tercatat. Admin memantau
+live count, analitik, dan hasil akhir yang aktif otomatis saat waktu pemilihan
+habis menurut jam server.
 
-## Dokumen proyek
+Dokumen ini adalah panduan pemakaian dan deployment. Riwayat implementasi per
+tahap ada di `STAGE1-NOTES.md` s.d. `STAGE4-NOTES.md`.
+
+Daftar isi:
+[1 Ringkasan](#1-ringkasan) ·
+[2 Arsitektur](#2-arsitektur) ·
+[3 Kebutuhan](#3-kebutuhan) ·
+[4 Instalasi](#4-instalasi) ·
+[5 Konfigurasi .env](#5-konfigurasi-env) ·
+[6 Database](#6-database) ·
+[7 Deployment Laragon](#7-deployment-laragon) ·
+[8 Admin](#8-admin) ·
+[9 Siswa](#9-siswa) ·
+[10 Guru](#10-guru) ·
+[11 Pasangan calon](#11-kelola-pasangan-calon) ·
+[12 Impor Excel](#12-impor-excel) ·
+[13 Voting](#13-voting) ·
+[14 Unlock](#14-unlock-hak-suara) ·
+[15 Analitik](#15-analitik--live-count) ·
+[16 Hasil akhir](#16-hasil-akhir) ·
+[17 Backup](#17-backup--pemulihan) ·
+[18 Troubleshooting](#18-troubleshooting) ·
+[19 Test](#19-test-otomatis) ·
+[20 Dokumen](#20-dokumen-proyek)
+
+## 1. Ringkasan
+
+| Bagian | Isi |
+|---|---|
+| Pemilih | Siswa (NISN + kode unik tanggal lahir DDMMYYYY) dan guru (NIP + kode unik), tabel & login terpisah, satu pemilihan yang sama |
+| Pengalaman memilih | beranda dengan countdown jam server, halaman kandidat bertema per pasangan, visi-misi interaktif, surat suara dengan paku coblos 3D/2D, konfirmasi, suara terkunci, halaman "pilihan saya" |
+| Admin | dasbor & live count, analitik (jenis pemilih, jenis kelamin, jenjang, kelas, detail suara), pasangan calon + unggah tema, data & impor Excel siswa/guru, jadwal, unlock, audit log, hasil akhir + confetti |
+| Integritas | transaction + row lock, unique key satu suara aktif, CHECK & trigger database (suara/audit tidak dapat dihapus atau diubah), hasil dikunci setelah selesai |
+| Jadwal | status UPCOMING / ONGOING / FINISHED dihitung dari `start_at`/`end_at` terhadap jam server (WIB); sejak `end_at` pencoblosan ditolak |
+
+Tanpa emoji, tanpa gradient; warna hanya dari aksen solid tiap pasangan.
+Semua animasi menghormati `prefers-reduced-motion`, dan setiap alur tetap
+berjalan tanpa WebGL (paku 2D) maupun tanpa JavaScript (halaman konfirmasi
+server).
+
+## 2. Arsitektur
+
+```
+Browser (HP siswa / komputer lab / laptop admin)
+  |  HTML + CSS + JS lokal (tanpa CDN), fetch JSON untuk voting & live count
+  v
+Apache 2.4 (DocumentRoot = public/, mod_rewrite)  ->  public/index.php
+  v
+CodeIgniter 4.7
+  Filter global : postsize -> csrf -> invalidchars | secureheaders, appheaders, CSP
+  Filter role   : studentauth / teacherauth / adminauth (401 JSON untuk AJAX)
+  Controller    : Home, Student\*, Teacher\*, VotingController, ElectionController (jam),
+                  Admin\* (Dashboard, LiveCount, Analytics, Result, Candidate, Student,
+                  Teacher, Import, Election, Unlock, Audit)
+  Service       : VoteService (castVote), UnlockService, AnalyticsService (satu definisi
+                  angka), FinalResult, VoterDirectory, Import\* (PhpSpreadsheet)
+  Library       : CandidateTheme, CandidateAssets (encode ulang gambar), DeviceInfo,
+                  Grade, AdminAccount, SystemCheck
+  Model         : Admin, Student, Teacher, Candidate, Election, StudentVote, TeacherVote,
+                  VoteUnlockLog, AuditLog
+  v
+MySQL 8.0.16+ / MariaDB 10.4+ (InnoDB, utf8mb4, strict mode, FK RESTRICT,
+unique key suara aktif, CHECK + 8 trigger penjaga integritas)
+```
+
+Prinsip utama:
+
+- **Server adalah sumber kebenaran.** Status pemilihan, waktu memilih,
+  perangkat/browser, dan hasil dihitung di server. Countdown hanya visual.
+- **Identitas dari sesi, bukan dari input.** Pemilih tidak pernah mengirim id
+  dirinya; jenis pemilih ditentukan route/controller. Tidak ada id pemilih atau
+  suara di URL pemilih.
+- **Satu definisi angka.** Dasbor, live count, analitik, daftar pemilih, dan
+  hasil akhir memakai `AnalyticsService`: pemilih aktif = `status_aktif = 1`,
+  suara sah = baris `LOCKED` milik pemilih aktif, dihitung dengan agregasi
+  MySQL (`GROUP BY`), bukan di browser.
+- **Riwayat tidak pernah dihapus.** Unlock mengubah `LOCKED` menjadi
+  `UNLOCKED`; pilih ulang = baris baru. Database menolak DELETE suara/log.
+
+State hak suara per pemilih per pemilihan:
+
+```
+NO_ACTIVE_VOTE --coblos--> LOCKED --unlock admin (alasan)--> NO_ACTIVE_VOTE (baris lama UNLOCKED)
+                                                              --coblos lagi--> LOCKED (baris baru)
+```
+
+Struktur folder utama:
+
+```
+app/Commands/        admin:create, admin:password, osis:check
+app/Config/          Routes.php, Filters.php, ContentSecurityPolicy.php, App.php, ...
+app/Controllers/     Home, VotingController, Student/*, Teacher/*, Admin/*
+app/Database/        Migrations (12 file), Seeds (data contoh development)
+app/Filters/         AuthFilter + per role, PostSizeFilter, SecurityHeadersFilter
+app/Libraries/       CandidateTheme, CandidateAssets, DeviceInfo, Grade, AdminAccount, SystemCheck
+app/Models/          9 model tabel
+app/Services/        VoteService, UnlockService, AnalyticsService, FinalResult, Import/*
+app/Views/           layouts, home, student, teacher, voting, admin/**, errors
+public/              index.php, .htaccess, assets/{css,js,fonts,img}, uploads/candidates/
+tests/               unit, database, feature (PHPUnit)
+writable/            cache, logs, session, uploads/imports (pratinjau impor)
+```
+
+Daftar file lengkap ada di `STAGE4-NOTES.md` bagian 12.
+
+## 3. Kebutuhan
+
+| Komponen | Versi / catatan |
+|---|---|
+| PHP | **8.2 atau lebih baru** (diuji 8.2.33 dan 8.4.19) |
+| Ekstensi PHP wajib | intl, mbstring, mysqli, gd, zip, fileinfo (PhpSpreadsheet juga memakai xml, dom, xmlreader, xmlwriter, simplexml yang aktif bawaan) |
+| Ekstensi disarankan | exif (foto HP yang miring diluruskan), GD dengan WebP |
+| Database | **MySQL 8.0.16+** atau **MariaDB 10.4+** (diuji MySQL 8.0.46 dan MariaDB 10.11.14) |
+| Web server | Apache 2.4 + mod_rewrite (mod_headers, mod_expires, mod_deflate disarankan); diuji Apache 2.4.58 + mod_php 8.2 |
+| Composer | 2.x |
+| Browser pemilih | Chrome/Edge/Firefox/Samsung Internet modern (diuji dengan Chromium; Safari iOS belum diuji); WebGL opsional |
+
+`php.ini` yang disarankan (Laragon: Menu > PHP > php.ini):
+
+```
+upload_max_filesize = 5M     ; foto kandidat per file
+post_max_size       = 40M    ; form kandidat membawa hingga 7 gambar
+memory_limit        = 256M   ; decode foto HP beresolusi besar
+expose_php          = Off    ; versi PHP tidak diumumkan
+```
+
+## 4. Instalasi
+
+Ringkas (development di komputer sendiri):
+
+```
+composer install
+copy .env.example .env            (Linux/macOS: cp .env.example .env)
+```
+
+Buat database kosong `smp1dawe_osis_2026` (collation `utf8mb4_unicode_ci`),
+sesuaikan `.env`, lalu:
+
+```
+php spark migrate
+php spark db:seed DatabaseSeeder  (HANYA development: data & akun contoh)
+php spark serve                   (http://localhost:8080/)
+```
+
+Akun contoh dari `DatabaseSeeder` (tidak untuk hari pemilihan; seeder menolak
+berjalan bila `CI_ENVIRONMENT = production`):
+
+| Peran | Login | Kode unik / sandi |
+|---|---|---|
+| Siswa | NISN `0000000001` di `/student/login` | `05062013` |
+| Guru | NIP `000000000000000004` di `/teacher/login` | `01061992` |
+| Admin | username `admin` di `/admin/login` | `admin123` |
+
+Instalasi server hari pemilihan: bagian 7.
+
+## 5. Konfigurasi .env
+
+`.env` berisi kredensial dan tidak pernah di-commit (ada di `.gitignore`).
+Salin dari `.env.example`:
+
+| Kunci | Nilai | Catatan |
+|---|---|---|
+| `CI_ENVIRONMENT` | `development` / `production` | production = Debug Toolbar mati, pesan error tanpa detail teknis, gagal CSRF diarahkan kembali |
+| `app.baseURL` | mis. `'http://192.168.1.10/'` | **harus sama persis** dengan alamat yang dibuka semua perangkat (termasuk port/subfolder), diakhiri `/` |
+| `database.default.*` | host, nama, user, sandi, port | database utama |
+| `database.tests.*` | database terpisah | hanya untuk test otomatis, isinya dihapus setiap test |
+| `session.cookieName`, `session.expiration` | `osis_session`, `7200` | sesi 2 jam; pemilih keluar otomatis setelah 15 menit tanpa aktivitas |
+| `cookie.secure` | `false` / `true` | set `true` bila situs dibuka lewat HTTPS |
+| `app.CSPEnabled` | (bawaan `true`) | Content-Security-Policy; boleh `false` sementara hanya untuk diagnosis |
+
+Zona waktu aplikasi tetap `Asia/Jakarta` (`app/Config/App.php`), jadi jam di
+komputer server harus benar.
+
+## 6. Database
+
+`php spark migrate` membuat 9 tabel dan menjalankan 12 migration:
+
+| Tabel | Isi |
+|---|---|
+| `admins` | admin panel (sandi `password_hash`) |
+| `students` | NISN (unik, teks), nama, jenis kelamin L/P, kelas, nomor absen, kode unik, `status_aktif` |
+| `teachers` | NIP (unik, teks), nama, kode unik, `status_aktif` |
+| `candidates` | nomor urut (unik), ketua, wakil, visi, misi, foto, tema (aksen, layout, latar, asset JSON), `status_aktif` |
+| `elections` | nama, tahun, `start_at`, `end_at`, status |
+| `student_votes`, `teacher_votes` | election, pemilih, pasangan, `status` LOCKED/UNLOCKED, waktu, perangkat, browser |
+| `vote_unlock_logs` | unlock: suara yang dibuka, admin, alasan, waktu |
+| `audit_logs` | tindakan admin (unlock, jadwal, pasangan, impor, status/hapus pemilih) |
+
+Penjaga integritas (migration `2026-04-01-000001_AddVoteIntegrityGuards`):
+
+- unique key `uq_*_votes_active`: maksimal satu suara `LOCKED` per pemilih per
+  pemilihan (Stage 1);
+- CHECK `chk_*_votes_state`: `LOCKED` tanpa `unlocked_at`, `UNLOCKED` wajib
+  `unlocked_at`;
+- trigger: baris suara tidak dapat dihapus; satu-satunya perubahan sah
+  `LOCKED -> UNLOCKED`; pilihan, pemilih, pemilihan, waktu, perangkat tidak
+  dapat diubah; `UNLOCKED` final; `vote_unlock_logs` dan `audit_logs`
+  append-only (tidak dapat diubah/dihapus), juga dari HeidiSQL/phpMyAdmin;
+- semua foreign key `RESTRICT`: pemilih/pasangan/admin yang punya suara atau
+  log tidak dapat dihapus.
+
+Membuat trigger butuh hak `TRIGGER`. Di MySQL 8 dengan binary log aktif
+(bawaan), user database selain root/SUPER juga butuh
+`log_bin_trust_function_creators = 1`; tanpa itu migration berhenti dengan
+pesan error 1419 yang menyebut perbaikannya, dan dapat diulang setelah
+diperbaiki. User `root` Laragon tidak terkena masalah ini.
+
+## 7. Deployment Laragon
+
+Folder target: `C:\laragon\www\smp1dawe-osis-2026`.
+
+### 7.1 Server (laptop/PC panitia)
+
+1. Pasang **Laragon** (paket berisi Apache, MySQL, PHP). Pastikan PHP 8.2+:
+   Menu > PHP > Version.
+2. Aktifkan ekstensi: Menu > PHP > Extensions: `intl`, `mbstring`, `mysqli`,
+   `gd`, `zip`, `fileinfo`, `exif`.
+3. Ubah `php.ini` (bagian 3), lalu **Stop** dan **Start All**.
+4. Pastikan jam Windows benar (Settings > Time & language > Sync now):
+   pemilihan dibuka dan ditutup menurut jam komputer server.
+5. Matikan sleep/hibernate selama pemilihan dan pakai daya listrik.
+
+### 7.2 Aplikasi
+
+Jalankan di **Laragon Terminal** (Menu > Terminal):
+
+```
+cd C:\laragon\www
+git clone <url-repository> smp1dawe-osis-2026      (atau ekstrak zip ke folder ini)
+cd smp1dawe-osis-2026
+composer install --no-dev --optimize-autoloader    (untuk menjalankan test: composer install)
+copy .env.example .env
+```
+
+Buat database (HeidiSQL dari tombol Database Laragon, atau):
+
+```
+mysql -u root -e "CREATE DATABASE smp1dawe_osis_2026 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+```
+
+Isi `.env` (Notepad): `CI_ENVIRONMENT = production`, `app.baseURL`, dan
+`database.default.*` (Laragon bawaan: user `root`, sandi kosong). Lalu:
+
+```
+php spark migrate
+php spark admin:create --username panitia --name "Panitia Pemilihan OSIS"
+php spark osis:check
+```
+
+- `migrate` membuat tabel + trigger (12 migration).
+- `admin:create` membuat admin production dan **menampilkan kata sandi acak
+  satu kali**; simpan di tempat aman. Ganti/lupa: `php spark admin:password panitia`.
+- **Jangan** menjalankan `php spark db:seed DatabaseSeeder` di database hari
+  pemilihan (data & akun contoh; di production seeder menolak berjalan).
+- `osis:check` memeriksa PHP & ekstensi, `.env`, `php.ini`, folder yang harus
+  dapat ditulis, versi database, migration, 8 trigger, admin (GAGAL bila
+  `admin/admin123` masih ada di production), jadwal, pasangan, dan data
+  pemilih (GAGAL bila data contoh NISN `00000000xx` ada di production).
+  Exit code 1 bila ada GAGAL. Di Laragon CLI dan Apache memakai `php.ini` yang
+  sama; di Linux, `php.ini` CLI dan Apache terpisah.
+
+Folder yang harus dapat ditulis PHP: `writable/` (cache, logs, session,
+uploads) dan `public/uploads/candidates/` (di Windows biasanya sudah).
+
+### 7.3 Virtual host & akses dari HP
+
+Web server harus menyajikan folder **`public/`**, bukan folder proyek.
+
+- Laragon membuat virtual host otomatis `http://smp1dawe-osis-2026.test/`.
+  Periksa Menu > Apache > sites-enabled > `auto.smp1dawe-osis-2026.test.conf`:
+  `DocumentRoot` harus berakhir `.../smp1dawe-osis-2026/public/`. Alamat
+  `.test` hanya dikenal komputer server itu sendiri.
+- **HP/komputer lain di Wi-Fi sekolah** membuka alamat IP server. Pilihan
+  paling sederhana untuk laptop khusus pemilihan: Menu > Preferences >
+  General > Document Root = `C:\laragon\www\smp1dawe-osis-2026\public`,
+  lalu `app.baseURL = 'http://<IP-server>/'` (lihat IP dengan `ipconfig`).
+  Tanpa mengubah Document Root, aplikasi juga dapat dibuka di
+  `http://<IP-server>/smp1dawe-osis-2026/` (file `.htaccess` di root proyek
+  meneruskan ke `public/`); `app.baseURL` harus memakai alamat itu.
+- Izinkan Apache di Windows Firewall untuk jaringan Private saat diminta,
+  dan minta IP tetap (DHCP reservation) untuk laptop server.
+- Semua perangkat harus membuka alamat yang **sama dengan `app.baseURL`**;
+  alamat lain membuat CSS/JS ditolak Content-Security-Policy.
+
+Lapisan pengaman web server (diuji pada Apache 2.4):
+
+- `.htaccess` di root proyek: bila DocumentRoot terlanjur menunjuk folder
+  proyek/induknya, `.env`, `.git`, `app/`, `writable/`, `vendor/`,
+  `composer.*` tidak dapat diunduh (403/404) dan request diteruskan ke
+  `public/`; tanpa mod_rewrite semuanya ditolak.
+- `public/uploads/.htaccess`: hanya gambar `jpg/jpeg/png/webp` bernama aman
+  yang disajikan; PHP tidak pernah dieksekusi di folder ini (termasuk nama
+  ganda seperti `x.php.webp`), dengan header `nosniff` dan CSP `sandbox`.
+- `public/.htaccess`: URL bersih, kompresi, cache asset 30 hari (CSS/JS memakai
+  `?v=<waktu ubah file>` sehingga update langsung terbaca), `X-Powered-By`
+  dihapus. Opsional di `httpd.conf`: `ServerTokens Prod`.
+
+### 7.4 Persiapan sebelum hari H
+
+1. Admin login > **Siswa** dan **Guru** > Impor (bagian 12).
+2. **Pasangan calon**: nama, visi, misi, foto, tema; periksa **Pratinjau**.
+3. **Jadwal pemilihan**: nama, tahun, mulai, selesai (WIB).
+4. `php spark osis:check` sampai tidak ada GAGAL.
+5. Uji coba alur memilih dari HP di **database terpisah**, karena suara uji
+   coba di database hari H tidak dapat dihapus (trigger): buat database
+   `smp1dawe_osis_2026_uji`, arahkan `database.default.database` ke sana
+   sementara, `php spark migrate`, buat admin & impor data uji, coba memilih,
+   lalu kembalikan `.env` ke database hari H.
+6. Backup (bagian 17) sebelum pemilihan dimulai.
+
+Hari H: pantau **Dasbor** (live count); bila perlu unlock, lihat bagian 14.
+Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
+
+## 8. Admin
+
+Login: `/admin/login` (username + kata sandi, dibatasi 5 percobaan gagal per
+akun lalu 1 per menit). Menu panel:
+
+| Menu | Fungsi |
+|---|---|
+| Dasbor | status & jadwal, countdown, ringkasan pemilih, suara per pasangan, rekap jenjang & kelas, live count; saat selesai tampil keadaan final + tautan hasil akhir |
+| Analitik | keseluruhan, jenis pemilih, jenis kelamin siswa, jenjang, kelas, detail suara (cari, filter, paginasi) |
+| Hasil akhir | hanya aktif saat pemilihan selesai (bagian 16) |
+| Pasangan calon | tambah/ubah/nonaktifkan/hapus + unggah tema, pratinjau halaman pemilih |
+| Siswa / Guru | daftar, cari, filter, detail (kode unik tersamar), nonaktifkan, hapus data salah impor, impor Excel |
+| Jadwal pemilihan | nama, tahun, mulai, selesai; tutup sekarang; buka sekarang |
+| Unlock | cari pemilih, buka hak suara dengan alasan |
+| Audit log | riwayat tindakan admin (hanya-baca) |
+
+Admin **tidak dapat memilih** atas nama pemilih dan tidak dapat mengubah
+pilihan siapa pun. Setelah pemilihan selesai, tindakan yang dapat mengubah
+hasil dikunci: ubah status/hapus pemilih, impor, tambah/hapus pasangan, nomor
+urut & status aktif pasangan. Membuka kembali pemilihan yang sudah selesai
+lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
+
+## 9. Siswa
+
+1. Buka alamat aplikasi > **Masuk sebagai siswa**: NISN (10 digit, nol di
+   depan tetap) + kode unik (tanggal lahir `DDMMYYYY`; `05-06-2013` juga
+   diterima).
+2. Dasbor menampilkan identitas, status hak suara, dan jadwal.
+3. **Lihat kandidat & coblos** (hanya saat pemilihan berlangsung).
+4. Setelah memilih: pilihan terkunci; login ulang hanya menampilkan pilihan
+   sendiri. Tekan **Selesai & keluar** di komputer bersama.
+
+Sesi pemilih berakhir otomatis setelah 15 menit tanpa aktivitas.
+
+## 10. Guru
+
+Sama dengan siswa, di **Masuk sebagai guru** dengan NIP + kode unik. Guru
+adalah pemilih biasa: tidak memiliki akses admin maupun analitik. Suara guru
+dan siswa disimpan di tabel terpisah dan dihitung bersama pada hasil.
+
+## 11. Kelola pasangan calon
+
+Admin > **Pasangan calon** > Tambah / Ubah:
+
+- nomor urut (1-99, unik), nama ketua & wakil, visi, misi (satu poin per
+  baris), nama tema, warna aksen `#RRGGBB` (kontras teks dihitung otomatis),
+  layout (otomatis / split / poster / column), status aktif;
+- 7 slot gambar: foto ketua, foto wakil, hero (berdua), latar panggung,
+  artwork, tekstur, poster. Hanya `jpg/jpeg/png/webp` sampai 5 MB (tekstur
+  2 MB); isi file diperiksa, gambar di-encode ulang server (WebP bila tersedia),
+  metadata EXIF/GPS dibuang, nama file acak;
+- **Pratinjau** menampilkan halaman persis seperti yang dilihat pemilih.
+
+Pasangan yang sudah menerima suara tidak dapat dihapus (gunakan nonaktif).
+Setelah pemilihan selesai hanya teks & gambar yang dapat dirapikan.
+
+## 12. Impor Excel
+
+Siswa > Impor atau Guru > Impor:
+
+1. **Unduh template** (`student-import-template.xlsx`: `no, NISN, nama,
+   jenis_kelamin, kelas, nomor_absen, kodeunik`; `teacher-import-template.xlsx`:
+   `no, NIP, nama, kodeunik`). Kolom identitas & kode unik bertipe Teks.
+2. Isi, simpan sebagai `.xlsx`, **unggah** (maks 5 MB, 3.000 baris).
+3. **Pratinjau & validasi**: baris baru / diperbarui / tidak berubah /
+   bermasalah dengan alasannya. NISN harus 10 digit; jenis kelamin L/P; kelas
+   berjenjang 7/8/9; kode unik tanggal valid; NISN/NIP ganda dalam file ditolak;
+   nol depan yang hilang dipulihkan dengan peringatan; NIP yang sudah dibulatkan
+   Excel ditolak.
+4. **Impor**: satu transaction; NISN/NIP yang sudah ada diperbarui (tidak
+   diduplikasi), pemilih yang tidak ada di file tidak dihapus. Pratinjau hanya
+   dapat dipakai sekali; klik ganda tidak mengimpor dua kali.
+5. **Hasil**: jumlah ditambahkan / diperbarui / tidak berubah / dilewati,
+   tercatat di audit log.
+
+## 13. Voting
+
+- Hanya saat status **Sedang Berlangsung** (dicek ulang server saat simpan);
+  tepat pada `end_at` sudah ditolak.
+- Halaman kandidat: tiap pasangan punya warna, pola, layout, dan gambar sendiri;
+  visi menyala mengikuti scroll, misi dapat dibuka-tutup.
+- Surat suara: tekan-tahan paku, geser ke kotak pasangan, lepas untuk
+  mencoblos, lalu **Konfirmasi pilihan**. Paku 3D (WebGL, dimuat malas) otomatis
+  diganti paku 2D di perangkat lemah, tanpa WebGL, atau saat reduced motion;
+  tombol "Coblos Pasangan 0X" untuk keyboard/pembaca layar; tanpa JavaScript
+  memakai halaman konfirmasi biasa.
+- Disimpan dalam transaction (`FOR UPDATE` baris pemilih + unique key), status
+  `LOCKED`, perangkat & browser dibaca server. Klik ganda, tab ganda, atau POST
+  diulang tetap satu suara.
+
+## 14. Unlock hak suara
+
+Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
+
+1. Admin > **Unlock** > cari nama/NISN/NIP.
+2. Periksa status suara, isi **alasan** (10-500 karakter), centang pernyataan,
+   konfirmasi.
+3. Baris suara lama menjadi riwayat `UNLOCKED`, dicatat di `vote_unlock_logs`
+   dan audit log (admin, pemilih, pemilihan, alasan, waktu).
+4. Pemilih login lagi dan **memilih sendiri**; admin tidak memilihkan.
+
+## 15. Analitik & live count
+
+- Angka dari satu definisi (bagian 2): sudah + belum memilih = total pemilih
+  aktif (siswa, guru, gabungan); suara siswa + suara guru = total suara.
+- Rekap: jenis pemilih, jenis kelamin (khusus siswa), jenjang 7/8/9 (juga
+  angka Romawi), kelas, per pasangan (jumlah & persen dari suara sah).
+- Live count di dasbor diperbarui tiap 10 detik saat berlangsung (60 detik
+  sebelum mulai), berhenti saat selesai atau tab tidak aktif; tombol
+  **Perbarui** memaksa ambil data.
+- Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status, 25 per
+  halaman.
+
+## 16. Hasil akhir
+
+Admin > **Hasil akhir** (`/admin/results`):
+
+- **Terkunci** (tanpa angka) sebelum waktu selesai; aktif otomatis sejak
+  jam server >= `end_at` (atau setelah **Tutup pemilihan sekarang**).
+- Menampilkan pasangan terpilih dengan tema pasangan itu, peringkat ketiga
+  pasangan, jumlah & persen suara, selisih dengan peringkat 2, partisipasi
+  siswa/guru, dan rekap jenis pemilih, jenjang, jenis kelamin. Angka sama
+  dengan dasbor.
+- Suara tertinggi sama: "Perolehan suara tertinggi sama" tanpa pemenang
+  (panitia memutuskan sesuai aturan). Tanpa suara sah: tanpa pemenang.
+- **Confetti** (canvas, tanpa emoji) hanya di halaman ini dan hanya bila ada
+  satu pasangan terpilih: sekali per sesi browser, sekitar 5 detik, tidak
+  menghalangi klik, tidak tampil bila reduced motion. Tidak pernah tampil di
+  dasbor/analitik.
+- Tombol **Layar penuh** (proyektor) dan **Cetak**.
+
+## 17. Backup & pemulihan
+
+Backup database (termasuk trigger), dari Laragon Terminal:
+
+```
+mysqldump -u root --single-transaction --routines --triggers smp1dawe_osis_2026 > backup-osis-2026-YYYYMMDD-HHMM.sql
+```
+
+Salin juga `public/uploads/candidates/` (foto & tema) dan `.env` (simpan
+terpisah, berisi kredensial). Waktu yang disarankan: setelah data & pasangan
+siap, sebelum pemilihan mulai, beberapa kali selama pemilihan
+(`--single-transaction` tidak mengunci pencoblosan), dan segera setelah
+selesai.
+
+Pemulihan ke database kosong:
+
+```
+mysql -u root -e "DROP DATABASE IF EXISTS smp1dawe_osis_2026; CREATE DATABASE smp1dawe_osis_2026 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql -u root smp1dawe_osis_2026 < backup-osis-2026-YYYYMMDD-HHMM.sql
+php spark osis:check
+```
+
+`osis:check` memastikan 8 trigger ikut terpulihkan. Karena suara dan log
+tidak dapat dihapus, "mengosongkan" suara berarti memulihkan backup lama atau
+memakai database baru.
+
+## 18. Troubleshooting
+
+| Gejala | Penyebab & solusi |
+|---|---|
+| Semua halaman selain beranda 404 | mod_rewrite mati atau `AllowOverride None`; DocumentRoot harus `public/` |
+| Tampilan tanpa CSS/JS, konsol "Content Security Policy" | alamat yang dibuka berbeda dengan `app.baseURL` (mis. `.test` vs IP). Samakan |
+| HP tidak bisa membuka `...test` | domain `.test` hanya berlaku di laptop server; pakai IP server (bagian 7.3) |
+| "Sesi formulir sudah kedaluwarsa" / 403 saat kirim form | token CSRF tidak cocok (sesi habis, cookie diblokir, form dibuka terlalu lama); muat ulang halaman lalu kirim lagi |
+| Pemilih kembali ke halaman login | sesi idle 15 menit berakhir (disengaja) atau akun dinonaktifkan |
+| "Terlalu banyak percobaan masuk" | 5 gagal per akun: tunggu sesuai detik yang disebut (sekitar 1 menit); periksa NISN/NIP dan kode unik |
+| Unggah foto "terlalu besar" | naikkan `upload_max_filesize` / `post_max_size` (bagian 3), restart Apache |
+| Impor ditolak | hanya `.xlsx`, maks 5 MB & 3.000 baris, header sesuai template (lihat alasan per baris di pratinjau) |
+| Pencoblosan belum/tidak terbuka, jam selisih | jam Windows server salah; status mengikuti jam server WIB |
+| Hasil akhir "belum tersedia" | waktu selesai belum lewat menurut jam server; gunakan Tutup pemilihan sekarang bila memang selesai |
+| Confetti tidak muncul | sudah tampil di sesi browser ini, perangkat memakai reduced motion, atau hasil seri/tanpa suara (disengaja) |
+| Tombol/menu "dikunci: pemilihan sudah selesai" | hasil akhir dilindungi; buka kembali lewat Jadwal hanya bila benar-benar perlu (tercatat) |
+| `php spark migrate` error 1419 | MySQL + binary log + user bukan root: jalankan dengan root atau `SET GLOBAL log_bin_trust_function_creators = 1`, lalu ulangi |
+| Migration "status dan unlocked_at tidak konsisten" | ada baris suara lama yang tidak konsisten; periksa id yang disebut sebelum melanjutkan |
+| HeidiSQL/phpMyAdmin: "tidak boleh dihapus/diubah" pada suara/log | penjaga integritas bekerja (disengaja) |
+| Halaman putih / 500 | lihat `writable/logs/log-*.log`; jalankan `php spark osis:check` (ekstensi, folder tulis, database) |
+
+## 19. Test otomatis
+
+Butuh database `smp1dawe_osis_2026_test` (`database.tests.*` di `.env`):
+
+```
+composer install
+composer test                 (atau vendor\bin\phpunit --no-coverage)
+```
+
+Hasil terakhir: **289 test, 2.122 assertion, lulus** pada PHP 8.4.19 dan
+PHP 8.2.33, masing-masing dengan MariaDB 10.11.14 dan MySQL 8.0.46. Test
+paralel (race condition) memakai `pcntl_fork` sehingga di-skip di Windows.
+Rincian dan uji browser: `STAGE4-NOTES.md` bagian 9.
+
+## 20. Dokumen proyek
 
 | File | Isi |
 |---|---|
 | `00-MASTER-PROJECT.md` | Spesifikasi utama (source of truth) |
-| `01-FOUNDATION-DATABASE-AUTH.md` | Stage 1: fondasi, database, autentikasi |
-| `STAGE1-NOTES.md` | Hasil Stage 1: instalasi, schema, route, test, handoff |
-| `02-STUDENT-TEACHER-VOTING.md` | Stage 2: pengalaman voting |
-| `STAGE2-NOTES.md` | Hasil Stage 2: alur voting, route, keamanan suara, test, handoff |
-| `03-ADMIN-IMPORT-ANALYTICS.md` | Stage 3: panel admin, import, analytics |
-| `STAGE3-NOTES.md` | Hasil Stage 3: panel admin, impor Excel, tema kandidat, analitik & live count, unlock, audit, test, handoff |
-| `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` | Stage 4: audit akhir & deployment |
-
-## Mulai cepat
-
-Syarat: PHP 8.2+ (intl, mbstring, mysqli, gd, zip, fileinfo; exif disarankan),
-Composer, MySQL 8.0+ / MariaDB 10.4+. Pengaturan `php.ini` untuk unggahan foto
-kandidat ada di `STAGE3-NOTES.md` bagian 2.
-
-```
-composer install
-copy .env.example .env        (Linux/macOS: cp .env.example .env)
-php spark migrate
-php spark db:seed DatabaseSeeder
-php spark serve
-```
-
-Detail instalasi Laragon, akun development, dan cara menjalankan test ada di
-`STAGE1-NOTES.md`. Alur voting siswa/guru (kandidat, surat suara & paku coblos,
-konfirmasi, pilihan terkunci) dijelaskan di `STAGE2-NOTES.md`. Panel admin
-(dasbor & live count, analitik, pasangan calon, impor siswa/guru, jadwal,
-unlock, audit log) dijelaskan di `STAGE3-NOTES.md`.
-
-Akun contoh (data development, dibuat `DatabaseSeeder`; tidak untuk production):
-
-| Peran | Login | Kode unik / sandi |
-|---|---|---|
-| Siswa | NISN `0000000001` | `05062013` |
-| Guru | NIP `000000000000000004` | `01061992` |
-| Admin | `/admin/login`, username `admin` | `admin123` |
-
-Pemilih: setelah login, buka **Lihat kandidat & coblos** di dasbor.
-Admin: dasbor live count di `/admin/dashboard`; template impor Excel dapat
-diunduh dari menu **Siswa** / **Guru** > Impor.
+| `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md` | Stage 1: fondasi, database, autentikasi |
+| `02-STUDENT-TEACHER-VOTING.md` + `STAGE2-NOTES.md` | Stage 2: pengalaman voting siswa & guru |
+| `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` | Stage 3: panel admin, impor, tema, analitik, live count, unlock, audit |
+| `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` + `STAGE4-NOTES.md` | Stage 4: audit keamanan, integritas suara, hasil akhir & confetti, deployment, matriks route & hak akses, test akhir |
 
 ## Lisensi
 

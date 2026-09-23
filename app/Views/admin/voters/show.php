@@ -12,6 +12,7 @@
  * @var list<array<string, mixed>> $unlocks
  * @var bool                       $deletable
  * @var array|null                 $election
+ * @var bool                       $resultsLocked Stage 4: pemilihan selesai, aksi akun dikunci
  */
 use App\Libraries\CandidateTheme;
 use App\Services\VoterType;
@@ -87,7 +88,7 @@ $active    = (int) $voter['status_aktif'] === 1;
     <?php if ($history === []): ?>
       <p class="empty">Belum ada riwayat suara.</p>
     <?php else: ?>
-      <div class="table-scroll" role="region" aria-label="Riwayat suara" tabindex="0">
+      <div class="table-scroll" role="region" aria-label="Tabel riwayat suara" tabindex="0">
         <table class="data-table">
           <thead>
             <tr>
@@ -136,6 +137,9 @@ $active    = (int) $voter['status_aktif'] === 1;
 
   <section class="panel panel--danger-zone" aria-labelledby="account-title">
     <header class="panel__head"><h2 class="panel__title" id="account-title">Akun pemilih</h2></header>
+    <?php if ($resultsLocked ?? false): ?>
+    <p class="notice"><?= icon('lock') ?><span>Pemilihan sudah selesai: status akun dan data pemilih dikunci agar hasil akhir tidak berubah. Status saat ini: <strong><?= $active ? 'aktif' : 'nonaktif' ?></strong>.</span></p>
+    <?php else: ?>
     <div class="account-actions">
       <form action="<?= site_url($type->adminPath($voter['id'] . '/status')) ?>" method="post"
             data-confirm="<?= $active
@@ -162,6 +166,7 @@ $active    = (int) $voter['status_aktif'] === 1;
         <p class="field-hint">Data ini memiliki riwayat suara sehingga tidak dapat dihapus; gunakan nonaktifkan.</p>
       <?php endif; ?>
     </div>
+    <?php endif; ?>
   </section>
 </div>
 <?= $this->endSection() ?>

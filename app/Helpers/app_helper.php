@@ -61,6 +61,31 @@ if (! function_exists('election_clock')) {
     }
 }
 
+if (! function_exists('asset_url')) {
+    /**
+     * URL file statis di public/ dengan penanda versi (?v=waktu ubah file),
+     * contoh asset_url('assets/css/app.css') -> ".../assets/css/app.css?v=1790000000".
+     *
+     * Stage 4: public/.htaccess mengizinkan browser menyimpan asset lebih lama
+     * (hemat Wi-Fi sekolah saat ratusan pemilih membuka halaman bersamaan);
+     * penanda versi berubah otomatis setiap file diperbarui sehingga browser
+     * tidak memakai CSS/JS lama setelah aplikasi di-update.
+     */
+    function asset_url(string $path): string
+    {
+        static $versions = [];
+
+        $path = ltrim($path, '/');
+
+        if (! array_key_exists($path, $versions)) {
+            $file            = FCPATH . str_replace('/', DIRECTORY_SEPARATOR, $path);
+            $versions[$path] = is_file($file) ? (string) filemtime($file) : null;
+        }
+
+        return base_url($path) . ($versions[$path] === null ? '' : '?v=' . $versions[$path]);
+    }
+}
+
 if (! function_exists('angka')) {
     /**
      * Bilangan bulat format Indonesia, contoh 1234 menjadi "1.234".
@@ -123,6 +148,10 @@ if (! function_exists('icon')) {
             'external' => '<path d="M14 4.5h5.5V10"/><path d="M19.5 4.5 11 13"/><path d="M17 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1H10"/>',
             'plus'     => '<path d="M12 5v14"/><path d="M5 12h14"/>',
             'logout'   => '<path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14"/><path d="M10 12h10"/><path d="m16.5 8.5 3.5 3.5-3.5 3.5"/>',
+            // Hasil akhir (Stage 4)
+            'award'    => '<circle cx="12" cy="9" r="5.5"/><path d="m8.6 13.4-1.6 7.1 5-2.6 5 2.6-1.6-7.1"/>',
+            'expand'   => '<path d="M4.5 9V4.5H9"/><path d="M15 4.5h4.5V9"/><path d="M19.5 15v4.5H15"/><path d="M9 19.5H4.5V15"/>',
+            'printer'  => '<path d="M7 9V4.5h10V9"/><rect x="4" y="9" width="16" height="7.5" rx="1.5"/><path d="M7 14h10v5.5H7Z"/>',
         ];
 
         if (! isset($paths[$name])) {

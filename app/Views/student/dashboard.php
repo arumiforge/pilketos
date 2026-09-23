@@ -46,5 +46,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/countdown.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/countdown.js') ?>" defer></script>
 <?= $this->endSection() ?>

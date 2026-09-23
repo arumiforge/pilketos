@@ -1,84 +1,49 @@
+<?php
+/**
+ * Halaman error 400 (Stage 4): bahasa Indonesia, gaya netral aplikasi,
+ * mandiri (tanpa CSS/JS eksternal). Detail teknis hanya tampil di luar production.
+ */
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title><?= lang('Errors.badRequest') ?></title>
-
-    <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Permintaan tidak dapat diproses — Pemilihan OSIS SMP 1 Dawe</title>
+    <style <?= function_exists('csp_style_nonce') ? csp_style_nonce() : '' ?>>
+        :root { --ink: #15141A; --paper: #FAF9F6; --line: #DCD8CD; --muted: #514E45; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; }
         body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px 16px;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.55;
         }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
-        }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
-            text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
-            position: relative;
-        }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
-        }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
-        }
-        p {
-            margin-top: 1.5rem;
-        }
-        .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
-        }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
-        }
+        main { width: 100%; max-width: 560px; border-top: 6px double var(--ink); padding-top: 20px; }
+        .kicker { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+        h1 { margin: 8px 0 0; font-family: Newsreader, Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 8vw, 3.4rem); font-weight: 500; line-height: 1.02; letter-spacing: -0.02em; }
+        p { margin: 16px 0 0; }
+        .detail { padding: 12px 14px; border: 1px solid var(--line); background: #FFFFFF; font-size: 0.875rem; overflow-wrap: anywhere; }
+        a { color: var(--ink); font-weight: 600; text-underline-offset: 0.2em; }
+        a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .foot { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 0.8125rem; color: var(--muted); }
     </style>
 </head>
 <body>
-<div class="wrap">
-    <h1>400</h1>
-
-    <p>
-        <?php if (ENVIRONMENT !== 'production') : ?>
-            <?= nl2br(esc($message)) ?>
-        <?php else : ?>
-            <?= lang('Errors.sorryBadRequest') ?>
-        <?php endif; ?>
-    </p>
-</div>
+<main>
+    <p class="kicker">Kesalahan 400</p>
+    <h1>Permintaan tidak dapat diproses</h1>
+    <p>Permintaan tidak valid. Muat ulang halaman sebelumnya lalu coba lagi.</p>
+    <?php if (ENVIRONMENT !== 'production' && isset($message) && $message !== ''): ?>
+        <p class="detail"><?= nl2br(esc($message)) ?></p>
+    <?php endif; ?>
+    <p class="foot">Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 Dawe 2026 &middot; <a href="<?= esc(function_exists('base_url') ? base_url('/') : '/', 'attr') ?>">Kembali ke beranda</a></p>
+</main>
 </body>
 </html>

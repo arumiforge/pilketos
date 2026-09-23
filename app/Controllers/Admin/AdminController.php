@@ -16,6 +16,12 @@ use App\Models\ElectionModel;
  */
 abstract class AdminController extends BaseController
 {
+    /**
+     * Stage 4: pesan saat data penentu hasil akhir dikunci (pemilihan FINISHED).
+     */
+    public const RESULTS_LOCKED_MESSAGE = 'Pemilihan sudah selesai, jadi data yang menentukan hasil akhir dikunci agar hasil tidak berubah. '
+        . 'Bila benar-benar perlu, buka kembali pemilihan lewat menu Jadwal (tercatat di audit log).';
+
     private ?array $currentAdmin = null;
     private bool $electionLoaded = false;
     private ?array $currentElection = null;
@@ -49,14 +55,27 @@ abstract class AdminController extends BaseController
     }
 
     /**
+     * Stage 4: setelah pemilihan selesai (FINISHED menurut jam server), hasil
+     * akhir final. Tindakan yang dapat mengubah angka atau susunan hasil
+     * (status & hapus pemilih, impor pemilih, tambah/hapus pasangan, nomor
+     * urut & status aktif pasangan) ditolak. Satu-satunya jalan mengubahnya
+     * adalah membuka kembali pemilihan lewat jadwal (konfirmasi + audit log).
+     */
+    protected function resultsLocked(): bool
+    {
+        return ($this->election()['status'] ?? null) === ElectionModel::STATUS_FINISHED;
+    }
+
+    /**
      * Render view dalam layout admin dengan data bersama (admin, election, menu aktif).
      */
     protected function render(string $view, array $data = [], string $nav = ''): string
     {
         return view($view, $data + [
-            'admin'    => $this->admin(),
-            'election' => $this->election(),
-            'nav'      => $nav,
+            'admin'         => $this->admin(),
+            'election'      => $this->election(),
+            'nav'           => $nav,
+            'resultsLocked' => $this->resultsLocked(),
         ]);
     }
 
