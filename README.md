@@ -121,7 +121,7 @@ Daftar file lengkap ada di `STAGE4-NOTES.md` bagian 12.
 | Ekstensi PHP wajib | intl, mbstring, mysqli, gd, zip, fileinfo (PhpSpreadsheet juga memakai xml, dom, xmlreader, xmlwriter, simplexml yang aktif bawaan) |
 | Ekstensi disarankan | exif (foto HP yang miring diluruskan), GD dengan WebP |
 | Database | **MySQL 8.0.16+** atau **MariaDB 10.4+** (diuji MySQL 8.0.46 dan MariaDB 10.11.14) |
-| Web server | Apache 2.4 + mod_rewrite (mod_headers, mod_expires, mod_deflate disarankan); diuji Apache 2.4.58 + mod_php 8.2 |
+| Web server | Apache 2.4 + mod_rewrite (mod_headers, mod_expires, mod_deflate disarankan); diuji Apache 2.4.58 + mod_php 8.2. nginx dapat dipakai dengan konfigurasi di bagian 7.4 |
 | Composer | 2.x |
 | Browser pemilih | Chrome/Edge/Firefox/Samsung Internet modern (diuji dengan Chromium; Safari iOS belum diuji); WebGL opsional |
 
@@ -286,13 +286,15 @@ Web server harus menyajikan folder **`public/`**, bukan folder proyek.
   lalu `app.baseURL = 'http://<IP-server>/'` (lihat IP dengan `ipconfig`).
   Tanpa mengubah Document Root, aplikasi juga dapat dibuka di
   `http://<IP-server>/smp1dawe-osis-2026/` (file `.htaccess` di root proyek
-  meneruskan ke `public/`); `app.baseURL` harus memakai alamat itu.
-- Izinkan Apache di Windows Firewall untuk jaringan Private saat diminta,
-  dan minta IP tetap (DHCP reservation) untuk laptop server.
+  meneruskan ke `public/`); `app.baseURL` harus memakai alamat itu. Cara
+  subfolder ini khusus Apache; di nginx dilarang (bagian 7.4).
+- Izinkan Apache (atau nginx) di Windows Firewall untuk jaringan Private saat
+  diminta, dan minta IP tetap (DHCP reservation) untuk laptop server.
 - Semua perangkat harus membuka alamat yang **sama dengan `app.baseURL`**;
   alamat lain membuat CSS/JS ditolak Content-Security-Policy.
 
-Lapisan pengaman web server (diuji pada Apache 2.4):
+Lapisan pengaman web server (diuji pada Apache 2.4; nginx tidak membaca
+`.htaccess`, padanannya ada di bagian 7.4):
 
 - `.htaccess` di root proyek: bila DocumentRoot terlanjur menunjuk folder
   proyek/induknya, `.env`, `.git`, `app/`, `writable/`, `vendor/`,
@@ -305,12 +307,120 @@ Lapisan pengaman web server (diuji pada Apache 2.4):
   `?v=<waktu ubah file>` sehingga update langsung terbaca), `X-Powered-By`
   dihapus. Opsional di `httpd.conf`: `ServerTokens Prod`.
 
-### 7.4 Persiapan sebelum hari H
+### 7.4 Alternatif: nginx
+
+Apache bawaan Laragon tidak butuh setting tambahan dan merupakan konfigurasi
+yang diuji di Stage 4; pakai nginx hanya bila ada alasan khusus. nginx **tidak
+membaca `.htaccess`**, sehingga semua lapisan pengaman di 7.3 tidak berlaku.
+Dengan template vhost nginx bawaan Laragon (tanpa langkah di bawah):
+`http://<IP-server>/smp1dawe-osis-2026/.env` dapat diunduh; file pratinjau
+impor (NISN + kode unik siswa) dapat diunduh selama admin berada di halaman
+pratinjau; isi folder ditampilkan (`autoindex on`); file `.php` yang terselip
+di `uploads/` dijalankan; unggahan di atas 1 MB ditolak (413) bila
+`client_max_body_size` masih bawaan nginx.
+
+1. Menu > Preferences > Services & Ports: aktifkan Nginx, matikan Apache.
+2. Menu > Preferences > General > Document Root =
+   `C:\laragon\www\smp1dawe-osis-2026\public`. **Wajib** di nginx karena akses
+   lewat IP dilayani dari Document Root. Cara subfolder
+   `http://<IP-server>/smp1dawe-osis-2026/` (7.3) **tidak boleh** dipakai.
+3. Di `C:\laragon\etc\nginx\sites-enabled\`, ubah nama
+   `auto.smp1dawe-osis-2026.test.conf` menjadi `smp1dawe-osis-2026.test.conf`
+   (tanpa awalan `auto.` agar tidak ditimpa Laragon; jangan ada dua file dengan
+   `server_name` yang sama karena nginx hanya memakai yang pertama), lalu ganti
+   isinya dengan konfigurasi di bawah; buat baru bila file auto tidak ada.
+   Ganti `192.168.1.10` dengan IP server (sama dengan `app.baseURL`) dan
+   samakan baris `fastcgi_pass` dengan file auto bawaan versi Laragon yang
+   dipakai.
+4. Stop lalu Start All. Dari HP, alamat `http://<IP-server>/.env`,
+   `http://<IP-server>/smp1dawe-osis-2026/.env`, dan
+   `http://<IP-server>/uploads/candidates/` harus ditolak (403/404).
+   `osis:check` tidak memeriksa web server.
+
+```
+server {
+    listen 80;
+    # IP laptop server (cek dengan ipconfig), sama dengan app.baseURL di .env.
+    # Nama .test hanya dikenal laptop server itu sendiri.
+    server_name 192.168.1.10 smp1dawe-osis-2026.test;
+
+    root "C:/laragon/www/smp1dawe-osis-2026/public";   # WAJIB folder public/
+    charset utf-8;
+    autoindex off;              # pengganti Options -Indexes
+    server_tokens off;
+    client_max_body_size 50m;   # bawaan nginx 1 MB; form kandidat s.d. 40 MB (post_max_size)
+
+    gzip on;
+    gzip_vary on;
+    gzip_types text/plain text/css text/javascript application/javascript application/json image/svg+xml;
+
+    # URL bersih -> front controller CodeIgniter
+    location / {
+        try_files $uri /index.php$is_args$args;
+    }
+
+    # Hanya public/index.php yang dijalankan sebagai PHP
+    location = /index.php {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass php_upstream;   # samakan dengan baris fastcgi_pass di file auto. bawaan
+        fastcgi_hide_header X-Powered-By;
+    }
+    location ~* \.php$ { return 404; }
+
+    # File tersembunyi (.htaccess, .gitkeep, file sementara unggahan)
+    location ~ /\. { deny all; }
+
+    # CSS/JS dipanggil dengan ?v=<waktu ubah file>, aman di-cache lama
+    location /assets/ {
+        expires 30d;
+        try_files $uri =404;
+    }
+
+    # Pengganti public/uploads/.htaccess: hanya gambar bernama aman, PHP tidak pernah jalan
+    location ^~ /uploads/ {
+        location ~* "^/uploads/candidates/[a-z0-9][a-z0-9._-]*\.(jpe?g|png|webp)$" {
+            expires 7d;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'none'; sandbox" always;
+            add_header Cross-Origin-Resource-Policy "same-origin" always;
+        }
+        return 403;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+}
+```
+
+Proses PHP: nginx menjalankan PHP lewat beberapa proses `php-cgi`, dan satu
+proses hanya melayani satu request dalam satu waktu. Atur di
+`C:\laragon\usr\laragon.ini` bagian `[nginx]`:
+
+- Laragon 8.6+: bawaan `PHP_FCGI_CHILDREN` (10) dan `PHP_FCGI_MAX_REQUESTS=0`
+  sudah cukup.
+- Laragon 6.x: naikkan `Upstream=` (mis. dari 2) menjadi sekitar 8. Di versi
+  ini setiap proses php-cgi berhenti sendiri setelah 500 request (bawaan PHP)
+  lalu dinyalakan ulang Laragon, sehingga dapat muncul `502 Bad Gateway` sesaat.
+
+Uji beban sebelum hari H (`ab.exe` ikut terpasang bersama Apache Laragon);
+hasilnya harus `Failed requests: 0`:
+
+```
+C:\laragon\bin\apache\<versi>\bin\ab.exe -n 2000 -c 20 http://<IP-server>/
+```
+
+Diuji pada nginx 1.24 + php-cgi 8.4 + MariaDB 10.11 (Linux, template vhost
+meniru Laragon): alur siswa sampai suara terkunci, dasbor & live count, unggah
+foto kandidat, impor Excel, batas ukuran (40-50 MB pesan aplikasi, di atasnya
+413), dan semua penolakan di atas. Belum diuji di Windows/Laragon langsung.
+
+### 7.5 Persiapan sebelum hari H
 
 1. Admin login > **Siswa** dan **Guru** > Impor (bagian 12).
 2. **Pasangan calon**: nama, visi, misi, foto, tema; periksa **Pratinjau**.
 3. **Jadwal pemilihan**: nama, tahun, mulai, selesai (WIB).
-4. `php spark osis:check` sampai tidak ada GAGAL.
+4. `php spark osis:check` sampai tidak ada GAGAL (nginx: juga pemeriksaan
+   alamat dan uji beban di bagian 7.4).
 5. Uji coba alur memilih dari HP di **database terpisah**, karena suara uji
    coba di database hari H tidak dapat dihapus (trigger): buat database
    `smp1dawe_osis_2026_uji`, arahkan `database.default.database` ke sana
@@ -482,13 +592,15 @@ memakai database baru.
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| Semua halaman selain beranda 404 | mod_rewrite mati atau `AllowOverride None`; DocumentRoot harus `public/` |
+| Semua halaman selain beranda 404 | mod_rewrite mati atau `AllowOverride None`; DocumentRoot harus `public/` (nginx: `try_files`, bagian 7.4) |
 | Tampilan tanpa CSS/JS, konsol "Content Security Policy" | alamat yang dibuka berbeda dengan `app.baseURL` (mis. `.test` vs IP). Samakan |
 | HP tidak bisa membuka `...test` | domain `.test` hanya berlaku di laptop server; pakai IP server (bagian 7.3) |
 | "Sesi formulir sudah kedaluwarsa" / 403 saat kirim form | token CSRF tidak cocok (sesi habis, cookie diblokir, form dibuka terlalu lama); muat ulang halaman lalu kirim lagi |
 | Pemilih kembali ke halaman login | sesi idle 15 menit berakhir (disengaja) atau akun dinonaktifkan |
 | "Terlalu banyak percobaan masuk" | 5 gagal per akun: tunggu sesuai detik yang disebut (sekitar 1 menit); periksa NISN/NIP dan kode unik |
 | Unggah foto "terlalu besar" | naikkan `upload_max_filesize` / `post_max_size` (bagian 3), restart Apache |
+| nginx: `413 Request Entity Too Large` | `client_max_body_size` belum diatur (bawaan nginx 1 MB); lihat bagian 7.4 |
+| nginx: `502 Bad Gateway` | proses php-cgi mati atau kurang: Stop lalu Start All, naikkan jumlah proses PHP (bagian 7.4) |
 | Impor ditolak | hanya `.xlsx`, maks 5 MB & 3.000 baris, header sesuai template (lihat alasan per baris di pratinjau) |
 | Pencoblosan belum/tidak terbuka, jam selisih | jam Windows server salah; status mengikuti jam server WIB |
 | Hasil akhir "belum tersedia" | waktu selesai belum lewat menurut jam server; gunakan Tutup pemilihan sekarang bila memang selesai |
