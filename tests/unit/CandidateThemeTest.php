@@ -106,4 +106,34 @@ final class CandidateThemeTest extends CIUnitTestCase
         $this->assertSame([], $theme['misi']);
         $this->assertSame('?', $theme['wakil_initials']);
     }
+
+    /**
+     * Stage 6: CIEDE2000 untuk aturan netralitas warna identitas sekolah
+     * (06-VISUAL-DIRECTION §5.1). Data uji Sharma, Wu & Dalal (2005).
+     */
+    public function testDeltaE2000MatchesTheReferenceData(): void
+    {
+        $pairs = [
+            [[50, 2.6772, -79.7751], [50, 0, -82.7485], 2.0425],
+            [[50, 0, 0], [50, -1, 2], 2.3669],
+            [[50, 2.49, -0.001], [50, -2.49, 0.0009], 7.1792],
+            [[60.2574, -34.0099, 36.2677], [60.4626, -34.1751, 39.4387], 1.2644],
+            [[22.7233, 20.0904, -46.694], [23.0331, 14.973, -42.5619], 2.0373],
+            [[90.9257, -0.5406, -0.9208], [88.6381, -0.8985, -0.7239], 1.5381],
+        ];
+
+        foreach ($pairs as [$lab1, $lab2, $expected]) {
+            $this->assertEqualsWithDelta($expected, CandidateTheme::deltaE2000($lab1, $lab2), 0.0001);
+            $this->assertEqualsWithDelta($expected, CandidateTheme::deltaE2000($lab2, $lab1), 0.0001);
+        }
+
+        $this->assertEqualsWithDelta(0.0, CandidateTheme::deltaE('#A8628F', '#a8628f'), 0.0001);
+        $this->assertEqualsWithDelta(100.0, CandidateTheme::deltaE('#000000', '#FFFFFF'), 0.001);
+        // Parijoto vs aksen data seed (terracotta, hijau tua, biru tua): jelas berbeda.
+        foreach (['#C4432B', '#2F5D50', '#1B3A6B'] as $accent) {
+            $this->assertGreaterThan(20, CandidateTheme::deltaE('#A8628F', $accent), $accent);
+        }
+        // Ungu yang hampir sama: terlalu mirip.
+        $this->assertLessThan(20, CandidateTheme::deltaE('#A8628F', '#9C5A86'));
+    }
 }

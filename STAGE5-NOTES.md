@@ -163,7 +163,8 @@ publik yang disengaja.
 - Keluar (~1 detik): latar & bilah memudar, logo pembuka bergerak dan mengecil
   tepat ke posisi logo navigasi (shared element), hero muncul berlapis.
 - Sekali per sesi tab: `sessionStorage["osis2026.intro"] = "1"` (penanda
-  non-sensitif). Skrip inline ber-nonce di layout (satu-satunya skrip inline,
+  non-sensitif). **Diganti Stage 6**: selalu tampil; hanya penanda sekali
+  pakai `osis2026.skipIntro` untuk muat ulang otomatis (`STAGE6-NOTES.md`). Skrip inline ber-nonce di layout (satu-satunya skrip inline,
   seperti Stage 4) menambah kelas `intro-seen` sebelum render pertama,
   sehingga kunjungan berikutnya tidak berkedip. `loading="lazy"`: latar tidak
   diunduh saat layar pembuka dilewati.
@@ -376,9 +377,9 @@ development + suara contoh:
 | JavaScript mati | tanpa layar pembuka; tiga bagian setinggi layar bergulir dengan scroll-snap; angka live count dari server |
 | `home.js` gagal dimuat | layar pembuka & isi muncul sendiri setelah 8 detik; halaman tetap bisa digulir |
 | Konten lebih tinggi dari layar | digulir di dalam scene dulu, lalu pindah scene |
-| Muat ulang / tombol Back | scene yang sama (`#id`), layar pembuka tidak diulang di tab itu |
-| Tab baru | layar pembuka sekali lagi (sessionStorage per tab) |
-| sessionStorage diblokir | layar pembuka tampil setiap kali membuka beranda |
+| Muat ulang / tombol Back | scene yang sama (`#id`). **Diganti Stage 6**: layar pembuka tampil setiap pemuatan penuh (lihat `STAGE6-NOTES.md` bagian 8.4, tabel aturan tampil) |
+| Tab baru | layar pembuka tampil (Stage 6: selalu) |
+| sessionStorage diblokir | layar pembuka tampil (Stage 6: juga setelah muat ulang otomatis live count) |
 | Tab tidak aktif / HP tidur | polling & animasi berhenti; saat kembali langsung diperbarui |
 | Jaringan putus | coba lagi dengan jeda berlipat (paling lama 120 detik), angka terakhir tetap tampil |
 | Live count dimatikan | `GET live-count` 404, scene "Pasangan calon" tanpa angka, polling berhenti |

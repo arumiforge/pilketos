@@ -87,6 +87,8 @@ Placeholder Stage 5 yang **diganti**: `brand/logo-light.svg`, `brand/logo-dark.s
 
 ## 4. Kunci `Config\Homepage` baru (untuk tahap implementasi)
 
+> Status: diterapkan di Stage 6 dengan placeholder SVG (A01–A04, A06, A08), lockup B02/B03, dan S01–S04; kunci tambahan `schoolEmblem` (B01), `identityAccent`, `identityMinDeltaE`. Lihat `STAGE6-NOTES.md`.
+
 ```php
 /** Latar hero (scene 01) untuk layar lanskap. Disarankan 1920x1080 WebP. */
 public string $heroDesktop = 'assets/img/home/hero-desktop.webp';

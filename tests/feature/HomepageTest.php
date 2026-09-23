@@ -170,7 +170,7 @@ final class HomepageTest extends CIUnitTestCase
 
         // Mode imersif: layar penuh & safe-area HP, tema gelap, aset beranda.
         $page->assertSee('viewport-fit=cover');
-        $page->assertSee('content="#0F0E13"');
+        $page->assertSee('content="#101312"'); // Malam Lereng (Stage 6, palet "Pagi Muria")
         $page->assertSee('is-immersive');
         $page->assertSee('assets/css/home.css');
         $page->assertSee('assets/js/home.js');
@@ -219,8 +219,10 @@ final class HomepageTest extends CIUnitTestCase
         $page->assertSee('splash__shade');
         $page->assertSee('data-splash-logo');
         $page->assertSee('data-splash-fill');
-        // Sekali per sesi tab: penanda dibaca skrip inline ber-nonce sebelum render.
-        $page->assertSee("sessionStorage.getItem('osis2026.intro')");
+        // Stage 6: selalu tampil (tanpa penanda sesi); hanya penanda sekali
+        // pakai untuk muat ulang otomatis live count yang dibaca skrip inline.
+        $page->assertDontSee('osis2026.intro\'');
+        $page->assertSee("sessionStorage.getItem('osis2026.skipIntro')");
     }
 
     public function testStatusDockReplacesTheOngoingSection(): void

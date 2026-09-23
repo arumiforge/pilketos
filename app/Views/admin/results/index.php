@@ -66,6 +66,7 @@ $accents = array_values(array_unique(array_merge(
     <?php $all = $snapshot['summary']['all']; ?>
     <article class="final" aria-labelledby="final-title">
       <header class="final__masthead">
+        <span class="final__mark" aria-hidden="true"></span>
         <p class="final__kicker">Rekapitulasi resmi penghitungan suara</p>
         <h2 class="final__title" id="final-title">
           Pemilihan Ketua &amp; Wakil Ketua OSIS <span class="final__school">SMP 1 DAWE <?= esc((string) $election['tahun']) ?></span>

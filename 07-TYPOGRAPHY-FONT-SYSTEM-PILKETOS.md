@@ -159,6 +159,8 @@ Maksimal tiga family. Jangan menambahkan:
 
 ## 11. Keputusan desain
 
+> Status: diterapkan di Stage 6 (commit terpisah "font UI Plus Jakarta Sans & nama sekolah"). Perbandingan screenshot dan hasilnya: `STAGE6-NOTES.md` bagian 9.3.
+
 1. Jalankan perbandingan screenshot (§2) dengan ukuran hero baru (§7).
 2. Bila tidak ada keberatan, pakai Plus Jakarta Sans + Newsreader + JetBrains Mono.
 3. Terapkan aturan kapital "SMP 1 DAWE" (§3) bersamaan dengan pergantian font, dalam satu commit terpisah dari perubahan visual lain agar mudah ditinjau.

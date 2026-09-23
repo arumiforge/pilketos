@@ -1,4 +1,4 @@
-# Pemilihan Ketua & Wakil Ketua OSIS SMP 1 Dawe 2026
+# Pemilihan Ketua & Wakil Ketua OSIS SMP 1 DAWE 2026
 
 Aplikasi e-voting sekolah berbasis **CodeIgniter 4.7 + MySQL/MariaDB** untuk
 siswa dan guru. Pemilih login dengan identitasnya sendiri (NISN atau NIP + kode
@@ -8,13 +8,14 @@ sudah dikunci hanya dapat dibuka admin dengan alasan tercatat. Admin memantau
 live count, analitik, dan hasil akhir yang aktif otomatis saat waktu pemilihan
 habis menurut jam server.
 
-Beranda publik tampil seperti aplikasi: layar pembuka, tiga scene layar penuh
-yang berpindah satu per satu (pembuka, pintu masuk **Siswa/Guru**, perolehan
-suara langsung), dan panel status bergaya terminal dengan countdown jam server
-(bagian 21).
+Beranda publik tampil seperti aplikasi dengan identitas visual "Surat Suara
+dari Lereng Muria": layar pembuka berkabut yang tersingkap menjadi pagi di
+lereng Muria, tiga scene layar penuh yang berpindah satu per satu (lereng,
+pintu masuk **Siswa/Guru**, perolehan suara langsung), dan panel status
+bergaya terminal dengan countdown jam server (bagian 21).
 
 Dokumen ini adalah panduan pemakaian dan deployment. Riwayat implementasi per
-tahap ada di `STAGE1-NOTES.md` s.d. `STAGE5-NOTES.md`.
+tahap ada di `STAGE1-NOTES.md` s.d. `STAGE6-NOTES.md`.
 
 Daftar isi:
 [1 Ringkasan](#1-ringkasan) ·
@@ -44,7 +45,7 @@ Daftar isi:
 | Bagian | Isi |
 |---|---|
 | Pemilih | Siswa (NISN + kode unik tanggal lahir DDMMYYYY) dan guru (NIP + kode unik), tabel & login terpisah, satu pemilihan yang sama |
-| Beranda publik | logo di tengah tanpa tombol masuk; layar pembuka; scene layar penuh (roda mouse, trackpad, geser sentuh, keyboard); pintu masuk Siswa/Guru bergambar; perolehan suara (persentase per pasangan + partisipasi) diperbarui tiap 30 detik; panel status terminal dengan countdown jam server |
+| Beranda publik | lockup PILKETOS 2026 di tengah tanpa tombol masuk; layar pembuka "kabut tersingkap"; hero lereng Muria berlapis; scene layar penuh (roda mouse, trackpad, geser sentuh, keyboard); pintu masuk Siswa/Guru bergambar; perolehan suara (persentase per pasangan + partisipasi) diperbarui tiap 30 detik; panel status terminal dengan countdown jam server |
 | Pengalaman memilih | halaman kandidat bertema per pasangan, visi-misi interaktif, surat suara dengan paku coblos 3D/2D, konfirmasi, suara terkunci, halaman "pilihan saya" |
 | Admin | dasbor & live count, analitik (jenis pemilih, jenis kelamin, jenjang, kelas, detail suara), pasangan calon + unggah tema, data & impor Excel siswa/guru, jadwal, unlock, audit log, hasil akhir + confetti |
 | Integritas | transaction + row lock, unique key satu suara aktif, CHECK & trigger database (suara/audit tidak dapat dihapus atau diubah), hasil dikunci setelah selesai |
@@ -117,7 +118,8 @@ app/Services/        VoteService, UnlockService, AnalyticsService, PublicLiveCou
 app/Views/           layouts, home (+ partials: splash, dock, pair_photo), student, teacher,
                      voting, admin/**, errors
 public/              index.php, .htaccess, assets/{css,js,fonts,img}, uploads/candidates/
-                     (img/brand: logo, img/home: latar layar pembuka & ilustrasi pintu masuk)
+                     (img/brand: lockup acara, img/home: latar hero & layar pembuka, kontur,
+                     perforasi, ilustrasi pintu masuk; img/results: stempel hasil akhir)
 tests/               unit, database, feature (PHPUnit)
 writable/            cache, logs, session, uploads/imports (pratinjau impor)
 ```
@@ -190,7 +192,8 @@ Salin dari `.env.example`:
 | `app.CSPEnabled` | (bawaan `true`) | Content-Security-Policy; boleh `false` sementara hanya untuk diagnosis |
 | `homepage.publicLiveCount` | (bawaan `true`) | `false` = beranda tanpa angka perolehan suara, `GET live-count` 404 (bagian 21) |
 | `homepage.livePollSeconds`, `homepage.liveCacheSeconds` | `30`, `5` | irama pembaruan perolehan suara di beranda (min 10; 0 = mati) dan cache angka publik |
-| `homepage.logoOnDark`, `logoOnLight`, `introDesktop`, `introMobile`, `entryStudent`, `entryTeacher` | path di `public/` | mengganti logo, latar layar pembuka, ilustrasi pintu masuk (bagian 21) |
+| `homepage.logoOnDark`, `logoOnLight`, `schoolEmblem`, `heroDesktop`, `heroMobile`, `heroForeground`, `introDesktop`, `introMobile`, `entryStudent`, `entryTeacher` | path di `public/` | mengganti lockup, memasang lambang resmi sekolah, latar hero & layar pembuka, lapisan depan, ilustrasi pintu masuk (bagian 21) |
+| `homepage.identityAccent` | (bawaan `'#A8628F'`, parijoto) | warna bilah muat layar pembuka; otomatis netral bila mirip warna pasangan mana pun; `null` = selalu netral |
 
 Zona waktu aplikasi tetap `Asia/Jakarta` (`app/Config/App.php`), jadi jam di
 komputer server harus benar.
@@ -384,7 +387,9 @@ server {
     # File tersembunyi (.htaccess, .gitkeep, file sementara unggahan)
     location ~ /\. { deny all; }
 
-    # CSS/JS dipanggil dengan ?v=<waktu ubah file>, aman di-cache lama
+    # CSS/JS/gambar beranda (termasuk WebP/AVIF, Stage 6) dipanggil dengan
+    # ?v=<waktu ubah file>, aman di-cache lama. AVIF: pastikan mime.types
+    # nginx memuat "image/avif avif;" (nginx >= 1.21 sudah).
     location /assets/ {
         expires 30d;
         try_files $uri =404;
@@ -441,9 +446,10 @@ foto kandidat, impor Excel, batas ukuran (40-50 MB pesan aplikasi, di atasnya
    sementara, `php spark migrate`, buat admin & impor data uji, coba memilih,
    lalu kembalikan `.env` ke database hari H.
 6. Backup (bagian 17) sebelum pemilihan dimulai.
-7. Beranda (bagian 21): ganti logo, latar layar pembuka, dan ilustrasi
-   Siswa/Guru bila aset final sudah ada; putuskan apakah perolehan suara boleh
-   tampil publik selama pencoblosan (`homepage.publicLiveCount`).
+7. Beranda (bagian 21): pasang lambang resmi sekolah (`homepage.schoolEmblem`),
+   ganti latar hero/layar pembuka dan ilustrasi Siswa/Guru bila aset final
+   sudah ada; putuskan apakah perolehan suara boleh tampil publik selama
+   pencoblosan (`homepage.publicLiveCount`).
 
 Hari H: pantau **Dasbor** (live count); bila perlu unlock, lihat bagian 14.
 Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
@@ -636,7 +642,7 @@ memakai database baru.
 | Migration "status dan unlocked_at tidak konsisten" | ada baris suara lama yang tidak konsisten; periksa id yang disebut sebelum melanjutkan |
 | HeidiSQL/phpMyAdmin: "tidak boleh dihapus/diubah" pada suara/log | penjaga integritas bekerja (disengaja) |
 | Halaman putih / 500 | lihat `writable/logs/log-*.log`; jalankan `php spark osis:check` (ekstensi, folder tulis, database) |
-| Layar pembuka beranda tidak muncul lagi | disengaja: sekali per tab browser (buka tab baru untuk melihatnya lagi) |
+| Layar pembuka muncul setiap kali beranda dibuka | disengaja (Stage 6): selalu tampil 1,5–5,2 detik; tidak tampil hanya setelah muat ulang otomatis karena status pemilihan berubah |
 | Beranda tidak pindah bagian dengan roda mouse/trackpad | satu gestur = satu bagian; tunggu transisi selesai lalu gulir lagi. Bagian yang lebih panjang dari layar (HP miring, zoom besar) digulir dulu isinya |
 | Perolehan suara di beranda tidak berubah | diperbarui tiap 30 detik (+ cache 5 detik), berhenti saat tab tidak aktif atau pemilihan selesai; `homepage.publicLiveCount = false` menyembunyikannya |
 | Logo/ilustrasi pengganti tidak tampil | path relatif ke `public/` (mis. `assets/img/home/siswa.webp`), bukan `public/uploads/`; format svg/webp/jpg/png/avif (bagian 21) |
@@ -650,11 +656,12 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 5): **306 test, 2.303 assertion, lulus** pada PHP
-8.4.19 dan PHP 8.2.33 dengan MariaDB 10.11.14. Stage 4 (289 test) juga lulus
-di MySQL 8.0.46; Stage 5 tidak mengubah schema maupun query. Test paralel
-(race condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan
-uji browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` bagian 9.
+Hasil terakhir (Stage 6): **316 test, 2.525 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14. Stage 4 (289 test) juga lulus di MySQL
+8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
+condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
+browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
+`STAGE6-NOTES.md` bagian 9.
 
 ## 20. Dokumen proyek
 
@@ -666,15 +673,19 @@ uji browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` bagian 9.
 | `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` | Stage 3: panel admin, impor, tema, analitik, live count, unlock, audit |
 | `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` + `STAGE4-NOTES.md` | Stage 4: audit keamanan, integritas suara, hasil akhir & confetti, deployment, matriks route & hak akses, test akhir |
 | `05-HOMEPAGE-REDESIGN.md` + `STAGE5-NOTES.md` | Stage 5: redesign beranda (scene layar penuh, pintu masuk Siswa/Guru, live count publik, layar pembuka, panel status terminal, navigasi logo & footer) |
+| `06`–`10-*-PILKETOS.md` + `STAGE6-NOTES.md` | Stage 6: identitas visual SMP 1 DAWE (arah visual "lereng Muria", font Plus Jakarta Sans, spesifikasi & prompt aset, sistem gerak, layar pembuka selalu tampil) |
 
 ## 21. Beranda imersif & aset visual
 
 Beranda (`/`) terdiri dari tiga **scene** setinggi layar yang berpindah satu
-per satu, bukan halaman bergulir panjang:
+per satu, bukan halaman bergulir panjang. Arah visual (Stage 6): "Surat Suara
+dari Lereng Muria": tempat (pagi berkabut di lereng Muria, sekolah yang asri)
+menjadi dunia visual, surat suara (perforasi, lubang coblos) menjadi bahasa
+interaksi. Palet netral "Pagi Muria" + warna aksen masing-masing pasangan.
 
 | Scene | Isi |
 |---|---|
-| 01 Beranda | Pemilihan Ketua & Wakil Ketua OSIS, SMP 1 Dawe 2026, tombol **Masuk untuk memilih** dan **Lihat perolehan suara**, pita warna pasangan, bidang titik interaktif |
+| 01 Lereng | latar lereng Muria + atap sekolah, garis kontur, lapisan depan opsional; teks singkat "PILKETOS 2026 / SMP 1 DAWE", tombol **Masuk untuk memilih** dan **Lihat perolehan suara**; titik "embun" di sekitar pointer. Tanpa warna/nomor/foto pasangan |
 | 02 Masuk | "Masuk sebagai": portal **SISWA** (`/student/login`) dan **GURU** (`/teacher/login`) bergambar |
 | 03 Perolehan suara | foto pasangan, persentase tepat di bawah foto, "Suara masuk" (partisipasi), "Diperbarui [tanggal] [jam]", footer |
 
@@ -684,41 +695,64 @@ per satu, bukan halaman bergulir panjang:
   membuka scene itu langsung.
 - **Panel status** di bawah layar (gaya terminal): status pemilihan, hitung
   mundur jam server, jadwal, garis progres. Tidak pernah menutupi tombol.
-- **Layar pembuka**: sekali per tab browser, logo + bilah muat, lalu logo
-  berpindah ke navigasi.
+- **Layar pembuka**: selalu tampil setiap kali beranda dimuat (1,5–5,2 detik,
+  mengikuti aset layar pertama), tanpa tombol lewati: pemandangan hero yang
+  sama berkabut pekat, lockup di tengah, bilah muat. Keluar: kabut memudar
+  menjadi hero yang jernih sementara lockup berpindah ke navigasi. Tidak
+  tampil setelah muat ulang otomatis karena status pemilihan berubah.
 - Tanpa JavaScript atau dengan "kurangi gerakan" di perangkat, beranda tetap
-  lengkap (bergulir biasa / tanpa animasi).
+  lengkap (bergulir biasa / tanpa animasi; layar pembuka tetap tampil statis).
 
 Mengganti gambar (tanpa mengubah layout): simpan file di
 `public/assets/img/...`, lalu isi path-nya (relatif ke `public/`) di
-`app/Config/Homepage.php` atau `.env`:
+`app/Config/Homepage.php` atau `.env`. Ukuran, zona aman, dan prompt
+pembuatan: `08-VISUAL-ASSET-SPECIFICATION-PILKETOS.md` dan
+`09-IMAGE-GENERATION-PROMPTS-PILKETOS.md`.
 
 ```
-# beranda & layar pembuka (latar gelap) / login, dasbor, voting (latar terang)
-homepage.logoOnDark   = 'assets/img/brand/logo-putih.svg'
-homepage.logoOnLight  = 'assets/img/brand/logo-hitam.svg'
-homepage.introDesktop = 'assets/img/home/pembuka-1920x1080.webp'
-homepage.introMobile  = 'assets/img/home/pembuka-1080x1920.webp'
-homepage.entryStudent = 'assets/img/home/siswa.webp'
-homepage.entryTeacher = 'assets/img/home/guru.webp'
-# opsional, portal di HP tegak (kotak lebar ±2:1):
-# homepage.entryStudentMobile = 'assets/img/home/siswa-hp.webp'
-# homepage.entryTeacherMobile = 'assets/img/home/guru-hp.webp'
+# lambang resmi sekolah (file dari sekolah, dipasang apa adanya di kiri lockup)
+homepage.schoolEmblem   = 'assets/img/brand/lambang-smp1dawe.svg'
+# hero (A03 lanskap master, A04 potret) & layar pembuka (A01/A02 = hero berkabut, bingkai sama)
+homepage.heroDesktop    = 'assets/img/home/hero-desktop.webp'
+homepage.heroMobile     = 'assets/img/home/hero-mobile.webp'
+homepage.introDesktop   = 'assets/img/home/intro-desktop.webp'
+homepage.introMobile    = 'assets/img/home/intro-mobile.webp'
+# opsional: lapisan depan transparan (ranting parijoto + daun kopi)
+homepage.heroForeground = 'assets/img/home/hero-foreground.webp'
+# portal Siswa/Guru (1:1) + versi HP tegak (3:2)
+homepage.entryStudent       = 'assets/img/home/entry-student.webp'
+homepage.entryStudentMobile = 'assets/img/home/entry-student-mobile.webp'
+homepage.entryTeacher       = 'assets/img/home/entry-teacher.webp'
+homepage.entryTeacherMobile = 'assets/img/home/entry-teacher-mobile.webp'
+# lockup acara (latar gelap / terang), bila ingin mengganti bawaan
+homepage.logoOnDark   = 'assets/img/brand/logo-light.svg'
+homepage.logoOnLight  = 'assets/img/brand/logo-dark.svg'
 ```
 
 | Aset | Ukuran disarankan | Catatan |
 |---|---|---|
-| Logo | SVG, atau PNG/WebP transparan tinggi >= 160 px | tampil setinggi 24–40 px di navigasi dan ±440 px lebar di layar pembuka; ukuran asli dibaca otomatis |
-| Latar layar pembuka | lanskap 1920×1080, potret 1080×1920, WebP/JPG < 300 KB | layar potret (HP/tablet tegak) memakai versi potret; bagian tengah tertutup logo; diberi lapisan gelap |
-| Ilustrasi Siswa/Guru | >= 1200×1500, subjek di tengah | dipotong "cover" (desktop: kotak potret; HP tegak: kotak lebar); diberi lapisan gelap agar teks terbaca |
+| Lambang resmi sekolah | SVG, atau PNG >= 1024 px transparan | tidak digambar ulang/diwarnai ulang; tampil setinggi lockup (24–40 px di navigasi) |
+| Lockup acara | SVG (bawaan: tanda gugus parijoto + "PILKETOS 2026 / SMP 1 DAWE") | ukuran asli dibaca otomatis; tampil setinggi 24–40 px di navigasi |
+| Latar hero | lanskap 1920×1080 (≤ 300 KB), potret 1080×1920 (≤ 250 KB), WebP | area kiri bawah (teks) gelap & tenang; fokus (punggungan, atap sekolah) di kanan tengah |
+| Latar layar pembuka | sama dengan latar hero, berkabut pekat (≤ 250/200 KB) | **bingkai harus identik** dengan latar hero; pusat layar rata untuk lockup |
+| Lapisan depan | 1400×1400 WebP ber-alpha (≤ 150 KB) | pojok kanan bawah; disembunyikan di HP tegak |
+| Portal Siswa/Guru | 1600×1600 (1:1) + 1200×800 (3:2) untuk HP | subjek di tengah, sepertiga bawah tenang (label di bawah-kiri); orang kecil/dari belakang |
 | Foto pasangan | dari menu **Pasangan calon** (foto ketua, foto wakil, hero/foto berdua) | scene perolehan suara memakai foto berdua bila ada; tanpa foto tampil monogram inisial |
+
+Garis kontur (`hero-contour*.svg`) menjiplak punggungan latar hero bawaan;
+bila latar hero diganti foto asli, gambar ulang konturnya (dokumen 09 §8)
+atau biarkan sebagai tekstur halus.
+
+Warna identitas sekolah (parijoto, `homepage.identityAccent`) hanya dipakai
+pada bilah muat layar pembuka, dan otomatis diganti warna netral bila mirip
+(CIEDE2000 < 20) warna aksen salah satu pasangan calon.
 
 Perolehan suara publik dapat dimatikan: `homepage.publicLiveCount = false`
 (scene ketiga menjadi "Pasangan calon" tanpa angka). Rincian teknis:
-`STAGE5-NOTES.md`.
+`STAGE5-NOTES.md` dan `STAGE6-NOTES.md`.
 
 ## Lisensi
 
 Framework CodeIgniter: MIT (`LICENSE`).
-Font Inter, Newsreader, dan JetBrains Mono: SIL Open Font License
+Font Plus Jakarta Sans, Newsreader, dan JetBrains Mono: SIL Open Font License
 (`public/assets/fonts/`).

@@ -12,7 +12,9 @@ use Config\Homepage;
 /**
  * Beranda imersif (redesign beranda, STAGE5-NOTES.md): layar pembuka, scene
  * layar penuh (hero, pintu masuk Siswa/Guru, perolehan suara), panel status
- * bergaya terminal, dan live count publik.
+ * bergaya terminal, dan live count publik. Stage 6 (STAGE6-NOTES.md): hero
+ * berlapis lereng Muria dan warna identitas sekolah yang dijaga netral
+ * terhadap warna aksen pasangan calon.
  */
 class Home extends BaseController
 {
@@ -49,6 +51,8 @@ class Home extends BaseController
 
         $html = view('home/index', [
             'election'   => $election,
+            // Parijoto hanya dipakai bila tidak mirip warna pasangan mana pun.
+            'identity'   => self::identityAccent($config, array_column($themes, 'accent')),
             // Teaser publik: hanya nomor, nama, foto, dan warna tema.
             'candidates' => $active,
             'live'       => $live,
@@ -63,6 +67,33 @@ class Home extends BaseController
         service('renderer')->resetData();
 
         return $html;
+    }
+
+    /**
+     * Warna identitas sekolah (parijoto) untuk beranda, atau null = netral
+     * (Kabut). Netralitas (06-VISUAL-DIRECTION §5.1): bila warna identitas
+     * mirip warna aksen salah satu pasangan (CIEDE2000 di bawah ambang),
+     * beranda tidak memakainya agar tidak terkesan memihak.
+     *
+     * @param list<string> $accents Warna aksen semua pasangan (#RRGGBB)
+     */
+    public static function identityAccent(Homepage $config, array $accents): ?string
+    {
+        $color = $config->identityAccent;
+
+        if (! is_string($color) || preg_match('/^#[0-9A-Fa-f]{6}$/', trim($color)) !== 1) {
+            return null;
+        }
+
+        $color = strtoupper(trim($color));
+
+        foreach ($accents as $accent) {
+            if (CandidateTheme::deltaE($color, $accent) < $config->identityMinDeltaE) {
+                return null;
+            }
+        }
+
+        return $color;
     }
 
     /**

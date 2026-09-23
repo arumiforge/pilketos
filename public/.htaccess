@@ -59,6 +59,13 @@ ServerSignature Off
 	AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
 </IfModule>
 
+# Stage 6: aset beranda WebP (utama) / AVIF (opsional) juga dipanggil lewat
+# asset_url() (?v=...), dan layar pembuka selalu tampil, jadi aset layar
+# pertama di-cache 30 hari (08-VISUAL-ASSET-SPECIFICATION §8.3).
+<IfModule mod_mime.c>
+	AddType image/avif .avif
+</IfModule>
+
 <IfModule mod_expires.c>
 	ExpiresActive On
 	ExpiresByType text/css "access plus 30 days"
@@ -66,7 +73,8 @@ ServerSignature Off
 	ExpiresByType application/javascript "access plus 30 days"
 	ExpiresByType font/woff2 "access plus 1 year"
 	ExpiresByType image/svg+xml "access plus 30 days"
-	ExpiresByType image/webp "access plus 7 days"
+	ExpiresByType image/webp "access plus 30 days"
+	ExpiresByType image/avif "access plus 30 days"
 	ExpiresByType image/png "access plus 7 days"
 	ExpiresByType image/jpeg "access plus 7 days"
 </IfModule>

@@ -234,10 +234,31 @@ p { max-width: 62ch; }
   margin: 0;
 }
 
-.site-nav__logo {
+/* Stage 6: lockup acara (+ lambang resmi sekolah bila dipasang, dipisah garis
+   tipis). Semua ukuran relatif --brand-h sehingga proporsi sama di navigasi
+   dan layar pembuka (logo pembuka "mendarat" tepat di sini). */
+.brandmark {
+  --brand-h: 32px;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--brand-h) * 0.32);
+}
+
+.brandmark__logo,
+.brandmark__emblem {
   display: block;
+  flex: 0 0 auto;
   width: auto;
-  height: 32px;
+  max-width: none;
+  height: var(--brand-h);
+}
+
+.brandmark__rule {
+  flex: 0 0 auto;
+  width: 1px;
+  height: calc(var(--brand-h) * 0.78);
+  background: currentColor;
+  opacity: 0.32;
 }
 
 .site-nav__action {
@@ -294,7 +315,7 @@ p { max-width: 62ch; }
     padding-inline: var(--space-6);
   }
 
-  .site-nav__logo { height: 38px; }
+  .site-nav .brandmark { --brand-h: 38px; }
 }
 
 /* -- buttons -- */

@@ -6,24 +6,27 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('overlay') ?>
-<?= view('home/partials/splash', ['home' => $home]) ?>
+<?= view('home/partials/splash', ['home' => $home, 'identity' => $identity]) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <?php
 /**
- * Beranda imersif (redesign beranda, STAGE5-NOTES.md).
+ * Beranda imersif (Stage 5, STAGE5-NOTES.md) dengan identitas visual SMP 1
+ * DAWE (Stage 6, STAGE6-NOTES.md; dokumen 06-10).
  *
- * Tiga scene layar penuh yang berpindah satu per satu (home.js): hero,
- * pintu masuk Siswa/Guru, dan perolehan suara (live count publik) atau
- * pasangan calon bila live count publik dimatikan. Panel status bergaya
- * terminal menempel di bawah layar. Tanpa JavaScript, scene tampil sebagai
- * halaman bergulir biasa dengan scroll-snap.
+ * Tiga scene layar penuh yang berpindah satu per satu (home.js): LERENG
+ * (hero berlapis: latar lereng Muria, kontur, lapisan depan opsional, teks
+ * singkat), PEMILIH (pintu masuk Siswa/Guru), dan SUARA (perolehan suara /
+ * pasangan calon; hanya palet netral + aksen pasangan). Panel status
+ * bergaya terminal menempel di bawah layar. Tanpa JavaScript, scene tampil
+ * sebagai halaman bergulir biasa dengan scroll-snap.
  *
  * @var array|null       $election
  * @var list<array>      $candidates Pasangan aktif (CandidateTheme::present())
  * @var array|null       $live       PublicLiveCount::build() + pairs; null = live count publik mati
  * @var \Config\Homepage $home
+ * @var string|null      $identity   Warna parijoto bila netral terhadap semua pasangan
  */
 $status   = $election['status'] ?? null;
 $liveId   = $live !== null ? 'perolehan' : 'pasangan';
@@ -52,40 +55,44 @@ $entries = [
 ?>
 <div class="scenes" data-scenes>
 
-  <?php /* ---------------------------------------------------------- 01 hero */ ?>
+  <?php /* ---------------------------------------------------- 01 LERENG (hero) */ ?>
   <section class="scene scene--hero is-active" id="beranda" data-scene aria-labelledby="hero-title" tabindex="-1">
+    <?php /* Lapisan visual (belakang -> depan): latar lereng Muria (A03/A04),
+             lapisan gelap solid, kontur punggungan (S01), lapisan depan
+             parijoto (A05, opsional). Tanpa warna/nomor/foto pasangan. */ ?>
+    <div class="hero-bg" aria-hidden="true" data-hero-bg>
+      <picture class="hero-bg__photo">
+        <source media="(orientation: portrait)" srcset="<?= esc(asset_url($home->heroMobile), 'attr') ?>">
+        <img class="hero-bg__img" src="<?= esc(asset_url($home->heroDesktop), 'attr') ?>" alt="" fetchpriority="high" decoding="async" data-hero-img>
+      </picture>
+      <span class="hero-bg__shade"></span>
+      <span class="hero-bg__contour"></span>
+      <?php if (($home->heroForeground ?? '') !== ''): ?>
+        <span class="hero-bg__fore">
+          <img class="hero-bg__fore-img" src="<?= esc(asset_url($home->heroForeground), 'attr') ?>" alt="" decoding="async">
+        </span>
+      <?php endif; ?>
+    </div>
     <canvas class="field" data-field aria-hidden="true"></canvas>
     <div class="scene__inner" data-scene-scroll>
       <div class="hero">
+        <p class="hero__kicker" aria-hidden="true" data-reveal><span class="hero__reg"></span>PILKETOS 2026</p>
         <h1 class="hero__title" id="hero-title">
-          <span class="hero__kicker" data-reveal>Pemilihan Ketua &amp; Wakil Ketua OSIS</span>
+          <span class="visually-hidden">Pemilihan Ketua &amp; Wakil Ketua OSIS </span>
           <span class="hero__line"><span class="hero__word" data-reveal>SMP 1 DAWE</span></span>
-          <span class="hero__line hero__line--year"><span class="hero__word" data-reveal><span class="visually-hidden">Tahun </span>2026</span></span>
+          <span class="visually-hidden"> 2026</span>
         </h1>
-        <p class="hero__lede" data-reveal>Satu pemilih, satu suara. Kenali pasangan calon, lalu coblos pilihanmu di surat suara digital.</p>
+        <p class="hero__support" data-reveal>Satu pemilih, satu suara.</p>
+        <span class="hero__perf" aria-hidden="true" data-reveal></span>
         <div class="hero__actions" data-reveal>
           <a class="hbtn hbtn--primary" href="#masuk" data-scene-link>Masuk untuk memilih <?= icon('arrow-right') ?></a>
-          <a class="hbtn hbtn--ghost" href="#<?= esc($liveId, 'attr') ?>" data-scene-link><?= esc($live !== null ? 'Lihat perolehan suara' : 'Kenali pasangan calon') ?></a>
+          <a class="hlink" href="#<?= esc($liveId, 'attr') ?>" data-scene-link><?= esc($live !== null ? 'Lihat perolehan suara' : 'Kenali pasangan calon') ?></a>
         </div>
       </div>
-
-      <?php if ($candidates !== []): ?>
-        <div class="hero__bands" aria-hidden="true" data-reveal>
-          <?php foreach ($candidates as $c): ?>
-            <span class="hero__band" style="<?= esc($c['style'], 'attr') ?>"><span><?= esc($c['label']) ?></span></span>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-
-      <a class="scene-next" href="#masuk" data-scene-link aria-label="Lanjut ke bagian Masuk">
-        <span class="scene-next__text scene-next__text--fine" aria-hidden="true">Gulir</span>
-        <span class="scene-next__text scene-next__text--coarse" aria-hidden="true">Geser ke atas</span>
-        <?= icon('chevron-down') ?>
-      </a>
     </div>
   </section>
 
-  <?php /* ------------------------------------------------ 02 pintu masuk */ ?>
+  <?php /* ------------------------------------------ 02 PEMILIH (pintu masuk) */ ?>
   <section class="scene scene--entry" id="masuk" data-scene aria-labelledby="entry-title" tabindex="-1">
     <div class="scene__inner" data-scene-scroll>
       <div class="entry">
@@ -99,7 +106,7 @@ $entries = [
                   <?php if (($e['mobile'] ?? '') !== ''): ?>
                     <source media="(orientation: portrait) and (max-width: 767px)" srcset="<?= esc(asset_url($e['mobile']), 'attr') ?>">
                   <?php endif; ?>
-                  <img class="portal__img" src="<?= esc(asset_url($e['img']), 'attr') ?>" alt="" decoding="async" data-preload>
+                  <img class="portal__img" src="<?= esc(asset_url($e['img']), 'attr') ?>" alt="" decoding="async" fetchpriority="low">
                 </picture>
               </span>
               <span class="portal__shade" aria-hidden="true"></span>
@@ -118,7 +125,7 @@ $entries = [
     </div>
   </section>
 
-  <?php /* -------------------------------- 03 perolehan suara / pasangan */ ?>
+  <?php /* ---------------------- 03 SUARA (perolehan suara / pasangan calon) */ ?>
   <section class="scene scene--live" id="<?= esc($liveId, 'attr') ?>" data-scene aria-labelledby="live-title" tabindex="-1"
     <?php if ($live !== null): ?>
       data-live
