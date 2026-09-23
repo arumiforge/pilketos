@@ -8,6 +8,7 @@
  * @var \App\Services\VoterType                $type
  * @var \App\Services\Import\VoterImporter    $importer
  * @var int                                    $maxBytes
+ * @var bool                                   $resultsLocked Stage 4: pemilihan selesai, unggah dikunci
  */
 use App\Libraries\CandidateAssets;
 use App\Services\Import\VoterImporter;
@@ -50,6 +51,9 @@ $isStudent = $type === VoterType::Student;
 
     <section class="panel" aria-labelledby="upload-title">
       <header class="panel__head"><h2 class="panel__title" id="upload-title">02 &middot; Unggah file</h2></header>
+      <?php if ($resultsLocked ?? false): ?>
+      <p class="notice"><?= icon('lock') ?><span>Pemilihan sudah selesai: impor dikunci karena dapat mengubah jumlah pemilih dan rekap hasil akhir. Template tetap dapat diunduh.</span></p>
+      <?php else: ?>
       <form action="<?= site_url($type->adminPath('import')) ?>" method="post" enctype="multipart/form-data" class="stack" data-upload-form data-post-max="<?= CandidateAssets::iniBytes((string) ini_get('post_max_size')) ?>">
         <?= csrf_field() ?>
         <div class="field">
@@ -61,6 +65,7 @@ $isStudent = $type === VoterType::Student;
         </div>
         <button type="submit" class="btn btn--block" data-loading-text="Membaca &amp; memvalidasi..."><?= icon('upload') ?> Unggah &amp; periksa</button>
       </form>
+      <?php endif; ?>
 
       <h3 class="panel__subtitle">Yang diperiksa sebelum impor</h3>
       <ul class="check-list">

@@ -2,8 +2,8 @@
 
 <?= $this->section('head') ?>
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="<?= base_url('assets/css/voting.css') ?>">
-<link rel="stylesheet" href="<?= base_url('assets/css/admin.css') ?>">
+<link rel="stylesheet" href="<?= asset_url('assets/css/voting.css') ?>">
+<link rel="stylesheet" href="<?= asset_url('assets/css/admin.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -18,6 +18,7 @@
  * @var list<array> $switcher
  */
 ?>
+<h1 class="visually-hidden">Pratinjau Pasangan <?= esc($candidate['label']) ?></h1>
 <div class="preview-bar">
   <div class="container preview-bar__row">
     <p class="preview-bar__text"><?= icon('eye') ?> <span><strong>Pratinjau admin.</strong> Tampilan sama dengan halaman kandidat pemilih; surat suara tidak ditampilkan.<?= $active ? '' : ' Pasangan ini nonaktif sehingga tidak tampil untuk pemilih.' ?></span></p>
@@ -40,5 +41,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/candidates.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/candidates.js') ?>" defer></script>
 <?= $this->endSection() ?>

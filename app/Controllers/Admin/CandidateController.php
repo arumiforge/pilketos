@@ -22,6 +22,9 @@ use CodeIgniter\HTTP\RedirectResponse;
  *
  * Kandidat yang sudah punya baris suara tidak dapat dihapus (FK RESTRICT):
  * gunakan status nonaktif.
+ *
+ * Stage 4: setelah pemilihan selesai, tambah/hapus pasangan ditolak dan
+ * nomor urut & status aktif dipertahankan (hasil akhir tidak berubah).
  */
 class CandidateController extends AdminController
 {
@@ -73,6 +76,10 @@ class CandidateController extends AdminController
      */
     public function new()
     {
+        if ($this->resultsLocked()) {
+            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
+
         $max = (int) (model(CandidateModel::class)->builder()->selectMax('nomor_urut', 'max')->get()->getRowArray()['max'] ?? 0);
 
         return $this->form(null, ['nomor_urut' => min(99, $max + 1), 'status_aktif' => 1]);
@@ -113,6 +120,10 @@ class CandidateController extends AdminController
         $model     = model(CandidateModel::class);
         $voteRows  = $model->voteRowCount((int) $candidate['id']);
         $label     = sprintf('Pasangan %02d (%s & %s)', $candidate['nomor_urut'], $candidate['nama_ketua'], $candidate['nama_wakil']);
+
+        if ($this->resultsLocked()) {
+            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
 
         if ($voteRows > 0) {
             return redirect()->to('admin/candidates')->with('error', sprintf(
@@ -182,8 +193,22 @@ class CandidateController extends AdminController
 
     private function save(?array $existing): RedirectResponse
     {
+        $locked = $this->resultsLocked();
+
+        if ($locked && $existing === null) {
+            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
+
         $model  = model(CandidateModel::class);
         $input  = $this->textInput();
+
+        if ($locked) {
+            // Stage 4: nomor urut & status aktif menentukan susunan hasil akhir;
+            // nilai lama dipertahankan. Nama, visi-misi, dan foto tetap dapat dirapikan.
+            $input['nomor_urut']   = (int) $existing['nomor_urut'];
+            $input['status_aktif'] = (int) $existing['status_aktif'];
+        }
+
         $data   = $input + ($existing === null ? [] : ['id' => (int) $existing['id']]);
         $back   = $existing === null ? 'admin/candidates/new' : 'admin/candidates/' . $existing['id'] . '/edit';
 

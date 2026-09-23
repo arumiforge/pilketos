@@ -106,5 +106,5 @@ $groups     = $snapshot['groups'];
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/admin-live.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/admin-live.js') ?>" defer></script>
 <?= $this->endSection() ?>

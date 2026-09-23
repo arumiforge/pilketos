@@ -1,0 +1,38 @@
+# ----------------------------------------------------------------------
+# Pertahanan berlapis (Stage 4) bila DocumentRoot web server TERLANJUR
+# diarahkan ke folder proyek, bukan ke public/.
+#
+# Konfigurasi yang benar tetap: DocumentRoot = <proyek>/public
+# (lihat README.md bagian Deployment Laragon). File ini memastikan
+# .env, app/, writable/, vendor/, composer.* dan file lain di luar public/
+# tidak pernah dapat diunduh lewat browser.
+# ----------------------------------------------------------------------
+
+Options -Indexes
+
+# File tersembunyi (.env, .git, .htaccess) selalu ditolak.
+<FilesMatch "^\.">
+    <IfModule authz_core_module>
+        Require all denied
+    </IfModule>
+    <IfModule !authz_core_module>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Semua request diteruskan ke public/ (front controller + asset).
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Tanpa mod_rewrite: tolak semuanya daripada membuka isi proyek.
+    <IfModule authz_core_module>
+        Require all denied
+    </IfModule>
+    <IfModule !authz_core_module>
+        Deny from all
+    </IfModule>
+</IfModule>

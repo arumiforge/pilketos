@@ -209,6 +209,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->db->disableForeignKeyChecks();
         $this->db->table('elections')->truncate();
         $this->db->enableForeignKeyChecks();
+        $this->db->enableForeignKeyChecks();
 
         $result = $this->asAdmin()->get('admin/dashboard');
 
@@ -456,6 +457,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->db->disableForeignKeyChecks();
         $this->db->table('elections')->truncate();
         $this->db->enableForeignKeyChecks();
+        $this->db->enableForeignKeyChecks();
         Time::setTestNow('2026-09-25 10:00:00');
 
         $this->postAdmin('admin/election', [
@@ -639,7 +641,8 @@ final class AdminPanelTest extends CIUnitTestCase
     public function testUnlockOfStaleVoteIsRejected(): void
     {
         $voteId = $this->vote('teacher', 2, 1);
-        $this->db->table('teacher_votes')->where('id', $voteId)->update(['status' => 'UNLOCKED']);
+        // Admin lain baru saja membuka suara ini (Stage 4: UNLOCKED wajib punya unlocked_at).
+        $this->db->table('teacher_votes')->where('id', $voteId)->update(['status' => 'UNLOCKED', 'unlocked_at' => Time::now()->toDateTimeString()]);
 
         $this->postAdmin('admin/unlock/teacher/2', ['vote_id' => (string) $voteId, 'reason' => self::REASON, 'confirm' => '1'])
             ->assertRedirectTo(site_url('admin/unlock/teacher/2'));

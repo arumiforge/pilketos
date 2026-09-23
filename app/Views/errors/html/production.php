@@ -1,25 +1,47 @@
-<!doctype html>
-<html>
+<?php
+/**
+ * Halaman error server (production) (Stage 4): bahasa Indonesia, gaya netral aplikasi,
+ * mandiri (tanpa CSS/JS eksternal). Detail teknis hanya tampil di luar production.
+ */
+?>
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-
-    <title><?= lang('Errors.whoops') ?></title>
-
-    <style>
-        <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
+    <title>Maaf, terjadi kesalahan — Pemilihan OSIS SMP 1 Dawe</title>
+    <style <?= function_exists('csp_style_nonce') ? csp_style_nonce() : '' ?>>
+        :root { --ink: #15141A; --paper: #FAF9F6; --line: #DCD8CD; --muted: #514E45; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; }
+        body {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px 16px;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.55;
+        }
+        main { width: 100%; max-width: 560px; border-top: 6px double var(--ink); padding-top: 20px; }
+        .kicker { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+        h1 { margin: 8px 0 0; font-family: Newsreader, Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 8vw, 3.4rem); font-weight: 500; line-height: 1.02; letter-spacing: -0.02em; }
+        p { margin: 16px 0 0; }
+        .detail { padding: 12px 14px; border: 1px solid var(--line); background: #FFFFFF; font-size: 0.875rem; overflow-wrap: anywhere; }
+        a { color: var(--ink); font-weight: 600; text-underline-offset: 0.2em; }
+        a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .foot { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 0.8125rem; color: var(--muted); }
     </style>
 </head>
 <body>
-
-    <div class="container text-center">
-
-        <h1 class="headline"><?= lang('Errors.whoops') ?></h1>
-
-        <p class="lead"><?= lang('Errors.weHitASnag') ?></p>
-
-    </div>
-
+<main>
+    <p class="kicker">Gangguan server</p>
+    <h1>Maaf, terjadi kesalahan</h1>
+    <p>Server sedang mengalami gangguan sehingga permintaan belum dapat diselesaikan. Tunggu sebentar lalu coba lagi. Bila masalah berlanjut, hubungi panitia pemilihan.</p>
+    <p>Suara yang sudah berhasil disimpan tidak hilang: buka kembali dasbor untuk melihat status hak suara.</p>
+    <p class="foot">Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 Dawe 2026 &middot; <a href="<?= esc(function_exists('base_url') ? base_url('/') : '/', 'attr') ?>">Kembali ke beranda</a></p>
+</main>
 </body>
-
 </html>

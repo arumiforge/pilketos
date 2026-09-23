@@ -1,11 +1,36 @@
-# Direktori upload asset kandidat (Stage 3).
-# Hanya file statis (gambar); skrip tidak boleh dieksekusi/diakses.
+# Direktori upload asset kandidat (Stage 3, diperketat Stage 4).
+# Hanya gambar hasil encode ulang server (jpg/jpeg/png/webp, nama file acak)
+# yang boleh diakses. Skrip tidak pernah dieksekusi; file lain ditolak.
 Options -Indexes -ExecCGI
 
-<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp|htaccess)$">
-    Require all denied
-</FilesMatch>
+<IfModule authz_core_module>
+    <FilesMatch ".">
+        Require all denied
+    </FilesMatch>
+    <FilesMatch "(?i)^[a-z0-9][a-z0-9._-]*\.(jpe?g|png|webp)$">
+        Require all granted
+    </FilesMatch>
+</IfModule>
 
+<IfModule !authz_core_module>
+    <FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp|htaccess|svg|html?)$">
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Jangan pernah menjalankan PHP di folder ini walau ada file .php terselip.
 <IfModule mod_php.c>
     php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+
+<IfModule mod_headers.c>
+    # Gambar tidak boleh ditafsirkan sebagai dokumen/skrip oleh browser.
+    Header set X-Content-Type-Options "nosniff"
+    Header set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'none'; sandbox"
+    Header set Cross-Origin-Resource-Policy "same-origin"
 </IfModule>

@@ -12,6 +12,7 @@
  * @var array<string, string> $errors
  * @var int                   $postMax   post_max_size (byte)
  * @var array|null            $election
+ * @var bool                  $resultsLocked Stage 4: pemilihan selesai
  */
 use App\Libraries\CandidateAssets;
 use App\Libraries\CandidateTheme;
@@ -24,6 +25,7 @@ $action = $candidate === null ? site_url('admin/candidates') : site_url('admin/c
 $accent = CandidateTheme::accent($values['theme_accent'] ?? null);
 $layout = (string) ($values['theme_layout'] ?? '');
 $active = (string) ($values['status_aktif'] ?? '1') === '1';
+$locked = ($resultsLocked ?? false) && $candidate !== null; // Stage 4: hasil akhir final
 $layouts = [
     ''       => ['Otomatis', 'Mengikuti nomor urut: 01 split, 02 poster, 03 kolom.'],
     'split'  => ['Split', 'Panggung & teks berdampingan, pola grid.'],
@@ -46,6 +48,8 @@ $layouts = [
 
   <?php if (($election['status'] ?? null) === 'ONGOING'): ?>
     <p class="notice"><?= icon('alert') ?><span>Pemilihan sedang berlangsung. Perubahan langsung terlihat oleh pemilih; bila pasangan dinonaktifkan, pemilih yang sedang membuka surat suara akan diminta memilih ulang.</span></p>
+  <?php elseif ($locked): ?>
+    <p class="notice"><?= icon('lock') ?><span>Pemilihan sudah selesai: nomor urut dan status aktif dikunci agar susunan hasil akhir tidak berubah. Nama, visi-misi, dan foto tetap dapat dirapikan (tercatat di audit log).</span></p>
   <?php endif; ?>
 
   <form class="form-x" action="<?= $action ?>" method="post" enctype="multipart/form-data" novalidate data-upload-form data-post-max="<?= (int) $postMax ?>">
@@ -56,17 +60,19 @@ $layouts = [
       <div class="form-grid">
         <div class="field field--short">
           <label for="nomor_urut">Nomor urut</label>
-          <input type="number" id="nomor_urut" name="nomor_urut" min="1" max="99" inputmode="numeric" required value="<?= $value('nomor_urut') ?>"<?= $invalid('nomor_urut') ?>>
+          <input type="number" id="nomor_urut" name="nomor_urut" min="1" max="99" inputmode="numeric" required value="<?= $value('nomor_urut') ?>"<?= $invalid('nomor_urut') ?><?= $locked ? ' readonly aria-describedby="locked-hint"' : '' ?>>
           <?= $error('nomor_urut') ?>
         </div>
         <div class="field field--switch">
           <input type="hidden" name="status_aktif" value="0">
           <label class="switch">
-            <input type="checkbox" name="status_aktif" value="1"<?= $active ? ' checked' : '' ?>>
+            <input type="checkbox" name="status_aktif" value="1"<?= $active ? ' checked' : '' ?><?= $locked ? ' disabled' : '' ?>>
             <span class="switch__track" aria-hidden="true"></span>
             <span class="switch__label">Aktif di surat suara</span>
           </label>
-          <p class="field-hint">Pasangan nonaktif tidak tampil dan tidak dapat dipilih. Suara yang sudah masuk tetap tersimpan.</p>
+          <p class="field-hint" id="locked-hint"><?= $locked
+              ? 'Dikunci setelah pemilihan selesai: nomor urut dan status aktif tidak dapat diubah.'
+              : 'Pasangan nonaktif tidak tampil dan tidak dapat dipilih. Suara yang sudah masuk tetap tersimpan.' ?></p>
         </div>
         <div class="field">
           <label for="nama_ketua">Nama calon ketua</label>

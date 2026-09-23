@@ -66,7 +66,7 @@ $misiId = 'misi-list-' . $c['id'];
       </h2>
 
       <section class="vm vm--visi" aria-labelledby="visi-<?= esc((string) $c['id'], 'attr') ?>">
-        <h3 class="vm__label" id="visi-<?= esc((string) $c['id'], 'attr') ?>">Visi</h3>
+        <h3 class="vm__label" id="visi-<?= esc((string) $c['id'], 'attr') ?>">Visi<span class="visually-hidden"> pasangan <?= esc($c['label']) ?></span></h3>
         <?php if ($c['visi'] !== ''): ?>
           <blockquote class="vm__visi" data-reveal-words>
             <p><?= esc($c['visi']) ?></p>
@@ -77,7 +77,7 @@ $misiId = 'misi-list-' . $c['id'];
       </section>
 
       <section class="vm vm--misi" aria-labelledby="misi-<?= esc((string) $c['id'], 'attr') ?>">
-        <h3 class="vm__label" id="misi-<?= esc((string) $c['id'], 'attr') ?>">Misi</h3>
+        <h3 class="vm__label" id="misi-<?= esc((string) $c['id'], 'attr') ?>">Misi<span class="visually-hidden"> pasangan <?= esc($c['label']) ?></span></h3>
         <?php if ($c['misi'] !== []): ?>
           <div class="misi" data-misi>
             <ol class="misi__list" id="<?= esc($misiId, 'attr') ?>">

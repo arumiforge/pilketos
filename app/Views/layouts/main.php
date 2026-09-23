@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#FAF9F6">
 <?= csrf_meta() ?>
 <title><?= isset($title) ? esc($title) . ' — Pemilihan OSIS SMP 1 Dawe' : 'Pemilihan Ketua OSIS — SMP 1 Dawe 2026' ?></title>
-<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+<script <?= csp_script_nonce() ?>>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 <link rel="preload" href="<?= base_url('assets/fonts/inter-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="<?= base_url('assets/fonts/newsreader-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+<link rel="stylesheet" href="<?= asset_url('assets/css/app.css') ?>">
 <?= $this->renderSection('head') ?>
 </head>
 <body class="<?= esc($bodyClass ?? '', 'attr') ?>">
@@ -21,7 +21,7 @@
 <?= $this->renderSection('content') ?>
 </main>
 <?= $this->include('partials/footer') ?>
-<script src="<?= base_url('assets/js/app.js') ?>" defer></script>
+<script src="<?= asset_url('assets/js/app.js') ?>" defer></script>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>

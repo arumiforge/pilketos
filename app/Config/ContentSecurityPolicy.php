@@ -5,13 +5,25 @@ namespace Config;
 use CodeIgniter\Config\BaseConfig;
 
 /**
- * Stores the default settings for the ContentSecurityPolicy, if you
- * choose to use it. The values here will be read in and set as defaults
- * for the site. If needed, they can be overridden on a page-by-page basis.
+ * Content-Security-Policy aplikasi (Stage 4, aktif lewat App::$CSPEnabled).
  *
- * Suggested reference for explanations:
+ * Kebijakan yang dihasilkan (lapisan kedua anti-XSS; lapisan pertama tetap
+ * esc() di semua view dan textContent di JavaScript):
  *
- * @see https://www.html5rocks.com/en/tutorials/security/content-security-policy/
+ *   default-src 'self'; script-src 'self' 'nonce-...'; script-src-attr 'none';
+ *   style-src 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline';
+ *   img-src 'self' data: blob:; font-src 'self'; connect-src 'self';
+ *   object-src 'none'; base-uri 'self'; form-action 'self';
+ *   frame-ancestors 'self'; frame-src 'none'; manifest-src 'self'
+ *
+ * - Script: hanya file dari server ini + satu skrip inline di layout yang
+ *   diberi nonce (csp_script_nonce()). Tidak ada handler inline (onclick=...).
+ *   Paku WebGL dimuat malas sebagai file same-origin sehingga tetap diizinkan.
+ * - Style: atribut style dipakai untuk custom property warna aksen pasangan
+ *   yang sudah tervalidasi #RRGGBB (CandidateTheme), jadi inline style diizinkan.
+ * - Gambar: data: (ikon debug toolbar development) dan blob: (pratinjau file
+ *   sebelum diunggah di form admin).
+ * Semua sumber same-origin: aplikasi tidak memakai CDN (font & JS lokal).
  */
 class ContentSecurityPolicy extends BaseConfig
 {
@@ -52,7 +64,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $defaultSrc;
+    public $defaultSrc = 'self';
 
     /**
      * Lists allowed scripts' URLs.
@@ -66,7 +78,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcElem = 'self';
+    public array|string $scriptSrcElem = [];
 
     /**
      * Specifies valid sources for JavaScript inline event
@@ -74,21 +86,21 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcAttr = 'self';
+    public array|string $scriptSrcAttr = 'none';
 
     /**
      * Lists allowed stylesheets' URLs.
      *
      * @var list<string>|string
      */
-    public $styleSrc = 'self';
+    public $styleSrc = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for stylesheets <link> elements.
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcElem = 'self';
+    public array|string $styleSrcElem = [];
 
     /**
      * Specifies valid sources for stylesheets inline
@@ -96,14 +108,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcAttr = 'self';
+    public array|string $styleSrcAttr = 'unsafe-inline';
 
     /**
      * Defines the origins from which images can be loaded.
      *
      * @var list<string>|string
      */
-    public $imageSrc = 'self';
+    public $imageSrc = ['self', 'data:', 'blob:'];
 
     /**
      * Restricts the URLs that can appear in a page's `<base>` element.
@@ -112,7 +124,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $baseURI;
+    public $baseURI = 'self';
 
     /**
      * Lists the URLs for workers and embedded frame contents
@@ -134,7 +146,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $fontSrc;
+    public $fontSrc = 'self';
 
     /**
      * Lists valid endpoints for submission from `<form>` tags.
@@ -151,7 +163,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameAncestors;
+    public $frameAncestors = 'self';
 
     /**
      * The frame-src directive restricts the URLs which may
@@ -159,7 +171,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameSrc;
+    public $frameSrc = 'none';
 
     /**
      * Restricts the origins allowed to deliver video and audio.
@@ -173,12 +185,12 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $objectSrc = 'self';
+    public $objectSrc = 'none';
 
     /**
      * @var list<string>|string|null
      */
-    public $manifestSrc;
+    public $manifestSrc = 'self';
 
     /**
      * @var list<string>|string

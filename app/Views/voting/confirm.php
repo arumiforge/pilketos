@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('head') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/voting.css') ?>">
+<link rel="stylesheet" href="<?= asset_url('assets/css/voting.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>

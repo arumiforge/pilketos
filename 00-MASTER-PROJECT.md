@@ -477,6 +477,8 @@ Setelah election selesai dan hasil final sudah ada:
 - gunakan canvas/confetti library atau implementasi ringan;
 - jangan menggunakan emoji;
 - jangan membuat confetti terus-menerus sehingga mengganggu.
+
+Keputusan Stage 4: hasil akhir ada di panel admin (`admin/results`) dan aktif hanya saat status FINISHED menurut jam server; angka dari `AnalyticsService` yang sama dengan dasbor. Pemenang = satu pasangan dengan suara sah terbanyak; seri atau tanpa suara sah ditampilkan tanpa pemenang dan tanpa confetti. Confetti canvas ringan tanpa library, sekali per sesi browser, dilewati saat reduced motion, tidak pernah di dasbor/analitik. Setelah selesai, data yang menentukan hasil dikunci; membuka kembali pemilihan wajib konfirmasi dan tercatat di audit log. Detail di `STAGE4-NOTES.md`.
 ## 18. ADMIN UNLOCK
  
 Flow:
@@ -577,6 +579,8 @@ Jangan menyimpan credential database di source code.
 Jangan menyimpan data siswa/guru di localStorage.
  
 LocalStorage hanya boleh menyimpan data non-sensitif yang benar-benar diperlukan.
+
+Keputusan Stage 4: database sendiri menjaga integritas (CHECK state suara + trigger: suara tidak dapat dihapus, isi suara tidak dapat diubah selain `LOCKED -> UNLOCKED`, log unlock & audit append-only). Content-Security-Policy aktif dengan nonce, header keamanan tambahan, sesi pemilih berakhir setelah 15 menit tanpa aktivitas, commit impor sekali pakai, dan `.htaccess` pengaman bila DocumentRoot salah. Admin production dibuat dengan `php spark admin:create`; kesiapan server diperiksa dengan `php spark osis:check`. Detail di `STAGE4-NOTES.md`.
  
 ## 24. FINAL PROJECT QUALITY BAR
  

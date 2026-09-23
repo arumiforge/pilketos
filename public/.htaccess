@@ -47,3 +47,32 @@ Options -Indexes
 # Disable server signature start
 ServerSignature Off
 # Disable server signature end
+
+# ----------------------------------------------------------------------
+# Stage 4: kompresi & cache asset statis (hemat Wi-Fi sekolah saat ratusan
+# pemilih membuka halaman bersamaan). CSS/JS dipanggil dengan
+# ?v=<waktu ubah file> (helper asset_url()), jadi aman disimpan lama:
+# setelah aplikasi di-update, URL berubah dan browser memuat versi baru.
+# Halaman HTML & JSON tidak di-cache (aplikasi mengirim Cache-Control: no-store).
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+	ExpiresActive On
+	ExpiresByType text/css "access plus 30 days"
+	ExpiresByType text/javascript "access plus 30 days"
+	ExpiresByType application/javascript "access plus 30 days"
+	ExpiresByType font/woff2 "access plus 1 year"
+	ExpiresByType image/svg+xml "access plus 30 days"
+	ExpiresByType image/webp "access plus 7 days"
+	ExpiresByType image/png "access plus 7 days"
+	ExpiresByType image/jpeg "access plus 7 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+	# Versi PHP tidak diumumkan (lihat juga expose_php = Off di php.ini).
+	Header always unset X-Powered-By
+	Header unset X-Powered-By
+</IfModule>

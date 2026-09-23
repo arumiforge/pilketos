@@ -1,2 +1,7 @@
+# Sistem pemilihan sekolah: halaman login, voting, dan panel admin tidak untuk mesin pencari.
 User-agent: *
-Disallow: 
+Disallow: /admin
+Disallow: /student
+Disallow: /teacher
+Disallow: /election
+Disallow: /uploads

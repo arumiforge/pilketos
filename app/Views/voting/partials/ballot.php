@@ -18,7 +18,7 @@ $status = $election['status'] ?? null;
          data-ballot<?php if ($canVote): ?>
          data-submit-url="<?= esc(site_url($type->path('vote')), 'attr') ?>"
          data-myvote-url="<?= esc(site_url($type->path('my-vote')), 'attr') ?>"
-         data-webgl-src="<?= esc(base_url('assets/js/nail-webgl.js'), 'attr') ?>"<?php endif; ?>>
+         data-webgl-src="<?= esc(asset_url('assets/js/nail-webgl.js'), 'attr') ?>"<?php endif; ?>>
   <div class="container">
     <header class="ballot__head">
       <p class="ballot__kicker">Bilik suara digital &middot; <?= esc($type->label()) ?></p>

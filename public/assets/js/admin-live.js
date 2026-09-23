@@ -28,6 +28,7 @@
   var timer = null;
   var busy = false;
   var stopped = false;
+  var finalReload = false;
   var reduced = window.App && window.App.reducedMotion ? window.App.reducedMotion() : false;
 
   var indicator = root.querySelector('[data-live-indicator]');
@@ -403,7 +404,9 @@
 
     if (next !== status) {
       if (next === 'FINISHED') {
-        announce('Pemilihan telah selesai. Angka yang tampil adalah hasil akhir.');
+        announce('Pemilihan telah selesai. Halaman dimuat ulang untuk menampilkan hasil akhir.');
+        // Stage 4: keadaan final (pasangan terpilih, tautan hasil akhir) dirender server.
+        finalReload = status === 'ONGOING' || status === 'UPCOMING';
       } else if (next === 'ONGOING') {
         announce('Pemilihan dibuka. Live count berjalan.');
       }
@@ -476,6 +479,13 @@
       render(data);
       interval = data.poll && typeof data.poll.interval === 'number' ? data.poll.interval : 0;
       setState(status || 'NONE');
+      if (finalReload) {
+        stopped = true;
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 1600);
+        return;
+      }
       schedule(interval);
     }).catch(function () {
       failures++;

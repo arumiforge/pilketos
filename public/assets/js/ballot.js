@@ -902,6 +902,15 @@
         window.location.reload();
       }
     });
+
+    // Stage 4: halaman ditinggal -> lepas konteks WebGL (hemat memori GPU).
+    window.addEventListener('pagehide', function () {
+      if (renderer) {
+        renderer.destroy();
+        renderer = null;
+        webglState = 'unknown';
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

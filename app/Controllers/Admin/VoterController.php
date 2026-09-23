@@ -15,6 +15,9 @@ use CodeIgniter\I18n\Time;
  * Student\... dan Teacher\... hanya menetapkan voterType(); tabel siswa
  * dan guru tetap terpisah. Pilihan kandidat hanya tampil di halaman detail
  * (untuk keperluan unlock), tidak di daftar.
+ *
+ * Stage 4: setelah pemilihan selesai, ubah status & hapus pemilih ditolak
+ * (AdminController::resultsLocked()) agar hasil akhir tidak berubah.
  */
 abstract class VoterController extends AdminController
 {
@@ -77,6 +80,11 @@ abstract class VoterController extends AdminController
         $voter  = $this->findOr404($id);
         $target = $this->request->getPost('status_aktif');
 
+        // Stage 4: status aktif menentukan suara yang dihitung; setelah selesai dikunci.
+        if ($this->resultsLocked()) {
+            return redirect()->to($type->adminPath((string) $voter['id']))->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
+
         if (! in_array($target, ['0', '1'], true)) {
             return redirect()->to($type->adminPath((string) $voter['id']))->with('error', 'Status akun tidak valid.');
         }
@@ -118,6 +126,11 @@ abstract class VoterController extends AdminController
         $voter     = $this->findOr404($id);
         $directory = service('voterDirectory');
         $label     = sprintf('%s %s (%s %s)', $type->label(), $voter['name'], $type->identifierLabel(), $voter[$type->identifierColumn()]);
+
+        // Stage 4: jumlah pemilih (partisipasi) bagian dari hasil akhir.
+        if ($this->resultsLocked()) {
+            return redirect()->to($type->adminPath((string) $voter['id']))->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
 
         if ($directory->historyCount($type, (int) $voter['id']) > 0) {
             return redirect()->to($type->adminPath((string) $voter['id']))

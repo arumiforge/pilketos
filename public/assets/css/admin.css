@@ -2002,6 +2002,76 @@ ul.check-list {
   margin-inline: auto;
 }
 
+/* -- keadaan final di dasbor (Stage 4) -------------------------------------- */
+.final-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.final-banner--winner {
+  grid-template-columns: auto minmax(0, 1fr);
+  border-color: var(--accent);
+  border-left-width: 10px;
+}
+
+.final-banner__no {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+}
+
+.final-banner__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.final-banner__eyebrow .icon { width: 16px; height: 16px; }
+
+.final-banner__title {
+  margin-top: var(--space-1);
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  overflow-wrap: anywhere;
+}
+
+.final-banner__text {
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+  color: var(--gray-700);
+}
+
+.final-banner__cta {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+@media (min-width: 900px) {
+  .final-banner { grid-template-columns: minmax(0, 1fr) auto; }
+  .final-banner--winner { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .final-banner__cta { grid-column: auto; justify-self: end; }
+}
+
+@media (max-width: 559px) {
+  .final-banner--winner { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* -- cetak rekap ------------------------------------------------------------ */
 @media print {
   .admin-side,

@@ -7,6 +7,7 @@ use App\Services\Import\ImportConflictException;
 use App\Services\Import\ImportStore;
 use App\Services\Import\VoterImporter;
 use CodeIgniter\HTTP\RedirectResponse;
+use Throwable;
 
 /**
  * Import Excel pemilih (Stage 3):
@@ -71,6 +72,11 @@ abstract class ImportController extends AdminController
         $type     = $importer->type();
         $back     = redirect()->to($type->adminPath('import'));
         $file     = $this->request->getFile('file');
+
+        // Stage 4: impor dapat mengubah jumlah pemilih & rekap kelas/jenjang hasil akhir.
+        if ($this->resultsLocked()) {
+            return $back->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
 
         if ($file === null || $file->getError() === UPLOAD_ERR_NO_FILE) {
             return $back->with('error', 'Pilih file Excel (.xlsx) terlebih dahulu.');
@@ -163,30 +169,48 @@ abstract class ImportController extends AdminController
         $importer = $this->importer();
         $type     = $importer->type();
         $token    = (string) $this->request->getPost('token');
-        $payload  = $this->loadPayload($token);
+
+        if ($this->resultsLocked()) {
+            return redirect()->to($type->adminPath('import'))->with('error', self::RESULTS_LOCKED_MESSAGE);
+        }
+
+        // Stage 4: pratinjau diklaim atomik; POST kedua (klik ganda / diulang)
+        // tidak dapat memproses impor yang sama dua kali.
+        $store   = service('importStore');
+        $payload = ImportStore::validToken($token) ? $store->claim($token, $this->adminId(), $type) : null;
 
         if ($payload === null) {
-            return redirect()->to($type->adminPath('import'))->with('error', 'Pratinjau tidak ditemukan atau sudah kedaluwarsa. Unggah ulang file.');
+            return redirect()->to($type->adminPath('import'))->with('error', 'Pratinjau tidak ditemukan, sudah kedaluwarsa, atau sudah diimpor. Periksa data, lalu unggah ulang file bila perlu.');
         }
 
         $summary = $payload['summary'];
         $preview = redirect()->to($type->adminPath('import/preview/' . $token));
 
         if ($summary['importable'] === 0) {
+            $store->release($token);
+
             return $preview->with('error', 'Tidak ada baris baru atau berubah untuk diimpor.');
         }
 
         if ($summary[VoterImporter::ACTION_INVALID] > 0 && $this->request->getPost('confirm_skip') !== '1') {
+            $store->release($token);
+
             return $preview->with('error', 'Centang konfirmasi bahwa baris bermasalah akan dilewati, atau perbaiki file lalu unggah ulang.');
         }
 
         try {
             $counts = $importer->commit($payload['rows']);
         } catch (ImportConflictException) {
+            $store->release($token);
+
             return $preview->with('error', 'Data berubah bersamaan saat impor (mis. admin lain sedang mengimpor). Tidak ada data yang disimpan; ulangi impor.');
+        } catch (Throwable $e) {
+            $store->release($token);
+
+            throw $e;
         }
 
-        service('importStore')->delete($token);
+        $store->delete($token);
 
         $this->audit($type->auditAction('import'), sprintf(
             'Impor %s dari file "%s": %d baris dibaca, %d baru, %d diperbarui, %d tidak berubah, %d dilewati (bermasalah).',
