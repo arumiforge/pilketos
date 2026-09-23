@@ -59,6 +59,12 @@ Countdown:
 - server-schedule driven.
 Jangan gunakan gradient.
 Jangan gunakan emoji.
+
+Catatan Stage 5: landing page ini digantikan redesign beranda
+(`05-HOMEPAGE-REDESIGN.md`, `STAGE5-NOTES.md`): judul, sekolah, dan tahun di
+scene pertama; login siswa/guru lewat portal di scene "Masuk" (tidak lagi
+tombol di navigasi); status, waktu mulai/selesai, dan countdown jam server di
+panel status bergaya terminal yang menempel di bawah layar.
  
 ## STUDENT LOGIN
  

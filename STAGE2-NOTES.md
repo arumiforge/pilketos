@@ -4,6 +4,12 @@ Dokumen ini adalah kontrak aktual Stage 2. Stage 3 wajib membacanya bersama
 `00-MASTER-PROJECT.md`, `02-STUDENT-TEACHER-VOTING.md`, dan `STAGE1-NOTES.md`.
 Isi lengkap setiap file ada di repository (tidak disalin ulang di sini).
 
+> Pembaruan Stage 5: beranda Stage 2 (hero editorial, pita jam dengan
+> countdown varian `hero`, pintu masuk teks, teaser pasangan) dan tombol
+> "Masuk Siswa/Guru" di header digantikan redesign beranda; countdown varian
+> `hero` diganti `dock` (panel status terminal). Tombol Keluar di header tetap.
+> Lihat `STAGE5-NOTES.md`. Bagian lain dokumen ini tetap berlaku.
+
 ## 1. Stage objective
 
 Pengalaman voting lengkap untuk siswa dan guru pada election yang sama dengan

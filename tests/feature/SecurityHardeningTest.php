@@ -128,9 +128,12 @@ final class SecurityHardeningTest extends CIUnitTestCase
             $this->assertStringContainsString('no-store', $response->getHeaderLine('Cache-Control'), $path);
         }
 
-        // Endpoint JSON juga tidak di-cache.
-        $clock = $this->get('election/clock')->response();
-        $this->assertStringContainsString('no-store', $clock->getHeaderLine('Cache-Control'));
+        // Endpoint JSON publik juga tidak di-cache (jam server, live count beranda).
+        foreach (['election/clock', 'live-count'] as $path) {
+            $json = $this->get($path)->response();
+            $this->assertStringContainsString('no-store', $json->getHeaderLine('Cache-Control'), $path);
+            $this->assertSame('nosniff', $json->getHeaderLine('X-Content-Type-Options'), $path);
+        }
     }
 
     // ------------------------------------------------------------------

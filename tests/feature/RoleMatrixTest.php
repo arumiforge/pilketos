@@ -32,9 +32,10 @@ final class RoleMatrixTest extends CIUnitTestCase
 
     /**
      * Satu-satunya route tanpa filter autentikasi (route matrix "public").
+     * live-count (redesign beranda): hanya persentase per pasangan + partisipasi.
      */
     private const PUBLIC_ROUTES = [
-        'GET'  => ['/', 'election/clock', 'student/login', 'teacher/login', 'admin/login', 'student', 'teacher', 'admin'],
+        'GET'  => ['/', 'election/clock', 'live-count', 'student/login', 'teacher/login', 'admin/login', 'student', 'teacher', 'admin'],
         'POST' => ['student/login', 'teacher/login', 'admin/login', 'student', 'teacher', 'admin'],
     ];
 

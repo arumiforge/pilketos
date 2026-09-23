@@ -1,6 +1,8 @@
 /* ==========================================================================
    SMP 1 Dawe — Pemilihan Ketua OSIS 2026
-   Foundation (Stage 1) + beranda, countdown, dasbor pemilih (Stage 2).
+   Foundation (Stage 1) + countdown, dasbor pemilih (Stage 2) + navigasi logo
+   di tengah & footer rata tengah (redesign beranda).
+   Beranda imersif (scene, layar pembuka, panel status): home.css.
    Base hitam / putih / abu-abu. Tanpa gradient, tanpa emoji.
    Warna aksen hanya milik masing-masing pasangan calon, dipasang lewat
    custom property --accent / --accent-ink / --accent-text pada elemen
@@ -187,51 +189,110 @@ p { max-width: 62ch; }
   align-items: center;
 }
 
-/* -- navigation shell -- */
+/* -- navigation shell (redesign beranda): logo lengkap tepat di tengah --
+   Kolom kiri & kanan sama lebar (1fr), jadi logo selalu di tengah, baik untuk
+   tamu (hanya logo) maupun pengguna login (Dasbor kiri, Keluar kanan).
+   Tidak ada tombol masuk: pintu Siswa/Guru ada di beranda. Beranda imersif
+   (navigasi melayang di atas scene gelap) diatur di home.css. */
 .site-nav {
   border-bottom: 1px solid var(--line);
   background: var(--paper);
 }
 
 .site-nav__row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  width: 100%;
+  max-width: var(--container-w);
   min-height: 64px;
-  padding-block: var(--space-3);
+  margin-inline: auto;
+  padding: var(--space-2) var(--space-4);
+}
+
+.site-nav__start {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
 }
 
 .site-nav__brand {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  text-decoration: none;
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  line-height: 0;
+  border-radius: var(--radius);
 }
 
-.site-nav__brand strong {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+.site-nav__end {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  margin: 0;
 }
 
-.site-nav__brand span {
-  font-size: 0.75rem;
-  color: var(--gray-700);
+.site-nav__logo {
+  display: block;
+  width: auto;
+  height: 32px;
 }
 
-.site-nav__actions {
-  display: flex;
-  flex-wrap: wrap;
+.site-nav__action {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
 }
 
-.site-nav__logout { margin: 0; }
+.site-nav__action:hover {
+  border-color: var(--ink);
+  background: var(--gray-100);
+}
+
+.site-nav__action .icon { width: 18px; height: 18px; }
+
+@media (max-width: 599px) {
+  .site-nav__role { display: none; }
+}
+
+/* HP sangat sempit: ikon saja (teks tetap terbaca pembaca layar) */
+@media (max-width: 379px) {
+  .site-nav__action {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .site-nav__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}
 
 @media (min-width: 720px) {
-  .site-nav__row { min-height: 76px; }
+  .site-nav__row {
+    min-height: 76px;
+    padding-inline: var(--space-6);
+  }
+
+  .site-nav__logo { height: 38px; }
 }
 
 /* -- buttons -- */
@@ -535,99 +596,9 @@ summary:focus-visible {
 .kv-list__row dd { font-weight: 600; text-align: right; }
 
 /* ==========================================================================
-   Stage 2 — Beranda (hero editorial + countdown kinetik)
+   Countdown bersama: "compact" (dasbor, halaman voting, hasil akhir).
+   Varian "dock" (panel status terminal beranda) ada di home.css.
    ========================================================================== */
-
-.hero-x {
-  padding-block: var(--space-6) var(--space-6);
-  overflow: hidden;
-}
-
-.hero-x__top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.hero-x__kicker {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.hero-x__title {
-  display: flex;
-  flex-direction: column;
-  margin-top: var(--space-5);
-  font-size: clamp(3.3rem, 17vw, 10.5rem);
-  font-weight: 500;
-  line-height: 0.86;
-  letter-spacing: -0.04em;
-}
-
-.hero-x__year {
-  font-weight: 300;
-  color: var(--gray-700);
-  font-variant-numeric: lining-nums;
-}
-
-.hero-x__bands {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: var(--space-6);
-  height: 44px;
-}
-
-.hero-x__band {
-  display: flex;
-  align-items: center;
-  padding-inline: var(--space-3);
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 600;
-  transform-origin: left center;
-  animation: band-in 0.9s var(--ease) both;
-}
-
-.hero-x__band:nth-child(2) { animation-delay: 0.08s; }
-.hero-x__band:nth-child(3) { animation-delay: 0.16s; }
-
-@keyframes band-in {
-  from { transform: scaleX(0); }
-  to { transform: none; }
-}
-
-.hero-x__lede {
-  margin-top: var(--space-5);
-  font-size: 1.0625rem;
-  max-width: 46ch;
-}
-
-@media (min-width: 720px) {
-  .hero-x { padding-block: var(--space-7) var(--space-7); }
-  .hero-x__lede { font-size: 1.1875rem; }
-}
-
-/* -- pita jam: countdown di atas bidang hitam -- */
-.clock-band {
-  background: var(--ink);
-  color: var(--paper);
-  padding-block: var(--space-6) var(--space-7);
-}
-
-.clock-band__empty { color: var(--ink-muted); }
-
-/* Stage 4: keterangan setelah pemilihan selesai (hasil diumumkan panitia) */
-.clock-band__note {
-  margin-top: var(--space-4);
-  font-size: 0.9375rem;
-  color: var(--ink-muted);
-}
 
 /* -- countdown (partials/countdown.php + countdown.js) -- */
 .countdown__label {
@@ -705,27 +676,6 @@ summary:focus-visible {
   line-height: var(--h);
 }
 
-.countdown--hero .countdown__label { color: var(--ink-muted); }
-
-.countdown--hero .countdown__digits { font-size: clamp(2.5rem, 12.5vw, 7.25rem); }
-
-.countdown--hero .odo {
-  background: var(--ink-2);
-  color: var(--paper);
-}
-
-.countdown--hero .countdown__name { color: var(--ink-muted); }
-
-.countdown--hero.countdown--finished .countdown__label,
-.countdown--hero:not(.countdown--upcoming):not(.countdown--ongoing) .countdown__label {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 7vw, 3rem);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  text-transform: none;
-  color: var(--paper);
-}
-
 .countdown--compact {
   padding: var(--space-4);
   border: 1px solid var(--line);
@@ -750,228 +700,6 @@ summary:focus-visible {
 }
 
 .countdown--compact .countdown__name { color: var(--gray-700); font-size: 0.625rem; }
-
-/* -- garis waktu: mulai -> sekarang -> selesai -- */
-.timeline { margin-top: var(--space-6); }
-
-.timeline__track {
-  position: relative;
-  height: 22px;
-}
-
-.timeline__track::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--ink-line);
-}
-
-.timeline__ticks {
-  position: absolute;
-  inset: 0 0 2px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.timeline__ticks i {
-  width: 1px;
-  height: 7px;
-  background: var(--ink-line);
-}
-
-.timeline__ticks i:nth-child(6n + 1) {
-  height: 15px;
-  background: var(--gray-500);
-}
-
-.timeline__fill {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--paper);
-  transform-origin: left center;
-  transform: scaleX(var(--progress, 0));
-}
-
-.timeline__marker {
-  position: absolute;
-  bottom: -5px;
-  left: calc(var(--progress, 0) * 100%);
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-  background: var(--paper);
-  box-shadow: 0 0 0 4px var(--ink);
-}
-
-.countdown--ongoing .timeline__marker::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border: 1px solid var(--paper);
-  border-radius: 50%;
-  animation: marker-pulse 2.4s var(--ease) infinite;
-}
-
-@keyframes marker-pulse {
-  from { transform: scale(0.6); opacity: 0.9; }
-  to { transform: scale(2); opacity: 0; }
-}
-
-.timeline__ends {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-  font-size: 0.8125rem;
-  color: var(--ink-muted);
-}
-
-.timeline__ends div:last-child { text-align: right; }
-
-.timeline__ends dd {
-  color: var(--paper);
-  font-weight: 600;
-}
-
-/* -- pintu masuk siswa / guru -- */
-.entry { border-bottom: 1px solid var(--line); }
-
-.entry__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.entry__link {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: var(--space-1) var(--space-4);
-  min-height: 96px;
-  padding-block: var(--space-5);
-  text-decoration: none;
-}
-
-.entry__link + .entry__link { border-top: 1px solid var(--line); }
-
-.entry__who {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 6vw, 2.4rem);
-  line-height: 1.1;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.15em;
-}
-
-.entry__how {
-  grid-column: 1;
-  font-size: 0.875rem;
-  color: var(--gray-700);
-}
-
-.entry__arrow {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  width: 36px;
-  height: 36px;
-  transition: transform 0.3s var(--ease);
-}
-
-.entry__link:hover .entry__who,
-.entry__link:focus-visible .entry__who { text-decoration-line: underline; }
-
-.entry__link:hover .entry__arrow { transform: translateX(6px); }
-
-@media (min-width: 720px) {
-  .entry__grid { grid-template-columns: 1fr 1fr; }
-  .entry__link { padding: var(--space-6) var(--space-6) var(--space-6) 0; }
-  .entry__link + .entry__link {
-    border-top: 0;
-    border-left: 1px solid var(--line);
-    padding-left: var(--space-6);
-  }
-}
-
-/* -- teaser pasangan calon (publik, tanpa data suara) -- */
-.teaser { padding-block: var(--space-7) var(--space-8); }
-
-.teaser__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-.teaser__list {
-  display: grid;
-  grid-template-columns: 1fr;
-  border-top: 2px solid var(--ink);
-}
-
-.teaser__item {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-1) var(--space-4);
-  padding-block: var(--space-5);
-  border-bottom: 1px solid var(--line);
-}
-
-.teaser__item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: -2px;
-  width: 64px;
-  height: 6px;
-  background: var(--accent);
-}
-
-.teaser__no {
-  grid-row: span 2;
-  font-family: var(--font-display);
-  font-size: 3.2rem;
-  font-weight: 600;
-  line-height: 0.9;
-  color: var(--accent-text);
-}
-
-.teaser__name {
-  display: block;
-  font-weight: 600;
-}
-
-.teaser__name--wakil {
-  font-weight: 400;
-  color: var(--gray-700);
-}
-
-.teaser__theme {
-  grid-column: 2;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gray-700);
-}
-
-@media (min-width: 720px) {
-  .teaser__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .teaser__item { padding-right: var(--space-5); border-bottom: 0; }
-  .teaser__item + .teaser__item {
-    padding-left: var(--space-5);
-    border-left: 1px solid var(--line);
-  }
-  .teaser__item + .teaser__item::before { left: var(--space-5); }
-}
 
 /* ==========================================================================
    Stage 2 — Dasbor pemilih
@@ -1090,9 +818,16 @@ summary:focus-visible {
   .vote-card--locked { padding-left: calc(var(--space-6) + 6px); }
 }
 
-footer.site-footer {
+/* -- footer minimal, rata tengah (redesign beranda); varian scene di home.css -- */
+.site-footer {
+  padding: var(--space-5) var(--space-4);
   border-top: 1px solid var(--line);
-  padding-block: var(--space-5);
+  text-align: center;
   font-size: 0.8125rem;
   color: var(--gray-700);
+}
+
+.site-footer__text {
+  max-width: none;
+  margin-inline: auto;
 }

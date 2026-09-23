@@ -86,6 +86,44 @@ if (! function_exists('asset_url')) {
     }
 }
 
+if (! function_exists('asset_size')) {
+    /**
+     * Ukuran intrinsik gambar di public/ sebagai [lebar, tinggi] untuk atribut
+     * width/height (mencegah layout bergeser saat gambar dimuat), atau null.
+     * SVG dibaca dari viewBox; format raster lewat getimagesize(). Dipakai
+     * logo beranda agar logo pengganti (Config\Homepage) tidak perlu ukuran manual.
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    function asset_size(string $path): ?array
+    {
+        static $sizes = [];
+
+        $path = ltrim($path, '/');
+
+        if (array_key_exists($path, $sizes)) {
+            return $sizes[$path];
+        }
+
+        $file = FCPATH . str_replace('/', DIRECTORY_SEPARATOR, $path);
+        $size = null;
+
+        if (is_file($file)) {
+            if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'svg') {
+                $head = (string) file_get_contents($file, false, null, 0, 4096);
+
+                if (preg_match('/viewBox\s*=\s*["\']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)\s*["\']/i', $head, $m) === 1) {
+                    $size = [(int) round((float) $m[1]), (int) round((float) $m[2])];
+                }
+            } elseif (($info = @getimagesize($file)) !== false) {
+                $size = [(int) $info[0], (int) $info[1]];
+            }
+        }
+
+        return $sizes[$path] = ($size !== null && $size[0] > 0 && $size[1] > 0) ? $size : null;
+    }
+}
+
 if (! function_exists('angka')) {
     /**
      * Bilangan bulat format Indonesia, contoh 1234 menjadi "1.234".
@@ -152,6 +190,10 @@ if (! function_exists('icon')) {
             'award'    => '<circle cx="12" cy="9" r="5.5"/><path d="m8.6 13.4-1.6 7.1 5-2.6 5 2.6-1.6-7.1"/>',
             'expand'   => '<path d="M4.5 9V4.5H9"/><path d="M15 4.5h4.5V9"/><path d="M19.5 15v4.5H15"/><path d="M9 19.5H4.5V15"/>',
             'printer'  => '<path d="M7 9V4.5h10V9"/><rect x="4" y="9" width="16" height="7.5" rx="1.5"/><path d="M7 14h10v5.5H7Z"/>',
+            // Beranda imersif (redesign beranda)
+            'arrow-up-right' => '<path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/>',
+            'arrow-up'       => '<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>',
+            'chevron-down'   => '<path d="m6 9.5 6 6 6-6"/>',
         ];
 
         if (! isset($paths[$name])) {
