@@ -8,8 +8,13 @@ sudah dikunci hanya dapat dibuka admin dengan alasan tercatat. Admin memantau
 live count, analitik, dan hasil akhir yang aktif otomatis saat waktu pemilihan
 habis menurut jam server.
 
+Beranda publik tampil seperti aplikasi: layar pembuka, tiga scene layar penuh
+yang berpindah satu per satu (pembuka, pintu masuk **Siswa/Guru**, perolehan
+suara langsung), dan panel status bergaya terminal dengan countdown jam server
+(bagian 21).
+
 Dokumen ini adalah panduan pemakaian dan deployment. Riwayat implementasi per
-tahap ada di `STAGE1-NOTES.md` s.d. `STAGE4-NOTES.md`.
+tahap ada di `STAGE1-NOTES.md` s.d. `STAGE5-NOTES.md`.
 
 Daftar isi:
 [1 Ringkasan](#1-ringkasan) ·
@@ -31,14 +36,16 @@ Daftar isi:
 [17 Backup](#17-backup--pemulihan) ·
 [18 Troubleshooting](#18-troubleshooting) ·
 [19 Test](#19-test-otomatis) ·
-[20 Dokumen](#20-dokumen-proyek)
+[20 Dokumen](#20-dokumen-proyek) ·
+[21 Beranda](#21-beranda-imersif--aset-visual)
 
 ## 1. Ringkasan
 
 | Bagian | Isi |
 |---|---|
 | Pemilih | Siswa (NISN + kode unik tanggal lahir DDMMYYYY) dan guru (NIP + kode unik), tabel & login terpisah, satu pemilihan yang sama |
-| Pengalaman memilih | beranda dengan countdown jam server, halaman kandidat bertema per pasangan, visi-misi interaktif, surat suara dengan paku coblos 3D/2D, konfirmasi, suara terkunci, halaman "pilihan saya" |
+| Beranda publik | logo di tengah tanpa tombol masuk; layar pembuka; scene layar penuh (roda mouse, trackpad, geser sentuh, keyboard); pintu masuk Siswa/Guru bergambar; perolehan suara (persentase per pasangan + partisipasi) diperbarui tiap 30 detik; panel status terminal dengan countdown jam server |
+| Pengalaman memilih | halaman kandidat bertema per pasangan, visi-misi interaktif, surat suara dengan paku coblos 3D/2D, konfirmasi, suara terkunci, halaman "pilihan saya" |
 | Admin | dasbor & live count, analitik (jenis pemilih, jenis kelamin, jenjang, kelas, detail suara), pasangan calon + unggah tema, data & impor Excel siswa/guru, jadwal, unlock, audit log, hasil akhir + confetti |
 | Integritas | transaction + row lock, unique key satu suara aktif, CHECK & trigger database (suara/audit tidak dapat dihapus atau diubah), hasil dikunci setelah selesai |
 | Jadwal | status UPCOMING / ONGOING / FINISHED dihitung dari `start_at`/`end_at` terhadap jam server (WIB); sejak `end_at` pencoblosan ditolak |
@@ -46,7 +53,7 @@ Daftar isi:
 Tanpa emoji, tanpa gradient; warna hanya dari aksen solid tiap pasangan.
 Semua animasi menghormati `prefers-reduced-motion`, dan setiap alur tetap
 berjalan tanpa WebGL (paku 2D) maupun tanpa JavaScript (halaman konfirmasi
-server).
+server; beranda menjadi halaman bergulir biasa).
 
 ## 2. Arsitektur
 
@@ -59,11 +66,12 @@ Apache 2.4 (DocumentRoot = public/, mod_rewrite)  ->  public/index.php
 CodeIgniter 4.7
   Filter global : postsize -> csrf -> invalidchars | secureheaders, appheaders, CSP
   Filter role   : studentauth / teacherauth / adminauth (401 JSON untuk AJAX)
-  Controller    : Home, Student\*, Teacher\*, VotingController, ElectionController (jam),
-                  Admin\* (Dashboard, LiveCount, Analytics, Result, Candidate, Student,
-                  Teacher, Import, Election, Unlock, Audit)
+  Controller    : Home (beranda + live count publik), Student\*, Teacher\*, VotingController,
+                  ElectionController (jam), Admin\* (Dashboard, LiveCount, Analytics, Result,
+                  Candidate, Student, Teacher, Import, Election, Unlock, Audit)
   Service       : VoteService (castVote), UnlockService, AnalyticsService (satu definisi
-                  angka), FinalResult, VoterDirectory, Import\* (PhpSpreadsheet)
+                  angka), PublicLiveCount (proyeksi publik), FinalResult, VoterDirectory,
+                  Import\* (PhpSpreadsheet)
   Library       : CandidateTheme, CandidateAssets (encode ulang gambar), DeviceInfo,
                   Grade, AdminAccount, SystemCheck
   Model         : Admin, Student, Teacher, Candidate, Election, StudentVote, TeacherVote,
@@ -80,10 +88,11 @@ Prinsip utama:
 - **Identitas dari sesi, bukan dari input.** Pemilih tidak pernah mengirim id
   dirinya; jenis pemilih ditentukan route/controller. Tidak ada id pemilih atau
   suara di URL pemilih.
-- **Satu definisi angka.** Dasbor, live count, analitik, daftar pemilih, dan
-  hasil akhir memakai `AnalyticsService`: pemilih aktif = `status_aktif = 1`,
-  suara sah = baris `LOCKED` milik pemilih aktif, dihitung dengan agregasi
-  MySQL (`GROUP BY`), bukan di browser.
+- **Satu definisi angka.** Dasbor, live count, analitik, daftar pemilih,
+  hasil akhir, dan perolehan suara di beranda memakai `AnalyticsService`:
+  pemilih aktif = `status_aktif = 1`, suara sah = baris `LOCKED` milik
+  pemilih aktif, dihitung dengan agregasi MySQL (`GROUP BY`), bukan di
+  browser. Beranda hanya menerima persentase per pasangan dan partisipasi.
 - **Riwayat tidak pernah dihapus.** Unlock mengubah `LOCKED` menjadi
   `UNLOCKED`; pilih ulang = baris baru. Database menolak DELETE suara/log.
 
@@ -98,15 +107,17 @@ Struktur folder utama:
 
 ```
 app/Commands/        admin:create, admin:password, osis:check
-app/Config/          Routes.php, Filters.php, ContentSecurityPolicy.php, App.php, ...
+app/Config/          Routes.php, Filters.php, ContentSecurityPolicy.php, App.php, Homepage.php, ...
 app/Controllers/     Home, VotingController, Student/*, Teacher/*, Admin/*
 app/Database/        Migrations (12 file), Seeds (data contoh development)
 app/Filters/         AuthFilter + per role, PostSizeFilter, SecurityHeadersFilter
 app/Libraries/       CandidateTheme, CandidateAssets, DeviceInfo, Grade, AdminAccount, SystemCheck
 app/Models/          9 model tabel
-app/Services/        VoteService, UnlockService, AnalyticsService, FinalResult, Import/*
-app/Views/           layouts, home, student, teacher, voting, admin/**, errors
+app/Services/        VoteService, UnlockService, AnalyticsService, PublicLiveCount, FinalResult, Import/*
+app/Views/           layouts, home (+ partials: splash, dock, pair_photo), student, teacher,
+                     voting, admin/**, errors
 public/              index.php, .htaccess, assets/{css,js,fonts,img}, uploads/candidates/
+                     (img/brand: logo, img/home: latar layar pembuka & ilustrasi pintu masuk)
 tests/               unit, database, feature (PHPUnit)
 writable/            cache, logs, session, uploads/imports (pratinjau impor)
 ```
@@ -177,6 +188,9 @@ Salin dari `.env.example`:
 | `session.cookieName`, `session.expiration` | `osis_session`, `7200` | sesi 2 jam; pemilih keluar otomatis setelah 15 menit tanpa aktivitas |
 | `cookie.secure` | `false` / `true` | set `true` bila situs dibuka lewat HTTPS |
 | `app.CSPEnabled` | (bawaan `true`) | Content-Security-Policy; boleh `false` sementara hanya untuk diagnosis |
+| `homepage.publicLiveCount` | (bawaan `true`) | `false` = beranda tanpa angka perolehan suara, `GET live-count` 404 (bagian 21) |
+| `homepage.livePollSeconds`, `homepage.liveCacheSeconds` | `30`, `5` | irama pembaruan perolehan suara di beranda (min 10; 0 = mati) dan cache angka publik |
+| `homepage.logoOnDark`, `logoOnLight`, `introDesktop`, `introMobile`, `entryStudent`, `entryTeacher` | path di `public/` | mengganti logo, latar layar pembuka, ilustrasi pintu masuk (bagian 21) |
 
 Zona waktu aplikasi tetap `Asia/Jakarta` (`app/Config/App.php`), jadi jam di
 komputer server harus benar.
@@ -427,6 +441,9 @@ foto kandidat, impor Excel, batas ukuran (40-50 MB pesan aplikasi, di atasnya
    sementara, `php spark migrate`, buat admin & impor data uji, coba memilih,
    lalu kembalikan `.env` ke database hari H.
 6. Backup (bagian 17) sebelum pemilihan dimulai.
+7. Beranda (bagian 21): ganti logo, latar layar pembuka, dan ilustrasi
+   Siswa/Guru bila aset final sudah ada; putuskan apakah perolehan suara boleh
+   tampil publik selama pencoblosan (`homepage.publicLiveCount`).
 
 Hari H: pantau **Dasbor** (live count); bila perlu unlock, lihat bagian 14.
 Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
@@ -455,9 +472,9 @@ lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
 
 ## 9. Siswa
 
-1. Buka alamat aplikasi > **Masuk sebagai siswa**: NISN (10 digit, nol di
-   depan tetap) + kode unik (tanggal lahir `DDMMYYYY`; `05-06-2013` juga
-   diterima).
+1. Buka alamat aplikasi, gulir/geser ke bagian **Masuk sebagai**, pilih
+   **SISWA** (atau buka `/student/login`): NISN (10 digit, nol di depan tetap)
+   + kode unik (tanggal lahir `DDMMYYYY`; `05-06-2013` juga diterima).
 2. Dasbor menampilkan identitas, status hak suara, dan jadwal.
 3. **Lihat kandidat & coblos** (hanya saat pemilihan berlangsung).
 4. Setelah memilih: pilihan terkunci; login ulang hanya menampilkan pilihan
@@ -467,7 +484,8 @@ Sesi pemilih berakhir otomatis setelah 15 menit tanpa aktivitas.
 
 ## 10. Guru
 
-Sama dengan siswa, di **Masuk sebagai guru** dengan NIP + kode unik. Guru
+Sama dengan siswa: pilih **GURU** di bagian **Masuk sebagai** (atau buka
+`/teacher/login`) dengan NIP + kode unik. Guru
 adalah pemilih biasa: tidak memiliki akses admin maupun analitik. Suara guru
 dan siswa disimpan di tabel terpisah dan dihitung bersama pada hasil.
 
@@ -543,6 +561,12 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
   **Perbarui** memaksa ambil data.
 - Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status, 25 per
   halaman.
+- **Beranda publik** (`GET live-count`): hanya persentase suara sah per
+  pasangan dan partisipasi (sudah memilih / seluruh pemilih aktif) dari angka
+  yang sama, diperbarui tiap 30 detik (cache 5 detik), berhenti saat tab tidak
+  aktif atau pemilihan selesai. Rincian di atas tetap hanya untuk admin.
+  Matikan dengan `homepage.publicLiveCount = false` bila aturan sekolah tidak
+  membolehkan perolehan sementara tampil publik (bagian 21).
 
 ## 16. Hasil akhir
 
@@ -561,6 +585,8 @@ Admin > **Hasil akhir** (`/admin/results`):
   menghalangi klik, tidak tampil bila reduced motion. Tidak pernah tampil di
   dasbor/analitik.
 - Tombol **Layar penuh** (proyektor) dan **Cetak**.
+- Beranda publik saat selesai menampilkan "Perolehan akhir" (persentase)
+  tanpa pemenang dan tanpa confetti; pengumuman resmi tetap oleh panitia.
 
 ## 17. Backup & pemulihan
 
@@ -610,6 +636,10 @@ memakai database baru.
 | Migration "status dan unlocked_at tidak konsisten" | ada baris suara lama yang tidak konsisten; periksa id yang disebut sebelum melanjutkan |
 | HeidiSQL/phpMyAdmin: "tidak boleh dihapus/diubah" pada suara/log | penjaga integritas bekerja (disengaja) |
 | Halaman putih / 500 | lihat `writable/logs/log-*.log`; jalankan `php spark osis:check` (ekstensi, folder tulis, database) |
+| Layar pembuka beranda tidak muncul lagi | disengaja: sekali per tab browser (buka tab baru untuk melihatnya lagi) |
+| Beranda tidak pindah bagian dengan roda mouse/trackpad | satu gestur = satu bagian; tunggu transisi selesai lalu gulir lagi. Bagian yang lebih panjang dari layar (HP miring, zoom besar) digulir dulu isinya |
+| Perolehan suara di beranda tidak berubah | diperbarui tiap 30 detik (+ cache 5 detik), berhenti saat tab tidak aktif atau pemilihan selesai; `homepage.publicLiveCount = false` menyembunyikannya |
+| Logo/ilustrasi pengganti tidak tampil | path relatif ke `public/` (mis. `assets/img/home/siswa.webp`), bukan `public/uploads/`; format svg/webp/jpg/png/avif (bagian 21) |
 
 ## 19. Test otomatis
 
@@ -620,10 +650,11 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir: **289 test, 2.122 assertion, lulus** pada PHP 8.4.19 dan
-PHP 8.2.33, masing-masing dengan MariaDB 10.11.14 dan MySQL 8.0.46. Test
-paralel (race condition) memakai `pcntl_fork` sehingga di-skip di Windows.
-Rincian dan uji browser: `STAGE4-NOTES.md` bagian 9.
+Hasil terakhir (Stage 5): **306 test, 2.303 assertion, lulus** pada PHP
+8.4.19 dan PHP 8.2.33 dengan MariaDB 10.11.14. Stage 4 (289 test) juga lulus
+di MySQL 8.0.46; Stage 5 tidak mengubah schema maupun query. Test paralel
+(race condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan
+uji browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` bagian 9.
 
 ## 20. Dokumen proyek
 
@@ -634,8 +665,60 @@ Rincian dan uji browser: `STAGE4-NOTES.md` bagian 9.
 | `02-STUDENT-TEACHER-VOTING.md` + `STAGE2-NOTES.md` | Stage 2: pengalaman voting siswa & guru |
 | `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` | Stage 3: panel admin, impor, tema, analitik, live count, unlock, audit |
 | `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` + `STAGE4-NOTES.md` | Stage 4: audit keamanan, integritas suara, hasil akhir & confetti, deployment, matriks route & hak akses, test akhir |
+| `05-HOMEPAGE-REDESIGN.md` + `STAGE5-NOTES.md` | Stage 5: redesign beranda (scene layar penuh, pintu masuk Siswa/Guru, live count publik, layar pembuka, panel status terminal, navigasi logo & footer) |
+
+## 21. Beranda imersif & aset visual
+
+Beranda (`/`) terdiri dari tiga **scene** setinggi layar yang berpindah satu
+per satu, bukan halaman bergulir panjang:
+
+| Scene | Isi |
+|---|---|
+| 01 Beranda | Pemilihan Ketua & Wakil Ketua OSIS, SMP 1 Dawe 2026, tombol **Masuk untuk memilih** dan **Lihat perolehan suara**, pita warna pasangan, bidang titik interaktif |
+| 02 Masuk | "Masuk sebagai": portal **SISWA** (`/student/login`) dan **GURU** (`/teacher/login`) bergambar |
+| 03 Perolehan suara | foto pasangan, persentase tepat di bawah foto, "Suara masuk" (partisipasi), "Diperbarui [tanggal] [jam]", footer |
+
+- Berpindah scene: roda mouse/trackpad (satu gestur = satu scene), geser
+  sentuh, panah/PageUp/PageDown/spasi/Home/End, garis navigasi di kanan
+  layar, atau tombol di tiap scene. Alamat `/#masuk` dan `/#perolehan`
+  membuka scene itu langsung.
+- **Panel status** di bawah layar (gaya terminal): status pemilihan, hitung
+  mundur jam server, jadwal, garis progres. Tidak pernah menutupi tombol.
+- **Layar pembuka**: sekali per tab browser, logo + bilah muat, lalu logo
+  berpindah ke navigasi.
+- Tanpa JavaScript atau dengan "kurangi gerakan" di perangkat, beranda tetap
+  lengkap (bergulir biasa / tanpa animasi).
+
+Mengganti gambar (tanpa mengubah layout): simpan file di
+`public/assets/img/...`, lalu isi path-nya (relatif ke `public/`) di
+`app/Config/Homepage.php` atau `.env`:
+
+```
+# beranda & layar pembuka (latar gelap) / login, dasbor, voting (latar terang)
+homepage.logoOnDark   = 'assets/img/brand/logo-putih.svg'
+homepage.logoOnLight  = 'assets/img/brand/logo-hitam.svg'
+homepage.introDesktop = 'assets/img/home/pembuka-1920x1080.webp'
+homepage.introMobile  = 'assets/img/home/pembuka-1080x1920.webp'
+homepage.entryStudent = 'assets/img/home/siswa.webp'
+homepage.entryTeacher = 'assets/img/home/guru.webp'
+# opsional, portal di HP tegak (kotak lebar ±2:1):
+# homepage.entryStudentMobile = 'assets/img/home/siswa-hp.webp'
+# homepage.entryTeacherMobile = 'assets/img/home/guru-hp.webp'
+```
+
+| Aset | Ukuran disarankan | Catatan |
+|---|---|---|
+| Logo | SVG, atau PNG/WebP transparan tinggi >= 160 px | tampil setinggi 24–40 px di navigasi dan ±440 px lebar di layar pembuka; ukuran asli dibaca otomatis |
+| Latar layar pembuka | lanskap 1920×1080, potret 1080×1920, WebP/JPG < 300 KB | layar potret (HP/tablet tegak) memakai versi potret; bagian tengah tertutup logo; diberi lapisan gelap |
+| Ilustrasi Siswa/Guru | >= 1200×1500, subjek di tengah | dipotong "cover" (desktop: kotak potret; HP tegak: kotak lebar); diberi lapisan gelap agar teks terbaca |
+| Foto pasangan | dari menu **Pasangan calon** (foto ketua, foto wakil, hero/foto berdua) | scene perolehan suara memakai foto berdua bila ada; tanpa foto tampil monogram inisial |
+
+Perolehan suara publik dapat dimatikan: `homepage.publicLiveCount = false`
+(scene ketiga menjadi "Pasangan calon" tanpa angka). Rincian teknis:
+`STAGE5-NOTES.md`.
 
 ## Lisensi
 
 Framework CodeIgniter: MIT (`LICENSE`).
-Font Inter dan Newsreader: SIL Open Font License (`public/assets/fonts/`).
+Font Inter, Newsreader, dan JetBrains Mono: SIL Open Font License
+(`public/assets/fonts/`).

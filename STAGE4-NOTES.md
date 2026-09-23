@@ -20,6 +20,12 @@ Ringkasan Stage 4:
 - alat deployment: `php spark admin:create`, `admin:password`, `osis:check`;
 - README final + deployment Laragon; 66 test baru (total 289).
 
+> Pembaruan Stage 5 (redesign beranda, `STAGE5-NOTES.md`): beranda imersif,
+> navigasi logo di tengah tanpa tombol masuk, footer rata tengah, dan route
+> publik baru `GET live-count` (persentase per pasangan + partisipasi).
+> Bagian yang terdampak di dokumen ini diberi tanda "Stage 5". Total test
+> sekarang 306.
+
 ## 1. Final audit
 
 ### 1.1 Alur lengkap (04 bagian 1)
@@ -121,7 +127,7 @@ Catatan per bagian:
 | Suara ganda | `FOR UPDATE` baris pemilih + unique key `uq_*_votes_active` | `testParallelRequestsFromOneStudentCreateExactlyOneVote` (6 proses), `VoteIntegrityTest::testDatabaseStillAllowsOnlyOneActiveVote` |
 | Replay POST suara | POST kedua = 409 `already_voted`; throttle 10/menit | `testSecondVoteIsRejectedAndFirstChoiceKept`, `testSubmitIsThrottledPerVoter` |
 | Race condition | urutan kunci sama (`castVote` & unlock), deadlock/lock wait = `retry` | `testParallelVotesFromDifferentVotersAllSucceedWithoutDeadlock` (12 proses), unlock paralel vs pilih ulang |
-| Akses API langsung | `election/clock` tanpa data pemilih; `live-count` hanya admin (401 JSON) | `testLiveCountRejectsNonAdminAjaxWith401Json`, `RoleMatrixTest` |
+| Akses API langsung | `election/clock` tanpa data pemilih; `admin/live-count` hanya admin (401 JSON); Stage 5: `live-count` publik hanya persentase per pasangan + partisipasi | `testLiveCountRejectsNonAdminAjaxWith401Json`, `RoleMatrixTest`, `HomepageTest::testLiveCountJsonIsANarrowProjectionOfTheAnalytics` |
 | Mass assignment | input dipetakan eksplisit, `allowedFields`; field asing diabaikan | `testMassAssignmentFieldsAreIgnored`, `testInvalidCandidateInputIsRejected` |
 | Brute force login | 5 gagal per akun (lalu 1/menit), 30 gagal per IP per menit, key di-hash | `testLoginIsThrottledPerAccountAfterRepeatedFailures` |
 | localStorage | hanya preferensi efek `osis2026.fx`; confetti memakai sessionStorage penanda `osis2026.confetti.<election>-<end>` | review kode |
@@ -274,7 +280,9 @@ beranda; pesan teknis hanya di luar production.
 - Judul login `h2` -> `h1`; pratinjau kandidat punya `h1` tersembunyi;
   landmark Visi/Misi per pasangan dan tabel riwayat suara diberi label unik.
 - Beranda saat FINISHED: "Pencoblosan sudah ditutup. Hasil resmi diumumkan
-  oleh panitia pemilihan OSIS." (hasil tidak dibuka ke publik).
+  oleh panitia pemilihan OSIS." (hasil tidak dibuka ke publik). Stage 5:
+  kalimat ini tetap tampil, kini bersama "Perolehan akhir" (persentase)
+  bila live count publik aktif; pemenang & confetti tetap hanya di admin.
 - Paku WebGL: `destroy()` menghapus buffer & program dan memanggil
   `WEBGL_lose_context`; `ballot.js` memanggilnya saat `pagehide`.
 - Panel: tombol **Layar penuh** (fallback webkit, `aria-pressed`) dan
@@ -390,6 +398,7 @@ after `secureheaders`, `appheaders` (+ CSP). Semua POST wajib token CSRF.
 |---|---|---|
 | GET | `/` | `Home::index` |
 | GET | `election/clock` | `ElectionController::clock` (JSON jam server, no-store) |
+| GET | `live-count` | `Home::liveCount` (Stage 5: JSON live count publik, no-store) |
 | GET, POST | `student/login` | `Student\AuthController::loginForm / attemptLogin` |
 | GET, POST | `teacher/login` | `Teacher\AuthController::loginForm / attemptLogin` |
 | GET, POST | `admin/login` | `Admin\AuthController::loginForm / attemptLogin` |
@@ -435,6 +444,7 @@ after `secureheaders`, `appheaders` (+ CSP). Semua POST wajib token CSRF.
 | Method | URI | Akses | Respons |
 |---|---|---|---|
 | GET | `election/clock` | publik | `{status, now, start, end, label}` (epoch ms jam server), tanpa data pemilih |
+| GET | `live-count` | publik (Stage 5) | `{status, label, candidates[{id, label, percent}], turnout{voted, total, percent}, updated_at, updated_label, poll}`, `no-store`; 404 bila `homepage.publicLiveCount = false` |
 | POST | `student/vote`, `teacher/vote` | pemilih role itu | 200 `ok` / 409 `already_voted` / 403 `voting_closed`, `no_election`, `voter_inactive` / 422 `invalid_candidate` / 429 `throttled` / 503 `retry` / 401 `unauthenticated` |
 | GET | `admin/live-count` | admin | snapshot JSON (STAGE3-NOTES bagian 7), `poll.interval` 10/60/0, `no-store`; non-admin AJAX = 401 JSON |
 
@@ -643,11 +653,12 @@ smp1dawe-osis-2026/
 ├── .env.example  .gitignore  .htaccess  composer.json  composer.lock  env  phpunit.dist.xml  preload.php  spark  LICENSE
 ├── 00-MASTER-PROJECT.md  01-FOUNDATION-DATABASE-AUTH.md  02-STUDENT-TEACHER-VOTING.md
 ├── 03-ADMIN-IMPORT-ANALYTICS.md  04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md
-├── README.md  STAGE1-NOTES.md  STAGE2-NOTES.md  STAGE3-NOTES.md  STAGE4-NOTES.md
+├── 05-HOMEPAGE-REDESIGN.md (Stage 5)
+├── README.md  STAGE1-NOTES.md  STAGE2-NOTES.md  STAGE3-NOTES.md  STAGE4-NOTES.md  STAGE5-NOTES.md
 ├── app/
 │   ├── Commands/        AdminCreate, AdminPassword, SystemCheckCommand
-│   ├── Config/          App, Autoload, ContentSecurityPolicy, Database, Filters, Pager, Routes,
-│   │                    Security, Services, UserAgents (+ bawaan CodeIgniter)
+│   ├── Config/          App, Autoload, ContentSecurityPolicy, Database, Filters, Homepage (Stage 5),
+│   │                    Pager, Routes, Security, Services, UserAgents (+ bawaan CodeIgniter)
 │   ├── Controllers/
 │   │   ├── BaseController, Home, ElectionController, VotingController
 │   │   ├── Admin/       AdminController, AuthController, DashboardController, LiveCountController,
@@ -671,13 +682,13 @@ smp1dawe-osis-2026/
 │   ├── Models/          AdminModel, StudentModel, TeacherModel, CandidateModel, ElectionModel,
 │   │                    StudentVoteModel, TeacherVoteModel, VoteUnlockLogModel, AuditLogModel
 │   ├── Services/        VoteService, VoteResult, VoterType, UnlockService, UnlockResult,
-│   │   │                AnalyticsService, FinalResult, VoterDirectory
+│   │   │                AnalyticsService, FinalResult, VoterDirectory, PublicLiveCount (Stage 5)
 │   │   └── Import/      VoterImporter, StudentImporter, TeacherImporter, ImportCell,
 │   │                    ImportStore, ImportConflictException
 │   └── Views/
 │       ├── layouts/     main.php, admin.php
 │       ├── partials/    header, footer, flash, election_status, countdown, vote_status
-│       ├── home/        index.php
+│       ├── home/        index.php + partials/ (splash, dock, pair_photo) (Stage 5)
 │       ├── student/     login.php, dashboard.php
 │       ├── teacher/     login.php, dashboard.php
 │       ├── voting/      index, confirm, my_vote + partials/ (chapter, portraits, ballot,
@@ -692,21 +703,24 @@ smp1dawe-osis-2026/
 ├── public/
 │   ├── index.php  .htaccess  robots.txt  favicon.ico
 │   ├── assets/
-│   │   ├── css/         app.css, voting.css, admin.css, results.css
-│   │   ├── js/          app, countdown, candidates, ballot, nail-webgl, admin, admin-live, confetti
-│   │   ├── fonts/       Inter & Newsreader (woff2 + OFL)
-│   │   └── img/patterns/ grid.svg, hatch.svg, dots.svg
+│   │   ├── css/         app.css, voting.css, admin.css, results.css, home.css (Stage 5)
+│   │   ├── js/          app, countdown, candidates, ballot, nail-webgl, admin, admin-live, confetti,
+│   │   │                home (Stage 5)
+│   │   ├── fonts/       Inter, Newsreader, JetBrains Mono (Stage 5) (woff2 + OFL)
+│   │   └── img/         patterns/ (grid, hatch, dots, ticks), brand/ (logo), home/ (layar pembuka,
+│   │                    ilustrasi pintu masuk) (Stage 5)
 │   └── uploads/         .htaccess, candidates/ (gambar unggahan, tidak di-commit)
 ├── tests/
 │   ├── _support/        bootstrap.php, UploadFixture.php, SpreadsheetFactory.php
 │   ├── unit/            HealthTest, ElectionStatusTest, DeviceInfoTest, CandidateThemeTest,
-│   │                    CandidateAssetsTest, GradeTest, FinalResultRankingTest
+│   │                    CandidateAssetsTest, GradeTest, FinalResultRankingTest,
+│   │                    PublicLiveCountTest (Stage 5)
 │   ├── database/        SchemaIntegrityTest, Stage2SchemaTest, Stage3SchemaTest, VoteServiceTest,
 │   │                    UnlockServiceTest, AnalyticsServiceTest, VoterImportTest,
 │   │                    VoteIntegrityTest, AnalyticsConsistencyTest, DeploymentToolsTest
 │   └── feature/         AuthTest, VotingTest, AdminPanelTest, AdminCandidateTest, AdminImportTest,
 │                        FinalResultTest, RoleMatrixTest, SecurityHardeningTest, ResultsLockTest,
-│                        ImportVerificationTest
+│                        ImportVerificationTest, HomepageTest (Stage 5)
 └── writable/            cache/, logs/, session/, uploads/imports/ (pratinjau impor), debugbar/
 ```
 
@@ -715,7 +729,10 @@ smp1dawe-osis-2026/
 1. **Hasil akhir hanya untuk admin.** Beranda publik saat selesai hanya
    menyatakan pencoblosan ditutup; pengumuman dilakukan panitia (layar penuh /
    cetak dari panel). Bila hasil perlu tampil publik, tambahkan halaman baru
-   yang memakai `FinalResult` yang sama.
+   yang memakai `FinalResult` yang sama. Stage 5: beranda kini juga
+   menampilkan persentase per pasangan & partisipasi (live count publik,
+   dapat dimatikan), tanpa pemenang maupun confetti; lihat
+   `STAGE5-NOTES.md` bagian 11.
 2. **Confetti hanya untuk satu pemenang.** Hasil seri atau tanpa suara sah
    tidak dirayakan; aplikasi tidak memutuskan seri (aturan panitia).
 3. **Hasil dikunci setelah FINISHED.** Koreksi data pemilih/pasangan setelah

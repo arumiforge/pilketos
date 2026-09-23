@@ -129,6 +129,8 @@ Gunakan:
 - canvas;
 - WebGL bila membantu.
 Jangan menggunakan gradient hanya untuk membuat countdown terlihat modern.
+
+Keputusan Stage 5 (redesign beranda, `05-HOMEPAGE-REDESIGN.md`): beranda menjadi tiga scene layar penuh yang berpindah satu per satu (pembuka, pintu masuk Siswa/Guru, perolehan suara) dengan transisi kedalaman; logo lengkap di tengah navigasi tanpa tombol masuk (masuk lewat portal Siswa/Guru bergambar); status, jadwal, dan countdown jam server dipindah ke panel bawah bergaya terminal; layar pembuka sekali per sesi tab; footer rata tengah. Tanpa JavaScript beranda tetap halaman bergulir biasa. Detail di `STAGE5-NOTES.md`.
  
 ## 6. TIGA PASANGAN CALON
  
@@ -252,6 +254,8 @@ Tidak tampilkan:
 - peringkat kandidat;
 - analytics admin.
 Unlock hanya dapat dilakukan admin.
+
+Catatan Stage 5: aturan di atas berlaku untuk halaman pemilih setelah login (dasbor, pilihan saya, surat suara). Beranda publik menampilkan perolehan ringkas sesuai keputusan Stage 5 di bagian 15.
  
 ## 11. DATA SISWA
  
@@ -330,7 +334,7 @@ Keputusan Stage 1: desain A (`student_votes` dan `teacher_votes`). Baris vote ti
  
 ## 14. ADMIN ANALYTICS
  
-Analytics hanya tersedia pada panel admin.
+Analytics hanya tersedia pada panel admin. (Stage 5: beranda publik hanya menerima persentase suara sah per pasangan dan partisipasi keseluruhan; seluruh rincian di bagian ini tetap admin-only.)
  
 ### Keseluruhan
  
@@ -433,6 +437,8 @@ Hentikan/kurangi polling ketika:
 - admin logout.
 
 Keputusan Stage 3: live count = AJAX polling `GET admin/live-count` dengan irama dari server (10 detik saat ONGOING, 60 detik saat UPCOMING, berhenti saat FINISHED, tab tidak aktif, atau sesi habis). Semua angka dasbor, live count, analitik, dan daftar pemilih memakai satu definisi di `AnalyticsService` (pemilih `status_aktif = 1`, suara `LOCKED`) dan dihitung dengan agregasi MySQL; grafik hanya batang horizontal, satu donat, dan batang komposisi. Detail di `STAGE3-NOTES.md`.
+
+Keputusan Stage 5: atas permintaan pemilik proyek, beranda publik menampilkan live count ringkas: foto pasangan, persentase suara sah per pasangan (urut nomor, bukan peringkat), dan partisipasi ("Suara masuk"), dari `AnalyticsService` yang sama lewat `GET live-count` (publik, JSON `no-store`, tanpa identitas, jumlah suara per pasangan, maupun rekap). Diperbarui tiap 30 detik saat belum dibuka/berlangsung, berhenti saat selesai atau tab tidak aktif, cache 5 detik. Panitia dapat mematikannya (`homepage.publicLiveCount = false`) bila aturan sekolah tidak membolehkan perolehan sementara tampil publik. Detail di `STAGE5-NOTES.md`.
 ## 16. ELECTION SCHEDULE
  
 Admin dapat menentukan:
@@ -479,6 +485,8 @@ Setelah election selesai dan hasil final sudah ada:
 - jangan membuat confetti terus-menerus sehingga mengganggu.
 
 Keputusan Stage 4: hasil akhir ada di panel admin (`admin/results`) dan aktif hanya saat status FINISHED menurut jam server; angka dari `AnalyticsService` yang sama dengan dasbor. Pemenang = satu pasangan dengan suara sah terbanyak; seri atau tanpa suara sah ditampilkan tanpa pemenang dan tanpa confetti. Confetti canvas ringan tanpa library, sekali per sesi browser, dilewati saat reduced motion, tidak pernah di dasbor/analitik. Setelah selesai, data yang menentukan hasil dikunci; membuka kembali pemilihan wajib konfirmasi dan tercatat di audit log. Detail di `STAGE4-NOTES.md`.
+
+Stage 5: bila live count publik aktif, beranda menampilkan "Perolehan akhir" (persentase per pasangan & partisipasi) setelah selesai, tanpa pemenang dan tanpa confetti; halaman hasil akhir tetap hanya di panel admin dan pengumuman resmi tetap oleh panitia.
 ## 18. ADMIN UNLOCK
  
 Flow:

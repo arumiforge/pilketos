@@ -14,6 +14,10 @@ $routes->get('/', 'Home::index');
 // Jam server untuk countdown (JSON publik, tanpa data pemilih/suara).
 $routes->get('election/clock', 'ElectionController::clock');
 
+// Live count publik beranda (JSON): hanya persentase per pasangan +
+// partisipasi, tanpa identitas/rincian. Rincian tetap di admin/live-count.
+$routes->get('live-count', 'Home::liveCount');
+
 $routes->get('student/login', 'Student\AuthController::loginForm');
 $routes->post('student/login', 'Student\AuthController::attemptLogin');
 
