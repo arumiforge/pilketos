@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#15141A">
 <?= csrf_meta() ?>
-<title><?= esc($title ?? 'Panel Admin') ?> — Admin Pemilihan OSIS SMP 1 Dawe</title>
+<title><?= esc($title ?? 'Panel Admin') ?> — Admin Pemilihan OSIS SMP 1 DAWE</title>
 <script <?= csp_script_nonce() ?>>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
-<link rel="preload" href="<?= base_url('assets/fonts/inter-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="<?= base_url('assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="<?= base_url('assets/fonts/newsreader-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= asset_url('assets/css/app.css') ?>">
 <link rel="stylesheet" href="<?= asset_url('assets/css/admin.css') ?>">
@@ -38,7 +38,7 @@
     </main>
 
     <footer class="admin-foot">
-      <p>Panel admin Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 Dawe &middot; waktu server <?= esc(\CodeIgniter\I18n\Time::now()->toLocalizedString('d MMM yyyy, HH.mm')) ?> WIB</p>
+      <p>Panel admin Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 DAWE &middot; waktu server <?= esc(\CodeIgniter\I18n\Time::now()->toLocalizedString('d MMM yyyy, HH.mm')) ?> WIB</p>
     </footer>
   </div>
 </div>

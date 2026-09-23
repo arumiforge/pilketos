@@ -99,7 +99,7 @@ final class HomepageTest extends CIUnitTestCase
         $page->assertSee('site-nav site-nav--immersive');
         $page->assertSee('class="site-nav__brand" href="' . base_url('/') . '"');
         $page->assertSee('assets/img/brand/logo-light.svg');
-        $page->assertSee('alt="Pemilihan Ketua OSIS SMP 1 Dawe 2026, ke beranda"');
+        $page->assertSee('alt="Pemilihan Ketua OSIS SMP 1 DAWE 2026, ke beranda"');
         $page->assertSee('width="' . $size[0] . '" height="' . $size[1] . '"');
         $page->assertDontSee('Masuk Siswa');
         $page->assertDontSee('Masuk Guru');
@@ -134,7 +134,7 @@ final class HomepageTest extends CIUnitTestCase
         $body  = (string) $login->response()->getBody();
 
         $login->assertSee('class="site-footer"');
-        $login->assertSee('SMP 1 Dawe');
+        $login->assertSee('SMP 1 DAWE');
         $this->assertSame(1, substr_count($body, '<footer'));
 
         // Beranda: footer ada di dalam scene terakhir (halaman tidak menggulir).

@@ -1,5 +1,5 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
  * Live count panel admin (Stage 3, MASTER section 15).
  *
  * Mengambil GET admin/live-count (JSON) lalu memperbarui angka ringkasan,

@@ -36,7 +36,7 @@ final class AuthTest extends CIUnitTestCase
         $result = $this->get('/');
 
         $result->assertStatus(200);
-        $result->assertSee('SMP 1 Dawe');
+        $result->assertSee('SMP 1 DAWE');
         $result->assertSee('Sedang Berlangsung');
     }
 

@@ -8,5 +8,5 @@
  */
 ?>
 <footer class="site-footer<?= ($footerInScene ?? false) ? ' site-footer--scene' : '' ?>">
-  <p class="site-footer__text">&copy; <?= date('Y') ?> SMP 1 Dawe <span aria-hidden="true">&middot;</span> Pemilihan Ketua &amp; Wakil Ketua OSIS</p>
+  <p class="site-footer__text">&copy; <?= date('Y') ?> SMP 1 DAWE <span aria-hidden="true">&middot;</span> Pemilihan Ketua &amp; Wakil Ketua OSIS</p>
 </footer>

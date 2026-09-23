@@ -26,7 +26,7 @@ class SystemCheckCommand extends BaseCommand
         $results = (new SystemCheck())->run();
         $colors  = [SystemCheck::OK => 'green', SystemCheck::WARN => 'yellow', SystemCheck::FAIL => 'red'];
 
-        CLI::write('Pemeriksaan kesiapan - Pemilihan OSIS SMP 1 Dawe 2026', 'white');
+        CLI::write('Pemeriksaan kesiapan - Pemilihan OSIS SMP 1 DAWE 2026', 'white');
         CLI::newLine();
 
         foreach ($results as $row) {

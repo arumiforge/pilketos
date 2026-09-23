@@ -150,7 +150,7 @@ abstract class VoterImporter
     {
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()
-            ->setCreator('Panitia Pemilihan OSIS SMP 1 Dawe')
+            ->setCreator('Panitia Pemilihan OSIS SMP 1 DAWE')
             ->setTitle('Template impor ' . strtolower($this->type()->label()))
             ->setDescription('Isi data mulai baris 2 pada sheet pertama. Jangan ubah baris judul.');
 

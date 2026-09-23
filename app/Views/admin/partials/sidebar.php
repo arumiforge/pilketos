@@ -32,7 +32,7 @@ $number = 0;
       <span class="admin-side__word">OSIS</span>
       <span class="admin-side__year">2026</span>
     </a>
-    <p class="admin-side__school">SMP 1 Dawe &middot; Panel Admin</p>
+    <p class="admin-side__school">SMP 1 DAWE &middot; Panel Admin</p>
     <button type="button" class="admin-side__close" data-admin-menu-close aria-label="Tutup menu"><?= icon('close') ?></button>
   </div>
 

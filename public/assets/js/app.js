@@ -1,5 +1,5 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
  * Foundation JS (Stage 1) + helper bersama Stage 2 (postJson, preferensi
  * efek, reduced motion). Interaksi voting/3D/countdown ada di file terpisah:
  * countdown.js, candidates.js, ballot.js, nail-webgl.js.

@@ -176,7 +176,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $result = $this->asAdmin()->get('admin/dashboard');
 
         $result->assertStatus(200);
-        $result->assertSee('Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe');
+        $result->assertSee('Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE');
         $result->assertSee('Sedang Berlangsung');
         $result->assertSee('Hasil sementara');
         $result->assertSee('data-live-url="' . site_url('admin/live-count') . '"');
@@ -390,7 +390,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->scheduleAt('2026-10-01 11:45:00');
 
         $this->postAdmin('admin/election', [
-            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe',
+            'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE',
             'tahun'    => '2026',
             'start_at' => '2026-10-01T07:00',
             'end_at'   => '2026-10-01T13:00',
@@ -633,7 +633,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $audit->assertSee('Ahmad Fauzan');
         $audit->assertSee('0000000001');
         $audit->assertSee('Siswa');
-        $audit->assertSee('Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 Dawe 2026');
+        $audit->assertSee('Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE 2026');
         $audit->assertSee(self::REASON);
         $audit->assertSee('<strong>1</strong> catatan');
     }

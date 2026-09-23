@@ -29,7 +29,7 @@ $navLogoSize = asset_size($navLogo);
 
     <a class="site-nav__brand" href="<?= base_url('/') ?>">
       <img class="site-nav__logo" src="<?= asset_url($navLogo) ?>"
-           alt="Pemilihan Ketua OSIS SMP 1 Dawe 2026, ke beranda"
+           alt="Pemilihan Ketua OSIS SMP 1 DAWE 2026, ke beranda"
            <?= $navLogoSize !== null ? 'width="' . $navLogoSize[0] . '" height="' . $navLogoSize[1] . '"' : '' ?>
            decoding="async" data-nav-logo>
     </a>

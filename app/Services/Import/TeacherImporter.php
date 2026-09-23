@@ -37,7 +37,7 @@ final class TeacherImporter extends VoterImporter
     protected function instructions(): array
     {
         return [
-            'Petunjuk impor data guru - Pemilihan Ketua OSIS SMP 1 Dawe 2026',
+            'Petunjuk impor data guru - Pemilihan Ketua OSIS SMP 1 DAWE 2026',
             '1. Isi data mulai baris 2 pada sheet pertama ("Data Guru"). Jangan mengubah, menghapus, atau memindahkan baris judul.',
             '2. NIP diketik sebagai teks (kolom sudah berformat Teks). NIP 18 digit yang diketik sebagai angka akan dibulatkan Excel dan ditolak sistem.',
             '3. Guru tanpa NIP PNS boleh memakai nomor identitas lain berupa angka (mis. NUPTK) yang juga dipakai untuk login.',

@@ -1,5 +1,5 @@
 /**
- * SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+ * SMP 1 DAWE — Pemilihan Ketua OSIS 2026
  * Beranda imersif (redesign beranda, STAGE5-NOTES.md).
  *
  * 1. Layar pembuka: bilah muat mengikuti asset yang benar-benar dimuat (font,

@@ -1,7 +1,9 @@
 /* ==========================================================================
-   SMP 1 Dawe — Pemilihan Ketua OSIS 2026
+   SMP 1 DAWE — Pemilihan Ketua OSIS 2026
    Foundation (Stage 1) + countdown, dasbor pemilih (Stage 2) + navigasi logo
-   di tengah & footer rata tengah (redesign beranda).
+   di tengah & footer rata tengah (redesign beranda). Stage 6: font UI
+   Plus Jakarta Sans (07-TYPOGRAPHY-FONT-SYSTEM-PILKETOS.md) untuk seluruh
+   aplikasi lewat token --font-ui.
    Beranda imersif (scene, layar pembuka, panel status): home.css.
    Base hitam / putih / abu-abu. Tanpa gradient, tanpa emoji.
    Warna aksen hanya milik masing-masing pasangan calon, dipasang lewat
@@ -12,11 +14,11 @@
 
 /* -- fonts: self-hosted (OFL), tidak bergantung CDN saat hari pemilihan -- */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('../fonts/inter-latin-wght-normal.woff2') format('woff2');
+  src: url('../fonts/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -52,7 +54,7 @@
   --accent-text: var(--ink);
 
   --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --radius: 3px;
   --radius-lg: 6px;

@@ -59,7 +59,7 @@ $entries = [
       <div class="hero">
         <h1 class="hero__title" id="hero-title">
           <span class="hero__kicker" data-reveal>Pemilihan Ketua &amp; Wakil Ketua OSIS</span>
-          <span class="hero__line"><span class="hero__word" data-reveal>SMP 1 Dawe</span></span>
+          <span class="hero__line"><span class="hero__word" data-reveal>SMP 1 DAWE</span></span>
           <span class="hero__line hero__line--year"><span class="hero__word" data-reveal><span class="visually-hidden">Tahun </span>2026</span></span>
         </h1>
         <p class="hero__lede" data-reveal>Satu pemilih, satu suara. Kenali pasangan calon, lalu coblos pilihanmu di surat suara digital.</p>
