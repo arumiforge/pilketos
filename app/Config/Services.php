@@ -2,6 +2,11 @@
 
 namespace Config;
 
+use App\Libraries\CandidateAssets;
+use App\Services\AnalyticsService;
+use App\Services\Import\ImportStore;
+use App\Services\UnlockService;
+use App\Services\VoterDirectory;
 use App\Services\VoteService;
 use CodeIgniter\Config\BaseService;
 
@@ -42,5 +47,66 @@ class Services extends BaseService
         }
 
         return new VoteService();
+    }
+
+    /**
+     * Analitik & live count admin (Stage 3). service('analytics')
+     */
+    public static function analytics(bool $getShared = true): AnalyticsService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('analytics');
+        }
+
+        return new AnalyticsService();
+    }
+
+    /**
+     * Unlock hak suara oleh admin (Stage 3). service('unlock')
+     */
+    public static function unlock(bool $getShared = true): UnlockService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('unlock');
+        }
+
+        return new UnlockService();
+    }
+
+    /**
+     * Daftar & pencarian pemilih di panel admin (Stage 3). service('voterDirectory')
+     */
+    public static function voterDirectory(bool $getShared = true): VoterDirectory
+    {
+        if ($getShared) {
+            return static::getSharedInstance('voterDirectory');
+        }
+
+        return new VoterDirectory();
+    }
+
+    /**
+     * Unggahan foto/asset kandidat ke public/uploads/candidates (Stage 3).
+     * Test menggantinya dengan folder sementara lewat Services::injectMock().
+     */
+    public static function candidateAssets(bool $getShared = true): CandidateAssets
+    {
+        if ($getShared) {
+            return static::getSharedInstance('candidateAssets');
+        }
+
+        return new CandidateAssets();
+    }
+
+    /**
+     * Penyimpanan pratinjau import di writable/uploads/imports (Stage 3).
+     */
+    public static function importStore(bool $getShared = true): ImportStore
+    {
+        if ($getShared) {
+            return static::getSharedInstance('importStore');
+        }
+
+        return new ImportStore();
     }
 }

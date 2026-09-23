@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Filters\AdminAuthFilter;
+use App\Filters\PostSizeFilter;
 use App\Filters\StudentAuthFilter;
 use App\Filters\TeacherAuthFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'adminauth'     => AdminAuthFilter::class,
         'studentauth'   => StudentAuthFilter::class,
         'teacherauth'   => TeacherAuthFilter::class,
+        'postsize'      => PostSizeFilter::class,
     ];
 
     /**
@@ -60,7 +62,9 @@ class Filters extends BaseFilters
 
     /**
      * Filter global. CSRF aktif untuk semua request (GET dilewati,
-     * POST/PUT/PATCH/DELETE wajib membawa token).
+     * POST/PUT/PATCH/DELETE wajib membawa token). "postsize" (Stage 3)
+     * berjalan sebelum CSRF agar unggahan > post_max_size mendapat pesan
+     * ukuran yang jelas, bukan pesan token kedaluwarsa.
      *
      * @var array{
      *     before: array<string, array{except: list<string>|string}>|list<string>,
@@ -69,6 +73,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'postsize',
             'csrf',
             'invalidchars',
         ],

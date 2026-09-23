@@ -61,6 +61,26 @@ if (! function_exists('election_clock')) {
     }
 }
 
+if (! function_exists('angka')) {
+    /**
+     * Bilangan bulat format Indonesia, contoh 1234 menjadi "1.234".
+     */
+    function angka(int|float|string|null $value): string
+    {
+        return number_format((float) $value, 0, ',', '.');
+    }
+}
+
+if (! function_exists('persen')) {
+    /**
+     * Persentase format Indonesia, contoh 45.25 menjadi "45,3%".
+     */
+    function persen(int|float|string|null $value, int $decimals = 1): string
+    {
+        return number_format((float) $value, $decimals, ',', '.') . '%';
+    }
+}
+
 if (! function_exists('icon')) {
     /**
      * Ikon SVG inline (garis 1.75px, currentColor) agar gaya ikon konsisten
@@ -72,12 +92,37 @@ if (! function_exists('icon')) {
         $paths = [
             'arrow-right' => '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
             'arrow-down'  => '<path d="M12 5v14"/><path d="m6 13 6 6 6-6"/>',
+            'arrow-left'  => '<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>',
             'lock'        => '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+            'unlock'      => '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 7.6-1.8"/>',
             'check'       => '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
             'alert'       => '<path d="M12 4 2.8 19.5h18.4Z"/><path d="M12 10v4.5"/><path d="M12 17.2v.3"/>',
+            'info'        => '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8v.01"/>',
             'clock'       => '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
             'nail'        => '<path d="M6.5 4.5h11"/><path d="M9 4.5 10 7h4l1-2.5"/><path d="M11 7v10.5L12 21l1-3.5V7"/>',
             'layers'      => '<path d="m12 4 8.5 4.5L12 13 3.5 8.5Z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/>',
+            // Panel admin (Stage 3)
+            'grid'     => '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+            'chart'    => '<path d="M4 20h16"/><path d="M7 16v-5"/><path d="M12 16V6"/><path d="M17 16v-8"/>',
+            'list'     => '<path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/>',
+            'flag'     => '<path d="M5 21V4"/><path d="M5 4.5h11.5l-2 4 2 4H5"/>',
+            'users'    => '<circle cx="9" cy="8.5" r="3.5"/><path d="M3 19.5c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/><path d="M15.5 5.3a3.5 3.5 0 0 1 0 6.4"/><path d="M17.5 14.8c1.8.6 3 2.2 3.5 4.7"/>',
+            'user'     => '<circle cx="12" cy="8" r="3.75"/><path d="M4.5 20c.9-3.7 3.9-6 7.5-6s6.6 2.3 7.5 6"/>',
+            'calendar' => '<rect x="4" y="5.5" width="16" height="14.5" rx="1.5"/><path d="M4 10h16"/><path d="M8.5 3.5v4"/><path d="M15.5 3.5v4"/>',
+            'file'     => '<path d="M14 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8Z"/><path d="M14 3.5V8h4.5"/><path d="M9 12.5h6"/><path d="M9 16h6"/>',
+            'upload'   => '<path d="M12 15V4"/><path d="m7 8.5 5-5 5 5"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/>',
+            'download' => '<path d="M12 4v11"/><path d="m7 10.5 5 5 5-5"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/>',
+            'search'   => '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>',
+            'menu'     => '<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>',
+            'close'    => '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
+            'trash'    => '<path d="M4.5 7h15"/><path d="M9.5 7V4.5h5V7"/><path d="M6.5 7l1 13h9l1-13"/>',
+            'edit'     => '<path d="M4.5 19.5l1-4L15 6a2.1 2.1 0 0 1 3 3l-9.5 9.5Z"/><path d="m13.5 7.5 3 3"/>',
+            'eye'      => '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>',
+            'image'    => '<rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><circle cx="9" cy="9.5" r="1.75"/><path d="m20.5 16-5-5-9 8.5"/>',
+            'refresh'  => '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>',
+            'external' => '<path d="M14 4.5h5.5V10"/><path d="M19.5 4.5 11 13"/><path d="M17 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1H10"/>',
+            'plus'     => '<path d="M12 5v14"/><path d="M5 12h14"/>',
+            'logout'   => '<path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14"/><path d="M10 12h10"/><path d="m16.5 8.5 3.5 3.5-3.5 3.5"/>',
         ];
 
         if (! isset($paths[$name])) {

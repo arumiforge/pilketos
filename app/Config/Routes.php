@@ -56,9 +56,62 @@ $routes->group('teacher', ['filter' => 'teacherauth'], static function (RouteCol
 
 // -----------------------------------------------------------------
 // ADMIN (protected by adminauth filter)
-// Stage 3 menambahkan seluruh route panel admin di dalam grup ini.
+// Panel admin Stage 3. Semua POST melewati CSRF global. Tidak ada route
+// admin yang menulis suara: unlock hanya membuka hak suara.
 // -----------------------------------------------------------------
 $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');
     $routes->post('logout', 'Admin\AuthController::logout');
+
+    // Live count (AJAX JSON) & analitik
+    $routes->get('live-count', 'Admin\LiveCountController::index');
+    $routes->get('analytics', 'Admin\AnalyticsController::index');
+    $routes->get('analytics/votes', 'Admin\AnalyticsController::votes');
+
+    // Pasangan calon + tema
+    $routes->get('candidates', 'Admin\CandidateController::index');
+    $routes->get('candidates/new', 'Admin\CandidateController::new');
+    $routes->post('candidates', 'Admin\CandidateController::create');
+    $routes->get('candidates/(:num)/edit', 'Admin\CandidateController::edit/$1');
+    $routes->get('candidates/(:num)/preview', 'Admin\CandidateController::preview/$1');
+    $routes->post('candidates/(:num)', 'Admin\CandidateController::update/$1');
+    $routes->post('candidates/(:num)/delete', 'Admin\CandidateController::delete/$1');
+
+    // Siswa + impor Excel
+    $routes->get('students', 'Admin\StudentController::index');
+    $routes->get('students/import', 'Admin\StudentImportController::index');
+    $routes->post('students/import', 'Admin\StudentImportController::upload');
+    $routes->get('students/import/template', 'Admin\StudentImportController::template');
+    $routes->get('students/import/preview/(:segment)', 'Admin\StudentImportController::preview/$1');
+    $routes->post('students/import/commit', 'Admin\StudentImportController::commit');
+    $routes->get('students/import/result', 'Admin\StudentImportController::result');
+    $routes->get('students/(:num)', 'Admin\StudentController::show/$1');
+    $routes->post('students/(:num)/status', 'Admin\StudentController::status/$1');
+    $routes->post('students/(:num)/delete', 'Admin\StudentController::delete/$1');
+
+    // Guru + impor Excel
+    $routes->get('teachers', 'Admin\TeacherController::index');
+    $routes->get('teachers/import', 'Admin\TeacherImportController::index');
+    $routes->post('teachers/import', 'Admin\TeacherImportController::upload');
+    $routes->get('teachers/import/template', 'Admin\TeacherImportController::template');
+    $routes->get('teachers/import/preview/(:segment)', 'Admin\TeacherImportController::preview/$1');
+    $routes->post('teachers/import/commit', 'Admin\TeacherImportController::commit');
+    $routes->get('teachers/import/result', 'Admin\TeacherImportController::result');
+    $routes->get('teachers/(:num)', 'Admin\TeacherController::show/$1');
+    $routes->post('teachers/(:num)/status', 'Admin\TeacherController::status/$1');
+    $routes->post('teachers/(:num)/delete', 'Admin\TeacherController::delete/$1');
+
+    // Jadwal pemilihan (status dihitung dari jadwal & jam server)
+    $routes->get('election', 'Admin\ElectionController::index');
+    $routes->post('election', 'Admin\ElectionController::save');
+    $routes->post('election/close', 'Admin\ElectionController::close');
+    $routes->post('election/open', 'Admin\ElectionController::open');
+
+    // Unlock hak suara & audit log
+    $routes->get('unlock', 'Admin\UnlockController::index');
+    $routes->get('unlock/student/(:num)', 'Admin\UnlockController::form/student/$1');
+    $routes->post('unlock/student/(:num)', 'Admin\UnlockController::unlock/student/$1');
+    $routes->get('unlock/teacher/(:num)', 'Admin\UnlockController::form/teacher/$1');
+    $routes->post('unlock/teacher/(:num)', 'Admin\UnlockController::unlock/teacher/$1');
+    $routes->get('audit', 'Admin\AuditController::index');
 });

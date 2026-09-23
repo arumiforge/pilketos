@@ -431,6 +431,8 @@ Hentikan/kurangi polling ketika:
 - election selesai;
 - browser tab tidak aktif;
 - admin logout.
+
+Keputusan Stage 3: live count = AJAX polling `GET admin/live-count` dengan irama dari server (10 detik saat ONGOING, 60 detik saat UPCOMING, berhenti saat FINISHED, tab tidak aktif, atau sesi habis). Semua angka dasbor, live count, analitik, dan daftar pemilih memakai satu definisi di `AnalyticsService` (pemilih `status_aktif = 1`, suara `LOCKED`) dan dihitung dengan agregasi MySQL; grafik hanya batang horizontal, satu donat, dan batang komposisi. Detail di `STAGE3-NOTES.md`.
 ## 16. ELECTION SCHEDULE
  
 Admin dapat menentukan:
@@ -521,6 +523,8 @@ Sediakan:
 - import;
 - result.
 Kode unik harus dibaca sebagai string agar leading zero tidak hilang.
+
+Keputusan Stage 3: impor hanya `.xlsx` (PhpSpreadsheet). Identitas dan kode unik dibaca sebagai teks; angka yang kehilangan nol depan dipulihkan dengan peringatan, NIP yang sudah dibulatkan Excel ditolak. NISN/NIP yang sudah ada diperbarui (upsert), tidak diduplikasi, dan pemilih yang tidak ada di file tidak dihapus. Pratinjau disimpan sementara di server (bukan browser), impor berjalan dalam satu transaction. Detail di `STAGE3-NOTES.md`.
  
 ## 21. MOBILE-FIRST
  

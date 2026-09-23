@@ -5,10 +5,14 @@
     "type": "project",
     "require": {
         "php": "^8.2",
+        "ext-fileinfo": "*",
+        "ext-gd": "*",
         "ext-intl": "*",
         "ext-mbstring": "*",
         "ext-mysqli": "*",
+        "ext-zip": "*",
         "laminas/laminas-escaper": "^2.18",
+        "phpoffice/phpspreadsheet": "^5.10",
         "psr/log": "^3.0"
     },
     "require-dev": {
@@ -23,6 +27,11 @@
             "**/Database/Migrations/**",
             "system/ThirdParty/**"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Support\\": "tests/_support/"
+        }
     },
     "config": {
         "optimize-autoloader": true,
