@@ -65,7 +65,7 @@ final class CandidateTheme
             'theme_name'     => trim((string) ($candidate['theme_name'] ?? '')) ?: sprintf('Pasangan %02d', $number),
             'accent'         => $accent,
             'accent_ink'     => self::inkOn($accent),
-            'accent_text'    => self::contrast($accent, self::PAPER) >= 3.0 ? $accent : self::INK,
+            'accent_text'    => self::textOnPaper($accent),
             'layout'         => $layout,
             'pattern'        => self::PATTERNS[$layout],
             'photo_ketua'    => self::url($candidate['foto_ketua'] ?? null),
@@ -126,6 +126,14 @@ final class CandidateTheme
         return self::contrast($accent, self::WHITE) >= self::contrast($accent, self::INK)
             ? self::WHITE
             : self::INK;
+    }
+
+    /**
+     * Warna teks aksen di atas kertas: aksen bila kontras >= 3:1, selain itu ink.
+     */
+    public static function textOnPaper(string $accent): string
+    {
+        return self::contrast($accent, self::PAPER) >= 3.0 ? $accent : self::INK;
     }
 
     /**

@@ -5,7 +5,7 @@ Baca:
 1. `00-MASTER-PROJECT.md`
 2. `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md`
 3. `02-STUDENT-TEACHER-VOTING.md` + `STAGE2-NOTES.md` (handoff Stage 2)
-4. `03-ADMIN-IMPORT-ANALYTICS.md` + handoff Stage 3
+4. `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` (handoff Stage 3)
 5. seluruh source file aktual.
 Jangan membuat project baru.
  

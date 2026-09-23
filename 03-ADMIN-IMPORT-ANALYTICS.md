@@ -8,6 +8,8 @@ Baca:
 4. semua source file aktual dari project.
 Jangan membuat project baru.
 Jangan menghapus behavior voting yang sudah bekerja.
+
+Hasil implementasi aktual dan handoff Stage 3: `STAGE3-NOTES.md`.
  
 ## OBJECTIVE
  
