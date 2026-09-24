@@ -8,7 +8,10 @@
 
 <?php
 /**
- * Halaman kandidat + surat suara (siswa & guru).
+ * Bilik suara (siswa & guru). Stage 7: pembuka ringkas -> "Sekilas paslon"
+ * (bandingkan & lompat) -> bab tiap pasangan (visi-misi interaktif) ->
+ * surat suara + paku. Pemilih yang sudah mantap cukup satu ketukan dari
+ * kartu ke kotak surat suara (#coblos-0X).
  *
  * @var \App\Services\VoterType $type
  * @var array                   $voter
@@ -19,19 +22,18 @@
 $status = $election['status'] ?? null;
 ?>
 
-<section class="vote-intro" aria-labelledby="vote-intro-title">
-  <div class="container vote-intro__grid">
-    <div>
-      <p class="eyebrow">Surat suara digital &middot; <?= esc($type->label()) ?> &middot; <?= esc($voter['name']) ?></p>
-      <h1 class="vote-intro__title" id="vote-intro-title">Kenali, lalu <span class="vote-intro__verb">coblos</span>.</h1>
-      <ol class="vote-steps">
-        <li><span>01</span> Baca visi &amp; misi</li>
-        <li><span>02</span> Ambil paku</li>
-        <li><span>03</span> Coblos satu pasangan</li>
-        <li><span>04</span> Konfirmasi &amp; terkunci</li>
+<section class="booth-intro" aria-labelledby="booth-title">
+  <div class="container booth-intro__grid">
+    <div class="booth-intro__main">
+      <p class="eyebrow">Halo, <?= esc($voter['name']) ?> &middot; Bilik suara <?= esc(strtolower($type->label())) ?></p>
+      <h1 class="booth-intro__title" id="booth-title">Kenali, lalu <span class="booth-intro__verb">coblos</span>.</h1>
+      <ol class="booth-steps" aria-label="Langkah memilih">
+        <li><span class="booth-steps__no" aria-hidden="true">1</span> Kenali paslon</li>
+        <li><span class="booth-steps__no" aria-hidden="true">2</span> Coblos satu</li>
+        <li><span class="booth-steps__no" aria-hidden="true">3</span> Konfirmasi &amp; kunci</li>
       </ol>
     </div>
-    <div class="vote-intro__status">
+    <div class="booth-intro__status">
       <?php if ($election && in_array($status, ['UPCOMING', 'ONGOING'], true)): ?>
         <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
       <?php endif; ?>
@@ -54,6 +56,8 @@ $status = $election['status'] ?? null;
 </section>
 
 <?php if ($candidates !== []): ?>
+  <?= view('voting/partials/lineup', ['candidates' => $candidates, 'canVote' => $canVote]) ?>
+
   <nav class="chapter-nav" aria-label="Lompat ke pasangan calon" data-chapter-nav>
     <div class="container chapter-nav__row">
       <?php foreach ($candidates as $c): ?>
@@ -62,7 +66,7 @@ $status = $election['status'] ?? null;
           <span class="chapter-nav__name"><?= esc($c['ketua']) ?></span>
         </a>
       <?php endforeach; ?>
-      <a class="chapter-nav__link chapter-nav__link--ballot" href="#surat-suara"><?= icon('nail') ?> Surat suara</a>
+      <a class="chapter-nav__link chapter-nav__link--ballot" href="#surat-suara"><?= icon('nail') ?> <?= $canVote ? 'Coblos' : 'Surat suara' ?></a>
     </div>
   </nav>
 

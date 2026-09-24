@@ -166,6 +166,43 @@ final class VotingTest extends CIUnitTestCase
         $result->assertSee('href="' . site_url('siswa/coblos/yakin/2') . '"');
     }
 
+    /**
+     * Stage 7: "Sekilas paslon" membandingkan ketiga pasangan di atas bab
+     * panjang; tombol "Pilih 0X" & CTA akhir bab menuju kotak surat suara.
+     */
+    public function testLineupComparesPairsAndLinksStraightToBallotBox(): void
+    {
+        $result = $this->withSession($this->student())->get('siswa/coblos');
+        $html   = (string) $result->response()->getBody();
+
+        $result->assertSee('Sekilas paslon');
+        $result->assertSee('Halo, Ahmad Fauzan');
+        foreach (['01', '02', '03'] as $label) {
+            $result->assertSee('href="#pasangan-' . $label . '"');
+            $result->assertSee('id="coblos-' . $label . '"');
+            $result->assertSee('href="#coblos-' . $label . '" data-pick');
+        }
+        $result->assertSee('Pilih pasangan 02');
+        $this->assertSame(3, substr_count($html, 'class="pair-card"'));
+        // Kartu tampil sebelum bab pertama dan surat suara.
+        $this->assertLessThan(strpos($html, 'id="pasangan-01"'), strpos($html, 'class="lineup"'));
+        $this->assertLessThan(strpos($html, 'id="surat-suara"'), strpos($html, 'id="pasangan-03"'));
+    }
+
+    public function testLineupHasNoPickLinksWhenVotingIsClosed(): void
+    {
+        foreach (['2026-09-30 08:00:00', '2026-10-02 00:00:00'] as $now) {
+            $this->scheduleAt($now);
+
+            $result = $this->withSession($this->student())->get('siswa/coblos');
+            $result->assertSee('Sekilas paslon');
+            $result->assertSee('href="#pasangan-01"');
+            $result->assertDontSee('data-pick');
+            $result->assertDontSee('href="#coblos-');
+            $result->assertSee('Lihat surat suara');
+        }
+    }
+
     public function testEachCandidateHasItsOwnThemeAndLayout(): void
     {
         $result = $this->withSession($this->student())->get('siswa/coblos');

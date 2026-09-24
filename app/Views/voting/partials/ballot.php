@@ -6,6 +6,8 @@
  *   animasi tusuk, dampak pada kotak, lalu modal konfirmasi + POST JSON.
  * - Tanpa JavaScript: tombol "Coblos" adalah tautan ke halaman konfirmasi
  *   biasa (form POST), jadi voting tidak bergantung pada efek visual.
+ * - Stage 7: tiap kotak punya id "coblos-0X" (tujuan tombol "Pilih" di
+ *   kartu Sekilas paslon & akhir bab); kotak tujuan disorot lewat :target.
  *
  * @var list<array>             $candidates Hasil CandidateTheme::presentAll()
  * @var bool                    $canVote
@@ -24,7 +26,7 @@ $status = $election['status'] ?? null;
       <p class="ballot__kicker">Bilik suara digital &middot; <?= esc($type->label()) ?></p>
       <h2 class="ballot__title" id="ballot-title">Surat Suara</h2>
       <?php if ($canVote): ?>
-        <p class="ballot__hint" id="ballot-hint">Tekan dan tahan paku, arahkan ke kotak pasangan pilihan, lalu lepaskan untuk mencoblos. Bisa juga dengan tombol <strong>Coblos</strong> di setiap kotak.</p>
+        <p class="ballot__hint" id="ballot-hint">Tekan <strong>Coblos</strong> di kotak pilihanmu, atau tahan paku lalu seret ke kotaknya.</p>
       <?php elseif ($status === 'UPCOMING'): ?>
         <p class="ballot__hint"><?= icon('clock') ?> Surat suara dapat dicoblos mulai <strong><?= esc(format_waktu($election['start_at'])) ?></strong>.</p>
       <?php elseif ($status === 'FINISHED'): ?>
@@ -45,7 +47,7 @@ $status = $election['status'] ?? null;
       <?php else: ?>
         <ol class="ballot__grid" aria-label="Pasangan calon pada surat suara">
           <?php foreach ($candidates as $c): ?>
-            <li class="ballot-cell" style="<?= esc($c['style'], 'attr') ?>" data-cell
+            <li class="ballot-cell" id="coblos-<?= esc($c['label'], 'attr') ?>" style="<?= esc($c['style'], 'attr') ?>" data-cell
                 data-candidate-id="<?= esc((string) $c['id'], 'attr') ?>"
                 data-number="<?= esc($c['label'], 'attr') ?>"
                 data-ketua="<?= esc($c['ketua'], 'attr') ?>"

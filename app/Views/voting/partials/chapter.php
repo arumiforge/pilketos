@@ -13,6 +13,9 @@
  * - data-reveal-words : tipografi visi menyala kata demi kata mengikuti scroll;
  * - data-misi     : panel misi dapat dibuka-tutup (expand), item muncul bertahap.
  *
+ * Stage 7: CTA akhir bab langsung menuju kotak pasangan ini di surat suara
+ * (#coblos-0X), bukan sekadar ke surat suara.
+ *
  * @var array $c       Hasil CandidateTheme::present()
  * @var bool  $canVote
  */
@@ -107,9 +110,13 @@ $misiId = 'misi-list-' . $c['id'];
         </figure>
       <?php endif; ?>
 
-      <a class="chapter__cta" href="#surat-suara">
-        <?= $canVote ? 'Coblos di surat suara' : 'Lihat surat suara' ?> <?= icon('arrow-down') ?>
-      </a>
+      <?php if ($canVote): ?>
+        <a class="chapter__cta" href="#coblos-<?= esc($c['label'], 'attr') ?>" data-pick>
+          Pilih pasangan <?= esc($c['label']) ?> <?= icon('arrow-down') ?>
+        </a>
+      <?php else: ?>
+        <a class="chapter__cta" href="#surat-suara">Lihat surat suara <?= icon('arrow-down') ?></a>
+      <?php endif; ?>
     </div>
   </div>
 </article>
