@@ -53,6 +53,7 @@ class AuthController extends BaseController
                 'nip',
                 $data['nip'],
                 "Terlalu banyak percobaan masuk. Silakan coba lagi dalam {$wait} detik.",
+                429,
             );
         }
 
@@ -71,7 +72,7 @@ class AuthController extends BaseController
         $this->clearLoginFailures('teacher', $data['nip']);
         $this->startAuthSession('teacher', (int) $teacher['id']);
 
-        return redirect()->to('guru');
+        return $this->loginSucceeded('guru');
     }
 
     public function logout()
