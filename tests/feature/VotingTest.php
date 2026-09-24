@@ -470,7 +470,7 @@ final class VotingTest extends CIUnitTestCase
 
         $choice = $this->withSession()->get('siswa/pilihanku');
         $choice->assertStatus(200);
-        $choice->assertSee('Anda memilih');
+        $choice->assertSee('Kamu memilih');
         $choice->assertSee('Pasangan 02');
         $choice->assertSee('Candra Setiawan');
         $choice->assertSee('Waktu memilih');

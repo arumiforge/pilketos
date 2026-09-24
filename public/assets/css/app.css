@@ -880,6 +880,23 @@ main:has(> .float-clock) {
 
 .float-clock .countdown__progress-fill { background: var(--paper); opacity: 0.8; }
 
+/* HP (Stage 10): tidak menempel; strip selebar layar tanpa sudut membulat,
+   tepat di atas footer (margin-top: auto mendorongnya ke dasar <main>) */
+@media (max-width: 719px) {
+  .float-clock {
+    position: relative;
+    bottom: auto;
+    z-index: auto;
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    padding: 12px var(--space-4) 14px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 /* ==========================================================================
    Stage 2 — Dasbor pemilih
    ========================================================================== */
@@ -926,6 +943,10 @@ main:has(> .float-clock) {
 .dash-meta dd {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 719px) {
+  .dash-head { padding-block: var(--space-5) var(--space-6); }
 }
 
 .dash-grid {
@@ -1008,6 +1029,26 @@ main:has(> .float-clock) {
 @media (min-width: 720px) {
   .vote-card { padding: var(--space-6); }
   .vote-card--locked { padding-left: calc(var(--space-6) + 6px); }
+}
+
+/* HP (Stage 10): isi kartu rata tengah (belum & sudah memilih). Kartu
+   terkunci: garis aksen pindah ke tepi atas, nomor di atas nama pasangan. */
+@media (max-width: 719px) {
+  .vote-card { text-align: center; }
+  .vote-card__title { justify-content: center; }
+  .vote-card__text,
+  .vote-card__meta { text-wrap: balance; }
+
+  .vote-card--locked {
+    padding-left: var(--space-5);
+    padding-top: calc(var(--space-5) + 6px);
+    box-shadow: inset 0 6px 0 var(--accent);
+  }
+
+  .vote-card__choice {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
 }
 
 /* -- footer minimal, rata tengah (redesign beranda); varian scene di home.css -- */

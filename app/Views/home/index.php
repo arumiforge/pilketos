@@ -22,6 +22,11 @@
  * bergaya terminal menempel di bawah layar. Tanpa JavaScript, scene tampil
  * sebagai halaman bergulir biasa dengan scroll-snap.
  *
+ * Stage 10 (scene SUARA): tanpa label status di samping judul (status tetap
+ * di panel dock); judul & pasangan rata tengah; "Suara masuk" tidak lagi
+ * sekolom dengan pasangan, tetapi menjadi baris penutup (menggantikan
+ * catatan) berisi persentase, meter, dan jumlah pemilih.
+ *
  * @var array|null       $election
  * @var list<array>      $candidates Pasangan aktif (CandidateTheme::present())
  * @var array|null       $live       PublicLiveCount::build() + pairs; null = live count publik mati
@@ -36,18 +41,6 @@ $scenes   = [
     ['id' => 'masuk', 'label' => 'Masuk'],
     ['id' => $liveId, 'label' => $liveName],
 ];
-$liveTag = match ($status) {
-    'ONGOING'  => 'Langsung',
-    'UPCOMING' => 'Belum dibuka',
-    'FINISHED' => 'Perolehan akhir',
-    default    => 'Belum dijadwalkan',
-};
-$liveNote = match ($status) {
-    'ONGOING'  => 'Persentase dari suara sah yang sudah masuk, urut nomor pasangan.',
-    'UPCOMING' => 'Penghitungan dimulai saat pencoblosan dibuka.',
-    'FINISHED' => 'Pencoblosan sudah ditutup. Hasil resmi diumumkan oleh panitia pemilihan OSIS.',
-    default    => 'Jadwal pemilihan belum tersedia.',
-};
 $entries = [
     ['key' => 'student', 'who' => 'Siswa', 'no' => '01', 'href' => base_url('siswa/masuk'), 'img' => $home->entryStudent, 'mobile' => $home->entryStudentMobile],
     ['key' => 'teacher', 'who' => 'Guru', 'no' => '02', 'href' => base_url('guru/masuk'), 'img' => $home->entryTeacher, 'mobile' => $home->entryTeacherMobile],
@@ -137,60 +130,47 @@ $entries = [
       <div class="live<?= $live === null ? ' live--teaser' : '' ?> live--<?= esc(strtolower($status ?? 'none'), 'attr') ?>">
         <div class="live__head" data-reveal>
           <h2 class="live__title" id="live-title"><?= esc($liveName) ?></h2>
-          <?php if ($live !== null): ?>
-            <p class="live__tag"><span class="live__led" aria-hidden="true"></span><span data-live-tag><?= esc($liveTag) ?></span></p>
-          <?php endif; ?>
         </div>
 
         <?php $pairs = $live !== null ? $live['pairs'] : $candidates; ?>
         <?php if ($pairs === []): ?>
           <p class="live__empty" data-reveal>Pasangan calon belum ditetapkan.</p>
         <?php else: ?>
-          <div class="live__grid">
-            <?php /* kolom seimbang untuk berapa pun jumlah pasangan: desktop maks 4, HP 3 (4+ pasangan: 2) */ ?>
-            <ol class="live__pairs" style="--cols: <?= min(count($pairs), 4) ?>; --cols-sm: <?= count($pairs) <= 3 ? count($pairs) : 2 ?>;">
-              <?php foreach ($pairs as $p): ?>
-                <li class="pair" style="<?= esc($p['style'], 'attr') ?>"<?= $live !== null ? ' data-live-pair="' . esc((string) $p['id'], 'attr') . '"' : '' ?> data-reveal>
-                  <?= view('home/partials/pair_photo', ['pair' => $p]) ?>
-                  <p class="pair__names">
-                    <span class="visually-hidden">Pasangan <?= esc($p['label']) ?>:</span>
-                    <span class="pair__ketua"><?= esc($p['ketua']) ?></span>
-                    <span class="pair__wakil">&amp; <?= esc($p['wakil']) ?></span>
-                  </p>
-                  <?php if ($live !== null): ?>
-                    <p class="pair__pct">
-                      <span class="pair__num" data-live-pct data-value="<?= esc(number_format((float) $p['percent'], 2, '.', ''), 'attr') ?>"><?= esc(number_format((float) $p['percent'], 1, ',', '.')) ?></span><span class="pair__unit">%</span><span class="visually-hidden"> suara sah</span>
-                    </p>
-                    <span class="pair__bar" aria-hidden="true"><span class="pair__fill" data-live-bar style="--share: <?= esc(number_format((float) $p['percent'], 2, '.', ''), 'attr') ?>;"></span></span>
-                  <?php else: ?>
-                    <p class="pair__theme"><?= esc($p['theme_name']) ?></p>
-                  <?php endif; ?>
-                </li>
-              <?php endforeach; ?>
-            </ol>
-
-            <?php if ($live !== null): ?>
-              <section class="turnout" aria-labelledby="turnout-title" data-reveal>
-                <h3 class="turnout__title" id="turnout-title">Suara masuk</h3>
-                <p class="turnout__pct">
-                  <span class="turnout__num" data-live-turnout data-value="<?= esc(number_format((float) $live['turnout']['percent'], 2, '.', ''), 'attr') ?>"><?= esc(number_format((float) $live['turnout']['percent'], 1, ',', '.')) ?></span><span class="turnout__unit">%</span>
+          <?php /* kolom seimbang untuk berapa pun jumlah pasangan: desktop maks 4, HP 3 (4+ pasangan: 2) */ ?>
+          <ol class="live__pairs" style="--cols: <?= min(count($pairs), 4) ?>; --cols-sm: <?= count($pairs) <= 3 ? count($pairs) : 2 ?>;">
+            <?php foreach ($pairs as $p): ?>
+              <li class="pair" style="<?= esc($p['style'], 'attr') ?>"<?= $live !== null ? ' data-live-pair="' . esc((string) $p['id'], 'attr') . '"' : '' ?> data-reveal>
+                <?= view('home/partials/pair_photo', ['pair' => $p]) ?>
+                <p class="pair__names">
+                  <span class="visually-hidden">Pasangan <?= esc($p['label']) ?>:</span>
+                  <span class="pair__ketua"><?= esc($p['ketua']) ?></span>
+                  <span class="pair__wakil">&amp; <?= esc($p['wakil']) ?></span>
                 </p>
-                <span class="turnout__meter" aria-hidden="true"><span class="turnout__fill" data-live-meter style="--share: <?= esc(number_format((float) $live['turnout']['percent'], 2, '.', ''), 'attr') ?>;"></span></span>
-                <p class="turnout__count"><span data-live-voted><?= esc(angka($live['turnout']['voted'])) ?></span> dari <span data-live-total><?= esc(angka($live['turnout']['total'])) ?></span> pemilih sudah memilih</p>
-              </section>
-            <?php endif; ?>
-          </div>
+                <?php if ($live !== null): ?>
+                  <p class="pair__pct">
+                    <span class="pair__num" data-live-pct data-value="<?= esc(number_format((float) $p['percent'], 2, '.', ''), 'attr') ?>"><?= esc(number_format((float) $p['percent'], 1, ',', '.')) ?></span><span class="pair__unit">%</span><span class="visually-hidden"> suara sah</span>
+                  </p>
+                  <span class="pair__bar" aria-hidden="true"><span class="pair__fill" data-live-bar style="--share: <?= esc(number_format((float) $p['percent'], 2, '.', ''), 'attr') ?>;"></span></span>
+                <?php else: ?>
+                  <p class="pair__theme"><?= esc($p['theme_name']) ?></p>
+                <?php endif; ?>
+              </li>
+            <?php endforeach; ?>
+          </ol>
         <?php endif; ?>
 
         <?php if ($live !== null): ?>
+          <?php $turnoutShare = number_format((float) $live['turnout']['percent'], 2, '.', ''); ?>
           <div class="live__foot" data-reveal>
-            <p class="live__note">
-              <?= esc($liveNote) ?>
-              <?php if ($live['poll']['interval'] > 0): ?>
-                <span class="live__cadence">Diperbarui otomatis tiap <?= esc((string) $live['poll']['interval']) ?> detik.</span>
-              <?php endif; ?>
-            </p>
-            <p class="live__updated">Diperbarui <time datetime="<?= esc($live['updated_at'], 'attr') ?>" data-live-updated><?= esc($live['updated_label']) ?></time></p>
+            <section class="turnout" aria-labelledby="turnout-title">
+              <h3 class="turnout__title" id="turnout-title">Suara masuk</h3>
+              <p class="turnout__pct">
+                <span class="turnout__num" data-live-turnout data-value="<?= esc($turnoutShare, 'attr') ?>"><?= esc(number_format((float) $live['turnout']['percent'], 1, ',', '.')) ?></span><span class="turnout__unit">%</span>
+              </p>
+              <p class="turnout__count"><span data-live-voted><?= esc(angka($live['turnout']['voted'])) ?></span> dari <span data-live-total><?= esc(angka($live['turnout']['total'])) ?></span> pemilih telah memberikan suara</p>
+              <p class="live__updated">Diperbarui <time datetime="<?= esc($live['updated_at'], 'attr') ?>" data-live-updated><?= esc($live['updated_label']) ?></time></p>
+              <span class="turnout__meter" aria-hidden="true"><span class="turnout__fill" data-live-meter style="--share: <?= esc($turnoutShare, 'attr') ?>;"></span></span>
+            </section>
           </div>
           <p class="visually-hidden" aria-live="polite" data-live-announce></p>
         <?php else: ?>

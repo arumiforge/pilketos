@@ -504,7 +504,8 @@ lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
 2. Dasbor menampilkan identitas, status hak suara, dan jadwal.
 3. **Lihat kandidat & coblos** (hanya saat pemilihan berlangsung).
 4. Setelah memilih: pilihan terkunci; login ulang hanya menampilkan pilihan
-   sendiri. Tekan **Selesai & keluar** di komputer bersama.
+   sendiri ("Kamu memilih Pasangan 0X"; guru: "Anda"). Tekan **Selesai &
+   keluar** di komputer bersama.
 
 Sesi pemilih berakhir otomatis setelah 15 menit tanpa aktivitas.
 
@@ -556,14 +557,18 @@ Siswa > Impor atau Guru > Impor:
   tepat pada `end_at` sudah ditolak.
 - Dasbor pemilih (Stage 8): nama rata tengah, di bawahnya NISN / kelas /
   nomor absen (guru: NIP) miring tanpa label; sisa waktu "Ditutup dalam"
-  melayang di bawah layar. Di HP tombol Dasbor & Keluar cukup ikon.
+  melayang di bawah layar. Di HP tombol Dasbor & Keluar cukup ikon; Stage 10:
+  kartu hak suara rata tengah dan sisa waktu menjadi strip selebar layar
+  tepat di atas footer (tidak melayang).
 - Bilik suara (`/siswa/coblos`, `/guru/coblos`, Stage 7-8): pembuka rata
   tengah "Kenali, lalu coblos." dengan journey timeline tiga langkah (Kenali
   paslon, Coblos satu, Konfirmasi & kunci) dan countdown bergaya terminal
   (Stage 9: tanpa teks bilah judul/perintah, angka satu baris di HP); di HP
   pembuka + Sekilas paslon berbagi layar pertama, bab & surat suara setinggi
   satu layar. Lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
-  tema, kutipan visi, jumlah misi; digeser di HP). **Baca visi & misi** menuju
+  tema, kutipan visi, jumlah misi; digeser di HP, Stage 10: bergeser sendiri
+  tiap 2 detik 01 -> terakhir -> 01, berhenti saat disentuh; panah halus di
+  bawahnya menuju navigasi bab). **Baca visi & misi** menuju
   bab pasangan, **Pilih 0X** langsung ke kotak pasangan itu di surat suara
   (kotak disorot dan tombol Coblos-nya difokuskan).
 - Bab pasangan: tiap pasangan punya warna, pola, layout, dan gambar sendiri;
@@ -627,8 +632,9 @@ Admin > **Hasil akhir** (`/admin/hasil`):
   menghalangi klik, tidak tampil bila reduced motion. Tidak pernah tampil di
   dasbor/analitik.
 - Tombol **Layar penuh** (proyektor) dan **Cetak**.
-- Beranda publik saat selesai menampilkan "Perolehan akhir" (persentase)
-  tanpa pemenang dan tanpa confetti; pengumuman resmi tetap oleh panitia.
+- Beranda publik saat selesai menampilkan perolehan akhir (persentase;
+  status "Sudah Selesai" di panel status) tanpa pemenang dan tanpa confetti;
+  pengumuman resmi tetap oleh panitia.
 
 ## 17. Backup & pemulihan
 
@@ -692,8 +698,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 9): **340 test, 2.966 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 10): **348 test, 3.030 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -713,6 +719,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `STAGE7-NOTES.md` | Stage 7: URL bahasa Indonesia santai, nama templat impor, redesain bilik suara siswa & guru |
 | `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
 | `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
+| `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
 
 ## 21. Beranda imersif & aset visual
 
@@ -726,7 +733,7 @@ interaksi. Palet netral "Pagi Muria" + warna aksen masing-masing pasangan.
 |---|---|
 | 01 Lereng | latar lereng Muria + atap sekolah, garis kontur, lapisan depan opsional; teks singkat "PILKETOS 2026 / SMP 1 DAWE", tombol **Masuk untuk memilih** dan **Lihat perolehan suara**; titik "embun" di sekitar pointer. Tanpa warna/nomor/foto pasangan |
 | 02 Masuk | "Masuk sebagai": portal **SISWA** (`/siswa/masuk`) dan **GURU** (`/guru/masuk`) bergambar |
-| 03 Perolehan suara | foto pasangan, persentase tepat di bawah foto, "Suara masuk" (partisipasi), "Diperbarui [tanggal] [jam]", footer |
+| 03 Perolehan suara | judul & pasangan rata tengah (Stage 10: tanpa label status di samping judul); foto pasangan, persentase tepat di bawah foto; baris penutup "Suara masuk" (persentase partisipasi, jumlah pemilih, "Diperbarui [tanggal] [jam]", meter); footer |
 
 - Berpindah scene: roda mouse/trackpad (satu gestur = satu scene), geser
   sentuh, panah/PageUp/PageDown/spasi/Home/End, garis navigasi di kanan

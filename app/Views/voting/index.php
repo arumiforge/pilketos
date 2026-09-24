@@ -22,6 +22,9 @@
  * tiga titik jendela); pembuka + "Sekilas paslon" dibungkus .booth-open
  * sehingga di HP keduanya berbagi satu layar.
  *
+ * Stage 10: navigasi bab punya id #navigasi-paslon, tujuan panah di bawah
+ * "Sekilas paslon" (HP).
+ *
  * @var \App\Services\VoterType $type
  * @var array                   $voter
  * @var array|null              $election
@@ -97,7 +100,7 @@ $journey = [
 </div>
 
 <?php if ($candidates !== []): ?>
-  <nav class="chapter-nav" aria-label="Lompat ke pasangan calon" data-chapter-nav>
+  <nav class="chapter-nav" id="navigasi-paslon" aria-label="Lompat ke pasangan calon" data-chapter-nav>
     <div class="container chapter-nav__row">
       <?php foreach ($candidates as $c): ?>
         <a class="chapter-nav__link" href="#pasangan-<?= esc($c['label'], 'attr') ?>" style="<?= esc($c['style'], 'attr') ?>">
