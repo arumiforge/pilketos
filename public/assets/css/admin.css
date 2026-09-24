@@ -448,7 +448,10 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   gap: var(--space-2);
 }
 
-/* -- indikator live ------------------------------------------------------ */
+/* -- indikator live ------------------------------------------------------
+   Stage 11: ikon siaran (icon('live')) menggantikan titik; status "Live".
+   Gelombang berdenyut bergantian hanya saat pemilihan berlangsung dan
+   polling aktif; status lain gelombang redup (tidak sedang menyiarkan). -- */
 .live {
   display: flex;
   flex-wrap: wrap;
@@ -457,41 +460,52 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   font-size: 0.8125rem;
 }
 
-.live__dot {
-  position: relative;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--gray-500);
+.live__signal {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--gray-500);
 }
 
-.live--ongoing .live__dot { background: var(--success); }
-.live--finished .live__dot { background: var(--ink); }
-.live.is-paused .live__dot { background: var(--gray-500); }
-.live.is-error .live__dot { background: var(--danger); }
+.live__signal .icon { width: 22px; height: 22px; stroke-width: 2; }
 
-.live--ongoing:not(.is-paused):not(.is-error) .live__dot::after {
-  content: '';
-  position: absolute;
-  inset: -5px;
-  border: 1px solid var(--success);
-  border-radius: 50%;
-  animation: live-pulse 2s var(--ease) infinite;
+.live--ongoing .live__signal { color: var(--success); }
+.live--finished .live__signal { color: var(--ink); }
+.live.is-paused .live__signal { color: var(--gray-500); }
+.live.is-error .live__signal { color: var(--danger); }
+
+.live .icon__wave { opacity: 0.3; }
+
+.live--ongoing:not(.is-paused):not(.is-error) .icon__wave--in { animation: live-wave 1.8s var(--ease) infinite; }
+.live--ongoing:not(.is-paused):not(.is-error) .icon__wave--out { animation: live-wave 1.8s var(--ease) 0.3s infinite; }
+
+@keyframes live-wave {
+  0%, 100% { opacity: 0.25; }
+  35% { opacity: 1; }
 }
 
-@keyframes live-pulse {
-  from { transform: scale(0.5); opacity: 1; }
-  to { transform: scale(1.8); opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .live .icon__wave { animation: none !important; }
+  .live--ongoing:not(.is-paused):not(.is-error) .icon__wave { opacity: 1; }
 }
 
 .live__state { font-weight: 700; }
+.live--ongoing:not(.is-paused):not(.is-error) .live__state { color: var(--success); letter-spacing: 0.02em; }
 .live__time { color: var(--gray-700); }
 .live__refresh { margin-left: auto; }
 
-/* Stage 9: desktop tetap sebaris; HP = bar menempel di bawah layar */
-.live__bar { display: contents; }
+/* Stage 9: desktop tetap sebaris; HP = bar menempel di bawah layar.
+   Stage 11: ikon + status ikut di bar (kiri), waktu di bawah status. */
+.live__bar,
+.live__text { display: contents; }
 
 @media (max-width: 719px) {
+  /* seluruh indikator pindah ke bar bawah: kepala halaman tidak lagi
+     menyisakan baris kosong untuknya */
+  .live { display: contents; }
+
   .live__bar {
     position: fixed;
     right: 0;
@@ -500,13 +514,30 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
     z-index: 45;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-2) var(--admin-pad) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--line);
     background: var(--paper);
     box-shadow: 0 -8px 24px rgba(21, 20, 26, 0.08);
+    font-size: 0.8125rem;
   }
+
+  .live__text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  .live__state,
+  .live__time {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .live__time { font-size: 0.75rem; }
 
   .live__bar .live__refresh { flex: 0 0 auto; margin-left: 0; }
 
@@ -561,6 +592,139 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
   }
+}
+
+/* -- countdown dasbor (Stage 11) ----------------------------------------
+   Desktop: kotak compact seperti biasa + garis progres tipis. HP: panel
+   terminal selebar layar tanpa sudut (latar tinta, huruf mono, 03:12:45
+   rata tengah, tiga titik jendela), senada jam terminal bilik suara. -- */
+.admin-clock { display: contents; }
+.admin-clock__dots { display: none; }
+
+.admin-clock .countdown__progress {
+  display: block;
+  height: 2px;
+  margin-top: var(--space-3);
+  overflow: hidden;
+  background: var(--gray-200);
+}
+
+.admin-clock .countdown__progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+}
+
+@media (max-width: 719px) {
+  .admin-clock {
+    position: relative;
+    display: block;
+    margin-inline: calc(var(--admin-pad) * -1);
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    text-align: center;
+  }
+
+  .admin-clock__dots {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .admin-clock__dots span {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--ink-muted);
+    border-radius: 50%;
+  }
+
+  .admin-clock .countdown--compact {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-4) 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .admin-clock .countdown__label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+  }
+
+  .admin-clock .countdown__units {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0;
+    font-size: clamp(2rem, 11vw, 2.75rem);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .admin-clock .countdown__unit {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+
+  .admin-clock .countdown__unit--minutes::before,
+  .admin-clock .countdown__unit--seconds::before {
+    content: ':';
+    padding-inline: 0.06em;
+    font-weight: 600;
+    opacity: 0.45;
+  }
+
+  .admin-clock .countdown__name { display: none; }
+
+  .admin-clock .countdown__unit--days .countdown__name {
+    display: inline;
+    margin: 0 0.6em 0 0.25em;
+    font-size: 0.4em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    color: var(--ink-muted);
+  }
+
+  .admin-clock .countdown__digits {
+    gap: 0;
+    font-family: var(--font-mono);
+    font-size: 1em;
+    font-weight: 600;
+  }
+
+  .admin-clock .odo {
+    --h: 1.2em;
+    width: 0.62em;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .admin-clock .odo::after { display: none; }
+
+  .admin-clock .countdown__progress {
+    width: 100%;
+    height: 3px;
+    margin-top: var(--space-4);
+    background: var(--ink-line);
+  }
+
+  .admin-clock .countdown__progress-fill { background: var(--paper); }
 }
 
 /* -- papan angka --------------------------------------------------------- */
@@ -760,45 +924,202 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.toc {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--line);
-  font-size: 0.875rem;
-  font-weight: 600;
+/* -- analitik: pill section header (Stage 11) ------------------------------
+   Deretan pil menempel di bawah topbar; pil aktif = blok tinta yang bergeser
+   (glider, admin-analytics.js). Tanpa JavaScript pil aktif diberi latar
+   tinta sendiri. HP: pil digeser horizontal, pil aktif dipusatkan. -- */
+.pills {
+  position: sticky;
+  top: 60px;
+  z-index: 30;
+  margin: calc(var(--space-2) * -1) calc(var(--admin-pad) * -1) var(--space-6);
+  padding: var(--space-2) var(--admin-pad);
+  background: var(--paper);
 }
 
-.toc a { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 32px; text-decoration: none; }
-.toc a:hover { text-decoration: underline; }
+.pills::after {
+  content: '';
+  position: absolute;
+  right: var(--admin-pad);
+  bottom: 0;
+  left: var(--admin-pad);
+  height: 1px;
+  background: var(--line);
+}
 
-.chapter-x { margin-top: var(--space-8); scroll-margin-top: 80px; }
+.pills__track {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-dim);
+  -webkit-overflow-scrolling: touch;
+}
+
+.pills__track::-webkit-scrollbar { display: none; }
+
+.pills__list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 2px;
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pills__list > li { flex: 1 0 auto; }
+
+.pills__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--gray-700);
+  transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+
+.pills__item:hover { color: var(--ink); background: rgba(21, 20, 26, 0.06); }
+
+.pills__item[aria-current="page"],
+.pills__item[aria-current="page"]:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pills__item:focus-visible { outline-offset: -2px; }
+
+/* dengan skrip: latar pil aktif digambar glider yang bergeser */
+.pills__glider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  opacity: 0;
+  transition: transform 0.35s var(--ease), width 0.35s var(--ease);
+}
+
+.pills__glider.is-ready { opacity: 1; }
+.pills__glider.is-instant { transition: none; }
+
+.pills.is-enhanced .pills__item[aria-current="page"] { background: transparent; }
+
+/* garis muat di tepi bawah header saat bagian sedang diambil */
+.pills.is-loading::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--admin-pad);
+  z-index: 1;
+  width: 30%;
+  height: 2px;
+  background: var(--ink);
+  animation: pane-progress 1s var(--ease) infinite;
+}
+
+@keyframes pane-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(calc(100vw - 2 * var(--admin-pad))); }
+}
+
+@media (min-width: 1024px) {
+  .pills { top: 60px; }
+  .pills__list > li { flex: 0 0 auto; }
+  .pills__track { display: inline-block; max-width: 100%; vertical-align: top; }
+}
+
+.pane-host { min-height: 50vh; transition: opacity 0.2s var(--ease); }
+
+.pane-host.is-loading {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.pane.is-entering { animation: pane-in 0.35s var(--ease); }
+
+@keyframes pane-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pills__glider,
+  .pills__item,
+  .pane-host { transition: none; }
+  .pane.is-entering { animation: none; }
+  .pills.is-loading::before { animation: none; width: 100%; opacity: 0.4; }
+}
+
+/* bab analitik: tanpa penomoran (Stage 11), judul + catatan */
+.chapter-x { scroll-margin-top: 130px; }
 
 .chapter-x__head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: baseline;
-  gap: var(--space-1) var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.chapter-x__no {
-  grid-row: span 2;
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 6vw, 3.6rem);
-  font-weight: 300;
-  line-height: 0.9;
-  color: var(--gray-500);
-  font-variant-numeric: lining-nums;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
 }
 
 .chapter-x__title { font-size: clamp(1.5rem, 3vw, 2rem); }
 
+.chapter-x__title:focus { outline: none; }
+.chapter-x__title:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
 .chapter-x__note {
+  max-width: 72ch;
   font-size: 0.875rem;
   color: var(--gray-700);
 }
+
+/* detail suara: siswa & guru di tabel terpisah (Stage 11) */
+.vote-block { margin-top: var(--space-7); }
+
+.vote-block__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.vote-block__title { font-size: clamp(1.25rem, 2.4vw, 1.5rem); }
+
+.vote-block__count {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gray-700);
+}
+
+.device-cell {
+  position: relative;
+  min-width: 13em;
+  padding-left: calc(0.6rem + 22px) !important;
+}
+
+.device-cell__icon {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.6rem;
+  width: 16px;
+  height: 16px;
+  color: var(--gray-500);
+}
+
+.device-cell__main { display: block; }
 
 /* -- hasil per pasangan -------------------------------------------------- */
 .results {
@@ -1078,6 +1399,22 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
 .data-table--votes td { padding-inline: 0.6rem; }
 
 .data-table--votes tbody th { min-width: 11em; }
+
+/* daftar pemilih (Stage 11): status & waktu memilih di kolom terpisah,
+   sel sejajar tengah agar pil tidak tampak turun dari teks di sebelahnya */
+.data-table--voters th,
+.data-table--voters td { vertical-align: middle; }
+
+.data-table--voters thead th { vertical-align: bottom; }
+
+.cell-empty { color: var(--gray-500); }
+
+.row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: var(--space-4);
+}
 
 .cell-n { font-weight: 700; }
 
@@ -1613,6 +1950,53 @@ ul.asset-dots {
 }
 
 .check--block input { margin-top: 2px; }
+
+/* form pemilih (Stage 11): pilihan L/P berupa pil, kelas + absen sebaris */
+.choice-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-x .choice-group legend {
+  float: none;
+  width: auto;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.form-x .choice-group legend + * { clear: none; }
+
+.choice-group__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.check--pill {
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--paper);
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+
+.check--pill:hover { border-color: var(--ink); }
+.check--pill:has(input:checked) { border-color: var(--ink); background: var(--paper-dim); font-weight: 600; }
+.check--pill:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.choice-group[aria-invalid="true"] .check--pill { border-color: var(--danger); }
+
+.form-grid--pair { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+
+.form-x__aside { align-self: center; }
 
 /* sakelar aktif/nonaktif */
 .field--switch { justify-content: flex-end; }
@@ -2259,7 +2643,7 @@ ul.check-list {
   .admin-scrim,
   .live,
   .filters,
-  .toc,
+  .pills,
   .pager,
   .admin-head__actions,
   .admin-head__hint,

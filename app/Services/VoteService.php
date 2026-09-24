@@ -55,7 +55,7 @@ class VoteService
     /**
      * Simpan satu suara berstatus LOCKED untuk pemilih pada election aktif.
      *
-     * @param array{device?: string, browser?: string} $client Hasil DeviceInfo::fromUserAgent() (dibaca server)
+     * @param array{device?: string, browser?: string} $client Hasil DeviceInfo::fromRequest() (dibaca server)
      */
     public function castVote(VoterType $type, int $voterId, int $candidateId, array $client = [], ?Time $now = null): VoteResult
     {

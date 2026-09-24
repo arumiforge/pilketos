@@ -86,13 +86,86 @@ abstract class VoterImporter
     abstract public function columns(): array;
 
     /**
+     * Pemeriksaan & normalisasi tiap kolom satu baris (Stage 11: dipakai juga
+     * oleh form tambah/ubah pemilih lewat validateForm()).
+     *
+     * @param array<string, ImportCell> $cells key = header baku (lihat headerKey())
+     *
+     * @return array<string, array{0: int|string|null, 1: list<string>, 2: list<string>}> field => [nilai, error, peringatan]
+     */
+    abstract protected function checkFields(array $cells): array;
+
+    /**
      * Validasi & normalisasi satu baris.
      *
      * @param array<string, ImportCell> $cells key = header baku (lihat headerKey())
      *
      * @return array{values: array<string, int|string|null>, errors: list<string>, warnings: list<string>}
      */
-    abstract protected function validateRow(array $cells): array;
+    protected function validateRow(array $cells): array
+    {
+        $values   = [];
+        $errors   = [];
+        $warnings = [];
+
+        foreach ($this->checkFields($cells) as $field => [$value, $fieldErrors, $fieldWarnings]) {
+            $values[$field] = $value;
+            array_push($errors, ...$fieldErrors);
+            array_push($warnings, ...$fieldWarnings);
+        }
+
+        return ['values' => $values, 'errors' => $errors, 'warnings' => $warnings];
+    }
+
+    /**
+     * Stage 11: validasi form tambah/ubah pemilih di panel admin dengan aturan
+     * yang sama persis dengan impor Excel (NISN 10 digit, rombel diawali kelas,
+     * kode unik tanggal lahir, ...). Nilai form diperlakukan sebagai sel teks.
+     *
+     * @param array<string, mixed> $input field database => nilai dari form
+     *
+     * @return array{values: array<string, int|string|null>, errors: array<string, string>, warnings: list<string>}
+     */
+    public function validateForm(array $input): array
+    {
+        $cells = [];
+
+        foreach ($this->columns() as $header => $column) {
+            if ($column['field'] === null) {
+                continue;
+            }
+
+            $value = $input[$column['field']] ?? '';
+            $cells[self::headerKey($header)] = new ImportCell(ImportCell::clean(is_scalar($value) ? (string) $value : ''));
+        }
+
+        $values   = [];
+        $errors   = [];
+        $warnings = [];
+
+        foreach ($this->checkFields($cells) as $field => [$value, $fieldErrors, $fieldWarnings]) {
+            $values[$field] = $value;
+
+            if ($fieldErrors !== []) {
+                $errors[$field] = $fieldErrors[0];
+            }
+
+            array_push($warnings, ...$fieldWarnings);
+        }
+
+        return ['values' => $values, 'errors' => $errors, 'warnings' => $warnings];
+    }
+
+    /**
+     * Nama header lama yang masih diterima => header baku (headerKey()).
+     * Stage 11: kolom "kelas" siswa menjadi "rombel"; file lama tetap terbaca.
+     *
+     * @return array<string, string>
+     */
+    protected function headerAliases(): array
+    {
+        return [];
+    }
 
     /**
      * Petunjuk pengisian untuk sheet kedua template.
@@ -383,6 +456,7 @@ abstract class VoterImporter
         foreach ($this->columns() as $header => $column) {
             $expected[self::headerKey($header)] = ['label' => $header, 'required' => $column['required']];
         }
+        $aliases = $this->headerAliases();
 
         $bestErrors = null;
 
@@ -402,6 +476,7 @@ abstract class VoterImporter
                 }
 
                 $key = self::headerKey($text);
+                $key = $aliases[$key] ?? $key;
 
                 if (! isset($expected[$key])) {
                     $unknown[] = $text;

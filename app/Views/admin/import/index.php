@@ -72,10 +72,10 @@ $isStudent = $type === VoterType::Student;
 
       <h3 class="panel__subtitle">Yang diperiksa sebelum impor</h3>
       <ul class="check-list">
-        <li>Header sesuai template (urutan kolom boleh berbeda).</li>
+        <li>Header sesuai template (urutan kolom boleh berbeda)<?= $isStudent ? '; file lama berkolom "kelas" tetap diterima sebagai rombel' : '' ?>.</li>
         <?php if ($isStudent): ?>
           <li>NISN tepat 10 digit, tidak ganda di dalam file.</li>
-          <li>Jenis kelamin L atau P; kelas berjenjang 7, 8, atau 9; nomor absen 1&ndash;999 atau kosong.</li>
+          <li>Jenis kelamin L atau P; rombel diawali kelas 7, 8, atau 9 (7A, VIII-B); nomor absen 1&ndash;999 atau kosong.</li>
         <?php else: ?>
           <li>NIP hanya angka, tidak ganda; NIP 18 digit yang terbaca sebagai angka (dibulatkan Excel) ditolak.</li>
         <?php endif; ?>

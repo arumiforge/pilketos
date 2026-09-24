@@ -174,7 +174,7 @@ final class ImportVerificationTest extends CIUnitTestCase
 
         $this->assertStringContainsString('Jenis kelamin harus L atau P', $this->errorsOf($result, 2));
         $this->assertStringContainsString('Nama wajib diisi', $this->errorsOf($result, 3));
-        $this->assertStringContainsString('Kelas wajib diisi', $this->errorsOf($result, 4));
+        $this->assertStringContainsString('Rombel wajib diisi', $this->errorsOf($result, 4));
         $this->assertStringContainsString('Kode unik harus tanggal lahir DDMMYYYY', $this->errorsOf($result, 5));
         $this->assertSame(4, $result['summary']['invalid']);
         $this->assertSame(1, $result['summary']['importable']);

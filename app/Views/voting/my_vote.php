@@ -79,7 +79,7 @@ $you = $type === \App\Services\VoterType::Student ? 'kamu' : 'Anda';
         </div>
         <?php if ($type === \App\Services\VoterType::Student): ?>
           <div class="kv-list__row">
-            <dt>Kelas</dt>
+            <dt>Rombel</dt>
             <dd><?= esc($voter['kelas']) ?></dd>
           </div>
           <div class="kv-list__row">

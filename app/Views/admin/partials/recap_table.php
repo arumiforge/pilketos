@@ -1,6 +1,8 @@
 <?php
 /**
  * Tabel rekap per kelompok (jenis pemilih, jenis kelamin, jenjang, kelas).
+ * Stage 11: di UI jenjang (key grade) disebut "Kelas" (7/8/9) dan kelas
+ * (key class, 7A/8B) disebut "Rombel"; key data & JSON live count tetap.
  *
  * Kolom pasangan: jumlah suara + persentase di dalam kelompok (dari yang
  * sudah memilih). Kolom komposisi: batang bertumpuk suara tiap pasangan +

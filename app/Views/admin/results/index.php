@@ -189,8 +189,8 @@ $accents = array_values(array_unique(array_merge(
             'groups'     => $snapshot['groups']['grade'],
             'candidates' => $snapshot['candidates'],
             'key'        => 'grade',
-            'label'      => 'Jenjang',
-            'caption'    => 'Hasil akhir siswa per jenjang',
+            'label'      => 'Kelas',
+            'caption'    => 'Hasil akhir siswa per kelas (7/8/9)',
         ]) ?>
         <?= view('admin/partials/recap_table', [
             'groups'     => $snapshot['groups']['gender'],

@@ -473,6 +473,7 @@ summary:focus-visible {
 
 .alert--error { border-color: var(--danger); color: var(--danger); }
 .alert--success { border-color: var(--success); color: var(--success); }
+.alert--warning { border-color: #7A5A12; color: #7A5A12; }
 
 .alert__list { margin: 0; padding-left: 1.1rem; }
 

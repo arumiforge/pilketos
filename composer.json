@@ -12,6 +12,7 @@
         "ext-mysqli": "*",
         "ext-zip": "*",
         "laminas/laminas-escaper": "^2.18",
+        "matomo/device-detector": "^6.4",
         "phpoffice/phpspreadsheet": "^5.10",
         "psr/log": "^3.0"
     },

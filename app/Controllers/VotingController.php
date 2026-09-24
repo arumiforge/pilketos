@@ -129,7 +129,7 @@ abstract class VotingController extends BaseController
             $type,
             $this->voterId(),
             (int) $digits,
-            DeviceInfo::fromUserAgent($this->request->getUserAgent()),
+            DeviceInfo::fromRequest($this->request),
         );
 
         return $this->respondVote($result);

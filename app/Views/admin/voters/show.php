@@ -33,6 +33,11 @@ $active    = (int) $voter['status_aktif'] === 1;
         <?php if (! $active): ?><span class="pill pill--muted">Akun nonaktif</span><?php endif; ?>
       </p>
     </div>
+    <?php if (! ($resultsLocked ?? false)): ?>
+      <div class="admin-head__actions">
+        <a class="btn btn--outline" href="<?= site_url($type->adminPath($voter['id'] . '/ubah')) ?>"><?= icon('edit') ?> Ubah data</a>
+      </div>
+    <?php endif; ?>
   </header>
 
   <div class="detail-grid">
@@ -43,7 +48,7 @@ $active    = (int) $voter['status_aktif'] === 1;
         <div class="kv-list__row"><dt>Nama</dt><dd><?= esc($voter['name']) ?></dd></div>
         <?php if ($isStudent): ?>
           <div class="kv-list__row"><dt>Jenis kelamin</dt><dd><?= $voter['jenis_kelamin'] === 'L' ? 'Laki-laki (L)' : 'Perempuan (P)' ?></dd></div>
-          <div class="kv-list__row"><dt>Kelas</dt><dd><?= esc($voter['kelas']) ?></dd></div>
+          <div class="kv-list__row"><dt>Rombel</dt><dd><?= esc($voter['kelas']) ?></dd></div>
           <div class="kv-list__row"><dt>Nomor absen</dt><dd><?= esc($voter['nomor_absen'] ?? '-') ?></dd></div>
         <?php endif; ?>
         <div class="kv-list__row">
@@ -108,7 +113,8 @@ $active    = (int) $voter['status_aktif'] === 1;
                 <td><?= esc($h['election_nama']) ?> <?= esc((string) $h['election_tahun']) ?></td>
                 <td><span class="cand-chip cand-chip--plain"><?= sprintf('%02d', (int) $h['nomor_urut']) ?></span> <?= esc($h['nama_ketua']) ?> &amp; <?= esc($h['nama_wakil']) ?></td>
                 <td class="nowrap"><?= esc(format_waktu($h['voted_at'], 'd MMM yyyy, HH.mm.ss')) ?></td>
-                <td><?= esc(($h['device_info'] ?? '-') . ' / ' . ($h['browser_info'] ?? '-')) ?></td>
+                <?php $device = device_summary($h['device_info'] ?? null, $h['browser_info'] ?? null); ?>
+                <td class="device-cell"><?= $device['kind'] !== null ? icon($device['kind'], 'device-cell__icon') : '' ?><span class="device-cell__main"><?= esc($device['main']) ?></span><?php if ($device['sub'] !== ''): ?><span class="cell-sub"><?= esc($device['sub']) ?></span><?php endif; ?></td>
                 <td>
                   <?php if ($h['status'] === 'LOCKED'): ?>
                     <span class="pill pill--ink"><?= icon('lock') ?> Terkunci</span>

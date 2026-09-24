@@ -11,7 +11,7 @@
         <dd><?= esc($student['nisn']) ?></dd>
       </div>
       <div>
-        <dt class="visually-hidden">Kelas</dt>
+        <dt class="visually-hidden">Rombel</dt>
         <dd><?= esc($student['kelas']) ?></dd>
       </div>
       <div>

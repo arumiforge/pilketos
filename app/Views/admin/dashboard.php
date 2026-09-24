@@ -6,6 +6,9 @@
  * Dasbor admin + live count (Stage 9: menu & breadcrumb "Beranda").
  * Strip jadwal cukup mulai & berakhir (status sudah ada di topbar), countdown
  * "Ditutup dalam" di sampingnya (HP: di bawahnya).
+ * Stage 11: di HP countdown bergaya terminal (latar tinta, huruf mono,
+ * 03:12:45 rata tengah, selebar layar tanpa sudut); "Rekap jenjang" menjadi
+ * "Rekap kelas" (7/8/9) dan "Rekap kelas" menjadi "Rekap rombel" (7A, 8B).
  *
  * @var array|null $election
  * @var array      $snapshot AnalyticsService::snapshot()
@@ -58,7 +61,10 @@ $heading  = match ($status) {
         </div>
       </dl>
       <?php if (in_array($status, ['UPCOMING', 'ONGOING'], true)): ?>
-        <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
+        <div class="admin-clock admin-clock--<?= esc(strtolower($status), 'attr') ?>">
+          <span class="admin-clock__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+          <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact', 'trimDays' => true, 'withProgress' => true]) ?>
+        </div>
       <?php endif; ?>
     </section>
   <?php endif; ?>
@@ -102,30 +108,30 @@ $heading  = match ($status) {
 
   <section class="panel" aria-labelledby="grade-title">
     <header class="panel__head">
-      <h2 class="panel__title" id="grade-title">Rekap jenjang</h2>
-      <?= view('admin/partials/note', ['id' => 'grade-note', 'text' => 'Siswa aktif, jenjang dibaca dari nama kelas.']) ?>
+      <h2 class="panel__title" id="grade-title">Rekap kelas</h2>
+      <?= view('admin/partials/note', ['id' => 'grade-note', 'text' => 'Siswa aktif; kelas 7, 8, 9 dibaca dari awal nama rombel.']) ?>
     </header>
     <?= view('admin/partials/recap_table', [
         'groups'     => $snapshot['groups']['grade'],
         'candidates' => $snapshot['candidates'],
         'key'        => 'grade',
-        'label'      => 'Jenjang',
-        'caption'    => 'Rekap suara siswa per jenjang',
+        'label'      => 'Kelas',
+        'caption'    => 'Rekap suara siswa per kelas',
     ]) ?>
   </section>
 
   <section class="panel" aria-labelledby="class-title">
     <header class="panel__head">
-      <h2 class="panel__title" id="class-title">Rekap kelas</h2>
+      <h2 class="panel__title" id="class-title">Rekap rombel</h2>
       <a class="panel__link" href="<?= site_url('admin/analitik/suara') ?>">Detail suara <?= icon('arrow-right') ?></a>
     </header>
     <?= view('admin/partials/recap_table', [
         'groups'     => $snapshot['groups']['class'],
         'candidates' => $snapshot['candidates'],
         'key'        => 'class',
-        'label'      => 'Kelas',
-        'caption'    => 'Rekap suara siswa per kelas',
-        'link'       => site_url('admin/siswa') . '?status=aktif&kelas=',
+        'label'      => 'Rombel',
+        'caption'    => 'Rekap suara siswa per rombel',
+        'link'       => site_url('admin/siswa') . '?status=aktif&rombel=',
     ]) ?>
   </section>
 </div>

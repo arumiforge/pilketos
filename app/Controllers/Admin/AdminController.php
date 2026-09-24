@@ -95,20 +95,22 @@ abstract class AdminController extends BaseController
     }
 
     /**
-     * Nomor halaman dari query string (?page=), minimal 1.
+     * Nomor halaman dari query string (?page=, atau ?page_<grup>= untuk
+     * pagination bergrup), minimal 1.
      */
-    protected function page(): int
+    protected function page(string $group = 'default'): int
     {
-        $page = $this->request->getGet('page');
+        $page = $this->request->getGet($group === 'default' ? 'page' : 'page_' . $group);
 
         return is_string($page) && ctype_digit($page) ? max(1, min((int) $page, 100000)) : 1;
     }
 
     /**
      * Link pagination dengan template admin (query string lain dipertahankan).
+     * Grup selain "default" memakai ?page_<grup>= (dua tabel di satu halaman).
      */
-    protected function pagerLinks(int $page, int $perPage, int $total): string
+    protected function pagerLinks(int $page, int $perPage, int $total, string $group = 'default'): string
     {
-        return service('pager')->makeLinks($page, $perPage, $total, 'admin');
+        return service('pager')->makeLinks($page, $perPage, $total, 'admin', 0, $group);
     }
 }

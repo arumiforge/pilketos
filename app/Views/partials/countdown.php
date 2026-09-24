@@ -9,8 +9,14 @@
  * performance.now(), jadi jam browser yang diubah tidak berpengaruh. Countdown
  * hanya visual: buka/tutup voting tetap diputuskan server.
  *
- * @var array|null $election Hasil ElectionModel::getCurrentElection()
- * @var string     $variant  'compact' | 'dock' | 'terminal'
+ * Stage 11: dasbor admin memakai 'compact' dengan trimDays (hari hilang bila
+ * sisa < 1 hari, seperti terminal) + withProgress (garis progres), karena di
+ * HP tampil bergaya terminal lewat .admin-clock (admin.css).
+ *
+ * @var array|null $election     Hasil ElectionModel::getCurrentElection()
+ * @var string     $variant      'compact' | 'dock' | 'terminal'
+ * @var bool|null  $trimDays     Sembunyikan "hari" bila sisa < 1 hari (bawaan: varian terminal)
+ * @var bool|null  $withProgress Garis progres pemilihan (bawaan: varian terminal)
  */
 $variant = $variant ?? 'compact';
 $clock   = election_clock($election ?? null);
@@ -29,8 +35,10 @@ $units  = [
 ];
 
 // Gaya terminal: "hari" hanya tampil bila sisa waktu >= 1 hari (03:12:45).
-$terminal = in_array($variant, ['dock', 'terminal'], true);
-if ($terminal && $remain < 86400) {
+$terminal     = in_array($variant, ['dock', 'terminal'], true);
+$trimDays     = $trimDays ?? $terminal;
+$withProgress = $withProgress ?? $terminal;
+if ($trimDays && $remain < 86400) {
     unset($units['days']);
 }
 $label = match ($status) {
@@ -73,7 +81,7 @@ $srText = match ($status) {
 
   <p class="visually-hidden" data-countdown-sr><?= esc($srText) ?></p>
 
-  <?php if ($terminal && $election): ?>
+  <?php if ($withProgress && $election): ?>
     <span class="countdown__progress" aria-hidden="true">
       <span class="countdown__progress-fill" data-timeline-fill style="--progress: <?= esc(number_format($progress, 4, '.', ''), 'attr') ?>;"></span>
     </span>

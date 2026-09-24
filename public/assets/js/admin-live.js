@@ -83,7 +83,7 @@
 
   /* -- status indikator ----------------------------------------------------- */
   var STATE_TEXT = {
-    ONGOING: 'Langsung',
+    ONGOING: 'Live',
     UPCOMING: 'Menunggu dibuka',
     FINISHED: 'Hasil akhir',
     NONE: 'Belum ada jadwal',

@@ -7,6 +7,7 @@ use App\Services\AnalyticsService;
 use App\Services\Import\ImportStore;
 use App\Services\UnlockService;
 use App\Services\VoterDirectory;
+use App\Services\VoterEditor;
 use App\Services\VoteService;
 use CodeIgniter\Config\BaseService;
 
@@ -83,6 +84,18 @@ class Services extends BaseService
         }
 
         return new VoterDirectory();
+    }
+
+    /**
+     * Tambah & ubah siswa/guru dari panel admin (Stage 11). service('voterEditor')
+     */
+    public static function voterEditor(bool $getShared = true): VoterEditor
+    {
+        if ($getShared) {
+            return static::getSharedInstance('voterEditor');
+        }
+
+        return new VoterEditor();
     }
 
     /**

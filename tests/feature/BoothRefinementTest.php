@@ -91,8 +91,8 @@ final class BoothRefinementTest extends CIUnitTestCase
 
         $page->assertDontSee('<p class="eyebrow">Dasbor Siswa</p>');
         $page->assertSee('<h1 class="dash-head__name">Candra Setiawan</h1>');
-        // Nilai langsung; label NISN / Kelas / Nomor Absen hanya untuk pembaca layar.
-        foreach (['NISN', 'Kelas', 'Nomor Absen'] as $label) {
+        // Nilai langsung; label NISN / Rombel / Nomor Absen hanya untuk pembaca layar.
+        foreach (['NISN', 'Rombel', 'Nomor Absen'] as $label) {
             $page->assertSee('<dt class="visually-hidden">' . $label . '</dt>');
         }
         $this->assertLessThan(strpos($html, 'class="dash-meta"'), strpos($html, 'class="dash-head__name"'));

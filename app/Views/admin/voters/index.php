@@ -13,13 +13,18 @@
  * @var int                        $offset
  * @var string                     $pager
  * @var array                      $summary Tally jenis pemilih ini (aktif)
+ * @var bool                       $resultsLocked Stage 4: pemilihan selesai, data dikunci
+ *
+ * Stage 11: kolom "Status memilih" berisi teks utuh "Sudah memilih" / "Belum
+ * memilih"; waktu memilih pindah ke kolom sendiri di sebelahnya. Tombol
+ * "Tambah" & tautan "Ubah" per baris (CRUD langsung, selain impor Excel).
  */
 use App\Services\VoterType;
 
 $isStudent = $type === VoterType::Student;
 $idLabel   = $type->identifierLabel();
 $idColumn  = $type->identifierColumn();
-$filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] !== '' || $filters['vote'] !== '' || $filters['status'] !== 'aktif';
+$filtered  = $filters['q'] !== '' || $filters['rombel'] !== '' || $filters['jk'] !== '' || $filters['vote'] !== '' || $filters['status'] !== 'aktif';
 ?>
 <div class="admin-page">
   <header class="admin-head">
@@ -36,7 +41,10 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
       </p>
     </div>
     <div class="admin-head__actions">
-      <a class="btn" href="<?= site_url($type->adminPath('impor')) ?>"><?= icon('upload') ?> Impor Excel</a>
+      <?php if (! ($resultsLocked ?? false)): ?>
+        <a class="btn" href="<?= site_url($type->adminPath('tambah')) ?>"><?= icon('plus') ?> Tambah <?= esc(strtolower($type->label())) ?></a>
+      <?php endif; ?>
+      <a class="btn btn--outline" href="<?= site_url($type->adminPath('impor')) ?>"><?= icon('upload') ?> Impor Excel</a>
     </div>
   </header>
 
@@ -47,11 +55,11 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
     </div>
     <?php if ($isStudent): ?>
       <div class="field">
-        <label for="f-kelas">Kelas</label>
-        <select id="f-kelas" name="kelas">
+        <label for="f-rombel">Rombel</label>
+        <select id="f-rombel" name="rombel">
           <option value="">Semua</option>
           <?php foreach ($classes as $kelas): ?>
-            <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['kelas'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
+            <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['rombel'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -96,7 +104,7 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
       <?php if ($filtered): ?>
         Tidak ada <?= esc(strtolower($type->label())) ?> yang cocok dengan filter.
       <?php else: ?>
-        Belum ada data <?= esc(strtolower($type->label())) ?>. <a href="<?= site_url($type->adminPath('impor')) ?>">Impor dari Excel</a>.
+        Belum ada data <?= esc(strtolower($type->label())) ?>. <a href="<?= site_url($type->adminPath('tambah')) ?>">Tambah satu per satu</a> atau <a href="<?= site_url($type->adminPath('impor')) ?>">impor dari Excel</a>.
       <?php endif; ?>
     </p>
   <?php else: ?>
@@ -109,11 +117,12 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
             <th scope="col">Nama</th>
             <?php if ($isStudent): ?>
               <th scope="col">JK</th>
-              <th scope="col">Kelas</th>
+              <th scope="col">Rombel</th>
               <th scope="col" class="num">Absen</th>
             <?php endif; ?>
             <th scope="col">Kode unik</th>
             <th scope="col">Status memilih</th>
+            <th scope="col">Waktu memilih</th>
             <th scope="col"><span class="visually-hidden">Aksi</span></th>
           </tr>
         </thead>
@@ -133,15 +142,28 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
                 <td class="num"><?= esc($row['nomor_absen'] ?? '-') ?></td>
               <?php endif; ?>
               <td class="mono"><span class="secret"><?= esc($row['kodeunik']) ?></span></td>
-              <td>
+              <td class="vote-status">
                 <?php if ($row['vote_id'] !== null): ?>
-                  <span class="pill pill--ink"><?= icon('lock') ?> Sudah</span>
-                  <span class="cell-sub"><?= esc(format_waktu($row['voted_at'], 'd MMM, HH.mm')) ?></span>
+                  <span class="pill pill--ink"><?= icon('lock') ?> Sudah memilih</span>
                 <?php else: ?>
-                  <span class="pill pill--outline">Belum</span>
+                  <span class="pill pill--outline">Belum memilih</span>
                 <?php endif; ?>
               </td>
-              <td><a class="row-link" href="<?= esc($url, 'attr') ?>">Detail<span class="visually-hidden"> <?= esc($row['name']) ?></span> <?= icon('arrow-right') ?></a></td>
+              <td class="nowrap">
+                <?php if ($row['vote_id'] !== null): ?>
+                  <time datetime="<?= esc($row['voted_at'], 'attr') ?>"><?= esc(\CodeIgniter\I18n\Time::parse($row['voted_at'])->toLocalizedString('d MMM yyyy')) ?><span class="cell-sub"><?= esc(format_waktu($row['voted_at'], 'HH.mm.ss')) ?></span></time>
+                <?php else: ?>
+                  <span class="cell-empty" aria-hidden="true">&mdash;</span><span class="visually-hidden">Belum memilih</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <?php if (! ($resultsLocked ?? false)): ?>
+                    <a class="row-link" href="<?= site_url($type->adminPath($row['id'] . '/ubah')) ?>"><?= icon('edit') ?> Ubah<span class="visually-hidden"> <?= esc($row['name']) ?></span></a>
+                  <?php endif; ?>
+                  <a class="row-link" href="<?= esc($url, 'attr') ?>">Detail<span class="visually-hidden"> <?= esc($row['name']) ?></span> <?= icon('arrow-right') ?></a>
+                </div>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>

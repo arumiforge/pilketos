@@ -63,7 +63,7 @@ final class SpreadsheetFactory
      */
     public static function students(array $rows): string
     {
-        return self::write(array_merge([['no', 'NISN', 'nama', 'jenis_kelamin', 'kelas', 'nomor_absen', 'kodeunik']], $rows));
+        return self::write(array_merge([['no', 'NISN', 'nama', 'jenis_kelamin', 'rombel', 'nomor_absen', 'kodeunik']], $rows));
     }
 
     /**

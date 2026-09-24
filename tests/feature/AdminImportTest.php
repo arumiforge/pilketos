@@ -97,7 +97,7 @@ final class AdminImportTest extends CIUnitTestCase
         $this->files[] = $path;
         file_put_contents($path, $binary);
         $sheet = (new Xlsx())->load($path)->getSheet(0);
-        $this->assertSame([['no', 'NISN', 'nama', 'jenis_kelamin', 'kelas', 'nomor_absen', 'kodeunik']], $sheet->rangeToArray('A1:G1'));
+        $this->assertSame([['no', 'NISN', 'nama', 'jenis_kelamin', 'rombel', 'nomor_absen', 'kodeunik']], $sheet->rangeToArray('A1:G1'));
 
         $teacher = $this->withSession($this->admin())->get('admin/guru/impor/templat');
         $teacher->response()->buildHeaders();

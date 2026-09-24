@@ -58,7 +58,7 @@ $ongoing = ($election['status'] ?? null) === 'ONGOING';
               <th scope="col">Pemilih</th>
               <th scope="col">Jenis</th>
               <th scope="col">NISN / NIP</th>
-              <th scope="col">Kelas</th>
+              <th scope="col">Rombel</th>
               <th scope="col">Status suara</th>
               <th scope="col">Pilihan &amp; waktu</th>
               <th scope="col"><span class="visually-hidden">Aksi</span></th>

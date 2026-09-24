@@ -268,7 +268,8 @@ final class StageNineRefinementTest extends CIUnitTestCase
         $pages = [
             'admin'                => ['Beranda'],
             'admin/analitik'       => ['Beranda', 'Analitik'],
-            'admin/analitik/suara' => ['Beranda', 'Analitik', 'Detail suara'],
+            // Stage 11: detail suara = bagian (pill) halaman Analitik.
+            'admin/analitik/suara' => ['Beranda', 'Analitik'],
             'admin/hasil'          => ['Beranda', 'Hasil akhir'],
             'admin/paslon'         => ['Beranda', 'Pasangan calon'],
             'admin/siswa'          => ['Beranda', 'Siswa'],
@@ -329,18 +330,19 @@ final class StageNineRefinementTest extends CIUnitTestCase
         $this->assertStringContainsString('countdown--compact', $strip);
         $this->assertLessThan(strpos($strip, 'countdown--compact'), strpos($strip, '<dt>Berakhir</dt>'));
 
-        // Waktu diperbarui + tombol Perbarui dalam satu bar.
-        $this->assertMatchesRegularExpression('/<div class="live__bar">\s*<span class="live__time">diperbarui <time data-live-updated>.*<\/time><\/span>\s*<a class="btn btn--sm btn--outline live__refresh"/', $html);
+        // Waktu diperbarui + tombol Perbarui dalam satu bar (Stage 11: ikon &
+        // status ikut di bar, waktu di bawah status).
+        $this->assertMatchesRegularExpression('/<div class="live__bar">\s*<span class="live__signal">.*<\/span>\s*<span class="live__text">\s*<span class="live__state" data-live-state>Live<\/span>\s*<span class="live__time">diperbarui <time data-live-updated>.*<\/time><\/span>\s*<\/span>\s*<a class="btn btn--sm btn--outline live__refresh"/', $html);
 
         // Catatan panel = ikon + tooltip.
         $page->assertDontSee('<p class="panel__note">');
         $page->assertSee('<span class="panel__note note-tip" data-note-tip>');
         $page->assertSee('aria-describedby="grade-note"');
-        $page->assertSee('<span class="note-tip__text" role="tooltip" id="grade-note">Siswa aktif, jenjang dibaca dari nama kelas.</span>');
+        $page->assertSee('<span class="note-tip__text" role="tooltip" id="grade-note">Siswa aktif; kelas 7, 8, 9 dibaca dari awal nama rombel.</span>');
 
         $css = $this->asset('assets/css/admin.css');
-        $this->assertStringContainsString('.live__bar { display: contents; }', $css);
-        $this->assertMatchesRegularExpression('/@media \(max-width: 719px\) \{\s*\.live__bar \{\s*position: fixed;[^}]*bottom: 0;/', $css);
+        $this->assertMatchesRegularExpression('/\.live__bar,\s*\.live__text \{ display: contents; \}/', $css);
+        $this->assertMatchesRegularExpression('/@media \(max-width: 719px\) \{[^@]*\.live \{ display: contents; \}\s*\.live__bar \{\s*position: fixed;[^}]*bottom: 0;/', $css);
         $this->assertMatchesRegularExpression('/\.schedule-strip__list \{[^}]*grid-template-columns: repeat\(2, minmax\(0, max-content\)\);/', $css);
         $this->assertMatchesRegularExpression('/\.note-tip:hover \.note-tip__text,\s*\.note-tip:focus-within \.note-tip__text \{[^}]*visibility: visible;/', $css);
     }

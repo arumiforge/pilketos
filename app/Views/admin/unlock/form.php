@@ -36,7 +36,7 @@ $c       = $vote === null ? null : CandidateTheme::present([
       </div>
       <p class="admin-head__lede" id="admin-head-lede" data-lede>
         <?= esc($type->identifierLabel()) ?> <span class="mono"><?= esc($voter[$type->identifierColumn()]) ?></span>
-        <?= isset($voter['kelas']) ? ' &middot; Kelas ' . esc($voter['kelas']) : '' ?>
+        <?= isset($voter['kelas']) ? ' &middot; Rombel ' . esc($voter['kelas']) : '' ?>
         <?php if ((int) $voter['status_aktif'] === 0): ?><span class="pill pill--muted">Akun nonaktif</span><?php endif; ?>
       </p>
     </div>

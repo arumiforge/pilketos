@@ -29,7 +29,7 @@ $labels    = [
     VoterImporter::ACTION_SAME    => ['Tidak berubah', 'pill--muted'],
     VoterImporter::ACTION_INVALID => ['Bermasalah', 'pill--danger'],
 ];
-$fieldNames = ['name' => 'nama', 'jenis_kelamin' => 'jenis kelamin', 'kelas' => 'kelas', 'nomor_absen' => 'nomor absen', 'kodeunik' => 'kode unik'];
+$fieldNames = ['name' => 'nama', 'jenis_kelamin' => 'jenis kelamin', 'kelas' => 'rombel', 'nomor_absen' => 'nomor absen', 'kodeunik' => 'kode unik'];
 $counts = [
     'issues'                      => $summary['issues'],
     VoterImporter::ACTION_INVALID => $summary[VoterImporter::ACTION_INVALID],
@@ -93,7 +93,7 @@ $counts = [
             <th scope="col">Nama</th>
             <?php if ($isStudent): ?>
               <th scope="col">JK</th>
-              <th scope="col">Kelas</th>
+              <th scope="col">Rombel</th>
               <th scope="col" class="num">Absen</th>
             <?php endif; ?>
             <th scope="col">Kode unik</th>

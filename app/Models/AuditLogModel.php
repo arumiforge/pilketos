@@ -9,8 +9,9 @@ use CodeIgniter\Model;
  * Jejak tindakan administratif penting (MASTER section 19).
  *
  * Dicatat secara proporsional: unlock hak suara, perubahan jadwal,
- * perubahan kandidat, impor siswa/guru, serta perubahan status/penghapusan
- * pemilih. Login dan tampilan halaman tidak dicatat.
+ * perubahan kandidat, impor siswa/guru, tambah/ubah pemilih lewat form
+ * (Stage 11), serta perubahan status/penghapusan pemilih. Login dan tampilan
+ * halaman tidak dicatat.
  *
  * Konteks (Stage 3, migration 2026-03-01-000001):
  * - election_id        : election terkait tindakan;
@@ -31,6 +32,10 @@ class AuditLogModel extends Model
     public const TEACHER_STATUS   = 'TEACHER_STATUS';
     public const STUDENT_DELETE   = 'STUDENT_DELETE';
     public const TEACHER_DELETE   = 'TEACHER_DELETE';
+    public const STUDENT_CREATE   = 'STUDENT_CREATE';
+    public const TEACHER_CREATE   = 'TEACHER_CREATE';
+    public const STUDENT_UPDATE   = 'STUDENT_UPDATE';
+    public const TEACHER_UPDATE   = 'TEACHER_UPDATE';
 
     /**
      * Label tindakan untuk UI (urutan = urutan filter di halaman Audit).
@@ -44,6 +49,10 @@ class AuditLogModel extends Model
         self::CANDIDATE_DELETE => 'Hapus pasangan calon',
         self::IMPORT_STUDENT   => 'Impor data siswa',
         self::IMPORT_TEACHER   => 'Impor data guru',
+        self::STUDENT_CREATE   => 'Tambah data siswa',
+        self::TEACHER_CREATE   => 'Tambah data guru',
+        self::STUDENT_UPDATE   => 'Ubah data siswa',
+        self::TEACHER_UPDATE   => 'Ubah data guru',
         self::STUDENT_STATUS   => 'Ubah status akun siswa',
         self::TEACHER_STATUS   => 'Ubah status akun guru',
         self::STUDENT_DELETE   => 'Hapus data siswa',
