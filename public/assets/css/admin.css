@@ -6,6 +6,8 @@
    tipis, angka serif besar. Warna hanya datang dari aksen solid tiap
    pasangan calon (--accent). Tanpa gradient, tanpa emoji, tanpa glass.
    Status tidak pernah disampaikan dengan warna saja (selalu ada teks).
+   Stage 9: brand & menu ringkas, breadcrumb stepper, keterangan di balik
+   ikon, bar live count menempel di bawah HP, catatan panel jadi tooltip.
    ========================================================================== */
 
 .admin {
@@ -109,32 +111,23 @@
   border-bottom: 1px solid var(--ink-line);
 }
 
+/* Stage 9: brand satu baris "SMP 1 DAWE", di bawahnya "Panel Admin" */
 .admin-side__mark {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  text-decoration: none;
+  display: block;
   font-family: var(--font-display);
-  line-height: 0.9;
-}
-
-.admin-side__word {
-  font-size: 2.35rem;
+  font-size: 1.9rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.admin-side__year {
-  font-size: 2.35rem;
-  font-weight: 300;
-  color: var(--ink-muted);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .admin-side__school {
   margin-top: var(--space-2);
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
@@ -161,23 +154,21 @@
   padding: var(--space-3) var(--space-3) var(--space-5);
 }
 
-.admin-side__group {
-  margin: var(--space-5) var(--space-2) var(--space-2);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
+/* Stage 9: tanpa judul kelompok; antarkelompok cukup garis tipis */
+.admin-side__list + .admin-side__list {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--ink-line);
 }
 
 .admin-side__link {
   position: relative;
   display: grid;
-  grid-template-columns: 1.6rem 1.25rem minmax(0, 1fr);
+  grid-template-columns: 1.25rem minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-height: 44px;
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
   text-decoration: none;
   font-size: 0.9375rem;
@@ -193,13 +184,6 @@
   background: var(--paper);
   color: var(--ink);
   font-weight: 600;
-}
-
-.admin-side__no {
-  font-family: var(--font-display);
-  font-size: 0.8125rem;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.7;
 }
 
 .admin-side__icon {
@@ -330,18 +314,79 @@
 
 .admin-head__text { flex: 1 1 420px; min-width: 0; }
 
-.eyebrow-x {
-  font-size: 0.75rem;
+/* -- breadcrumb stepper (Stage 9, admin/partials/crumbs.php): titik kecil di
+   rel tipis, langkah terakhir = halaman ini (titik tinta bercincin) -- */
+.crumbs__list {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.crumbs__list::-webkit-scrollbar { display: none; }
+
+.crumbs__item {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.crumbs__item + .crumbs__item::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 28px;
+  height: 1px;
+  margin-inline: var(--space-2);
+  background: var(--line-strong);
+}
+
+.crumbs__step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 28px;
+  padding-inline: 2px;
+  border-radius: var(--radius);
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gray-700);
+  text-decoration: none;
+  color: var(--gray-500);
+  transition: color 0.15s var(--ease);
 }
 
-.eyebrow-x a { text-underline-offset: 0.2em; }
+.crumbs__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gray-300);
+  transition: background-color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+a.crumbs__step:hover,
+a.crumbs__step:focus-visible { color: var(--ink); }
+
+a.crumbs__step:hover .crumbs__dot,
+a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: scale(1.25); }
+
+.crumbs__item.is-current .crumbs__step { color: var(--ink); }
+
+.crumbs__item.is-current .crumbs__dot {
+  margin-inline: 3px;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--ink);
+}
+
+/* -- judul + tombol keterangan (Stage 9): keterangan (lede) tersembunyi
+   sampai ikon "i" ditekan; tanpa JavaScript tetap tampil -- */
+/* judul inline agar ikon "i" selalu menempel di ujung baris terakhir judul */
+.admin-head__heading { margin-top: var(--space-2); }
 
 .admin-head__title {
-  margin-top: var(--space-2);
+  display: inline;
   font-size: clamp(2rem, 4.6vw, 3.3rem);
   font-weight: 500;
   letter-spacing: -0.025em;
@@ -349,10 +394,52 @@
   overflow-wrap: anywhere;
 }
 
+.admin-head__hint {
+  display: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: var(--space-3);
+  padding: 0;
+  vertical-align: 0.35em;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gray-700);
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.admin-head__hint .icon { width: 18px; height: 18px; }
+
+.js .admin-head__hint { display: inline-grid; }
+
+.admin-head__hint:hover { border-color: var(--ink); color: var(--ink); }
+
+.admin-head__hint[aria-expanded="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
 .admin-head__lede {
   margin-top: var(--space-3);
   max-width: 72ch;
   color: var(--gray-700);
+}
+
+.js .admin-head__lede[data-lede] {
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--ink);
+  background: var(--paper-dim);
+  font-size: 0.9375rem;
+}
+
+.js .admin-head__lede[data-lede]:not(.is-open) { display: none; }
+.js .admin-head__lede[data-lede].is-open { animation: lede-in 0.25s var(--ease); }
+
+@keyframes lede-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .admin-head__actions {
@@ -401,6 +488,32 @@
 .live__time { color: var(--gray-700); }
 .live__refresh { margin-left: auto; }
 
+/* Stage 9: desktop tetap sebaris; HP = bar menempel di bawah layar */
+.live__bar { display: contents; }
+
+@media (max-width: 719px) {
+  .live__bar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--admin-pad) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: 0 -8px 24px rgba(21, 20, 26, 0.08);
+  }
+
+  .live__bar .live__refresh { flex: 0 0 auto; margin-left: 0; }
+
+  /* ruang agar footer tidak tertutup bar */
+  .admin-main:has(.live__bar) { padding-bottom: 64px; }
+}
+
 .live.is-busy .live__refresh .icon { animation: spin 0.9s linear infinite; }
 
 @keyframes spin {
@@ -422,10 +535,12 @@
   margin-bottom: var(--space-6);
 }
 
+/* Stage 9: cukup mulai & berakhir, dua kolom sejajar juga di HP;
+   countdown di bawahnya (>= 1100px di sampingnya) */
 .schedule-strip__list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-3) var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: var(--space-3) var(--space-6);
 }
 
 .schedule-strip__list dt {
@@ -553,6 +668,70 @@
 .panel__note {
   font-size: 0.8125rem;
   color: var(--gray-700);
+}
+
+/* Stage 9: catatan panel = ikon "i" di samping judul, teks muncul sebagai
+   tooltip saat diarahkan (hover) atau difokus/diketuk (admin/partials/note) */
+.note-tip {
+  position: relative;
+  align-self: center;
+  margin-right: auto;
+  margin-left: calc(var(--space-2) * -1);
+}
+
+.note-tip__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gray-500);
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.note-tip__icon .icon { width: 18px; height: 18px; }
+
+.note-tip:hover .note-tip__icon,
+.note-tip__icon:focus-visible { background: var(--gray-200); color: var(--ink); }
+
+.note-tip__text {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 2 * var(--admin-pad) - 40px));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px rgba(21, 20, 26, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease), visibility 0s linear 0.15s;
+}
+
+.note-tip:hover .note-tip__text,
+.note-tip:focus-within .note-tip__text {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.note-tip.is-dismissed .note-tip__text { opacity: 0; visibility: hidden; }
+
+/* HP: tooltip ditambatkan ke kepala panel (bukan ikon) agar tidak meluap */
+@media (max-width: 719px) {
+  .panel__head { position: relative; }
+  .note-tip { position: static; }
+  .note-tip__text { top: calc(100% - 4px); max-width: 100%; }
 }
 
 .dash-cols {
@@ -1995,6 +2174,7 @@ ul.check-list {
   border-top: 1px solid var(--line);
   font-size: 0.75rem;
   color: var(--gray-700);
+  text-align: center;
 }
 
 .admin-foot p {
@@ -2082,7 +2262,11 @@ ul.check-list {
   .toc,
   .pager,
   .admin-head__actions,
+  .admin-head__hint,
+  .note-tip,
   .skip-link { display: none !important; }
+
+  .js .admin-head__lede[data-lede]:not(.is-open) { display: block; }
 
   .admin-shell { display: block; }
   .admin-content { max-width: none; padding: 0; }

@@ -23,9 +23,12 @@ $active    = (int) $voter['status_aktif'] === 1;
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url($type->adminPath()) ?>">Data <?= esc(strtolower($type->label())) ?></a> &middot; Detail</p>
-      <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
-      <p class="admin-head__lede">
+      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Detail']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>
         <?= esc($type->label()) ?> &middot; <?= esc($type->identifierLabel()) ?> <span class="mono"><?= esc($voter[$type->identifierColumn()]) ?></span>
         <?php if (! $active): ?><span class="pill pill--muted">Akun nonaktif</span><?php endif; ?>
       </p>
@@ -83,7 +86,7 @@ $active    = (int) $voter['status_aktif'] === 1;
   <section class="panel" aria-labelledby="history-title">
     <header class="panel__head">
       <h2 class="panel__title" id="history-title">Riwayat suara</h2>
-      <p class="panel__note">Baris suara tidak pernah dihapus: unlock mengubah status menjadi riwayat UNLOCKED.</p>
+      <?= view('admin/partials/note', ['id' => 'history-note', 'text' => 'Baris suara tidak pernah dihapus: unlock mengubah status menjadi riwayat UNLOCKED.']) ?>
     </header>
     <?php if ($history === []): ?>
       <p class="empty">Belum ada riwayat suara.</p>

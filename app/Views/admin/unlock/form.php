@@ -29,9 +29,12 @@ $c       = $vote === null ? null : CandidateTheme::present([
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url('admin/buka-kunci') ?>">Unlock</a> &middot; <?= esc($type->label()) ?></p>
-      <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
-      <p class="admin-head__lede">
+      <?= view('admin/partials/crumbs', ['trail' => [['Unlock hak suara', 'admin/buka-kunci'], [$type->label()]]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>
         <?= esc($type->identifierLabel()) ?> <span class="mono"><?= esc($voter[$type->identifierColumn()]) ?></span>
         <?= isset($voter['kelas']) ? ' &middot; Kelas ' . esc($voter['kelas']) : '' ?>
         <?php if ((int) $voter['status_aktif'] === 0): ?><span class="pill pill--muted">Akun nonaktif</span><?php endif; ?>

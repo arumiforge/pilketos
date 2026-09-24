@@ -42,9 +42,12 @@ $counts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url($type->adminPath('impor')) ?>">Impor <?= esc(strtolower($type->label())) ?></a> &middot; Pratinjau</p>
-      <h1 class="admin-head__title">Periksa sebelum impor</h1>
-      <p class="admin-head__lede">File <strong><?= esc($fileName) ?></strong> &middot; belum ada data yang disimpan. Pratinjau berlaku sampai pukul <?= esc(\CodeIgniter\I18n\Time::createFromTimestamp($expires, config('App')->appTimezone)->toLocalizedString('HH.mm')) ?> WIB.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel', $type->adminPath('impor')], ['Pratinjau']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Periksa sebelum impor</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>File <strong><?= esc($fileName) ?></strong> &middot; belum ada data yang disimpan. Pratinjau berlaku sampai pukul <?= esc(\CodeIgniter\I18n\Time::createFromTimestamp($expires, config('App')->appTimezone)->toLocalizedString('HH.mm')) ?> WIB.</p>
     </div>
   </header>
 

@@ -19,9 +19,12 @@ $isStudent = $type === VoterType::Student;
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url($type->adminPath()) ?>">Data <?= esc(strtolower($type->label())) ?></a> &middot; Impor Excel</p>
-      <h1 class="admin-head__title">Impor data <?= esc(strtolower($type->label())) ?></h1>
-      <p class="admin-head__lede">Data yang sudah ada dengan <?= esc($type->identifierLabel()) ?> sama akan diperbarui, bukan dibuat ganda. Data yang tidak ada di file tidak dihapus.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Impor data <?= esc(strtolower($type->label())) ?></h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Data yang sudah ada dengan <?= esc($type->identifierLabel()) ?> sama akan diperbarui, bukan dibuat ganda. Data yang tidak ada di file tidak dihapus.</p>
     </div>
   </header>
 

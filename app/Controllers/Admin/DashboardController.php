@@ -21,7 +21,7 @@ class DashboardController extends AdminController
         $snapshot = service('analytics')->snapshot($election);
 
         return $this->render('admin/dashboard', [
-            'title'    => 'Dasbor',
+            'title'    => 'Beranda',
             'snapshot' => $snapshot,
             'final'    => FinalResult::build($election, $snapshot),
         ], 'dashboard');

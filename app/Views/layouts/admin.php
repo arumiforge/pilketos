@@ -38,7 +38,7 @@
     </main>
 
     <footer class="admin-foot">
-      <p>Panel admin Pemilihan Ketua &amp; Wakil Ketua OSIS SMP 1 DAWE &middot; waktu server <?= esc(\CodeIgniter\I18n\Time::now()->toLocalizedString('d MMM yyyy, HH.mm')) ?> WIB</p>
+      <p>&copy; <?= date('Y') ?> SMP 1 DAWE</p>
     </footer>
   </div>
 </div>

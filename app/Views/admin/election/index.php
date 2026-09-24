@@ -24,9 +24,12 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Kontrol &middot; Jadwal</p>
-      <h1 class="admin-head__title">Jadwal pemilihan</h1>
-      <p class="admin-head__lede">Status dihitung otomatis dari jadwal terhadap <strong>jam server</strong> (WIB), bukan jam perangkat. Menutup lebih awal atau memperpanjang cukup mengubah waktu selesai; semua perubahan tercatat di audit log.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [['Jadwal pemilihan']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Jadwal pemilihan</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Status dihitung otomatis dari jadwal terhadap <strong>jam server</strong> (WIB), bukan jam perangkat. Menutup lebih awal atau memperpanjang cukup mengubah waktu selesai; semua perubahan tercatat di audit log.</p>
     </div>
   </header>
 

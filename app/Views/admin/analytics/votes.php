@@ -22,9 +22,12 @@ $filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['kelas']
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Analitik &middot; 06</p>
-      <h1 class="admin-head__title">Detail suara</h1>
-      <p class="admin-head__lede">
+      <?= view('admin/partials/crumbs', ['trail' => [['Analitik', 'admin/analitik'], ['Detail suara']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Detail suara</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>
         Bawaan: suara sah (terkunci) dari pemilih aktif &mdash; jumlahnya sama dengan total suara di dasbor
         (<strong><?= angka($counted) ?></strong>). Perangkat dan browser dibaca server dari User-Agent saat mencoblos.
       </p>

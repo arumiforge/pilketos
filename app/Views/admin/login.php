@@ -5,10 +5,7 @@
 <section class="section">
   <div class="container">
     <div class="card card--auth stack">
-      <div>
-        <p class="eyebrow">Masuk Admin</p>
-        <h1 class="card__title">Masuk ke panel admin</h1>
-      </div>
+      <h1 class="card__title">Masuk ke panel admin</h1>
 
       <form action="<?= base_url('admin/masuk') ?>" method="post" class="stack" novalidate>
         <?= csrf_field() ?>

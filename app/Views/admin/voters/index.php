@@ -24,9 +24,12 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Data &middot; <?= esc($type->label()) ?></p>
-      <h1 class="admin-head__title">Data <?= esc(strtolower($type->label())) ?></h1>
-      <p class="admin-head__lede">
+      <?= view('admin/partials/crumbs', ['trail' => [[$type->label()]]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Data <?= esc(strtolower($type->label())) ?></h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>
         <?= angka($summary['total']) ?> <?= esc(strtolower($type->label())) ?> aktif &middot;
         <?= angka($summary['voted']) ?> sudah memilih &middot; <?= angka($summary['not_voted']) ?> belum memilih.
         <?= $isStudent ? '' : 'Guru adalah pemilih dengan identitas terpisah dari siswa, bukan admin.' ?>

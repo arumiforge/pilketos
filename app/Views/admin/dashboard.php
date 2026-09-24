@@ -3,7 +3,9 @@
 <?= $this->section('content') ?>
 <?php
 /**
- * Dasbor admin + live count.
+ * Dasbor admin + live count (Stage 9: menu & breadcrumb "Beranda").
+ * Strip jadwal cukup mulai & berakhir (status sudah ada di topbar), countdown
+ * "Ditutup dalam" di sampingnya (HP: di bawahnya).
  *
  * @var array|null $election
  * @var array      $snapshot AnalyticsService::snapshot()
@@ -21,10 +23,13 @@ $heading  = match ($status) {
 
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Dasbor &middot; Live count</p>
-      <h1 class="admin-head__title"><?= $election ? esc($election['nama']) : 'Belum ada jadwal pemilihan' ?></h1>
+      <?= view('admin/partials/crumbs', ['trail' => []]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title"><?= $election ? esc($election['nama']) : 'Belum ada jadwal pemilihan' ?></h1>
+        <?php if ($election): ?><?= view('admin/partials/head_hint') ?><?php endif; ?>
+      </div>
       <?php if ($election): ?>
-        <p class="admin-head__lede">Tahun <?= esc((string) $election['tahun']) ?> &middot; seluruh angka dihitung dari suara terkunci pemilih aktif.</p>
+        <p class="admin-head__lede" id="admin-head-lede" data-lede>Tahun <?= esc((string) $election['tahun']) ?> &middot; seluruh angka dihitung dari suara terkunci pemilih aktif.</p>
       <?php endif; ?>
     </div>
     <?= $this->include('admin/partials/live_status') ?>
@@ -44,20 +49,11 @@ $heading  = match ($status) {
     <section class="schedule-strip" aria-label="Status dan jadwal pemilihan">
       <dl class="schedule-strip__list">
         <div>
-          <dt>Status</dt>
-          <dd>
-            <span class="badge badge--<?= esc(strtolower((string) $status), 'attr') ?>" data-live-badge-class>
-              <span class="badge__dot" aria-hidden="true"></span>
-              <span data-live-badge-label><?= esc(election_status_label($status)) ?></span>
-            </span>
-          </dd>
-        </div>
-        <div>
           <dt>Mulai</dt>
           <dd><time datetime="<?= esc($election['start_at'], 'attr') ?>"><?= esc(format_waktu($election['start_at'])) ?></time></dd>
         </div>
         <div>
-          <dt>Selesai</dt>
+          <dt>Berakhir</dt>
           <dd><time datetime="<?= esc($election['end_at'], 'attr') ?>"><?= esc(format_waktu($election['end_at'])) ?></time></dd>
         </div>
       </dl>
@@ -107,7 +103,7 @@ $heading  = match ($status) {
   <section class="panel" aria-labelledby="grade-title">
     <header class="panel__head">
       <h2 class="panel__title" id="grade-title">Rekap jenjang</h2>
-      <p class="panel__note">Siswa aktif, jenjang dibaca dari nama kelas.</p>
+      <?= view('admin/partials/note', ['id' => 'grade-note', 'text' => 'Siswa aktif, jenjang dibaca dari nama kelas.']) ?>
     </header>
     <?= view('admin/partials/recap_table', [
         'groups'     => $snapshot['groups']['grade'],
