@@ -38,7 +38,7 @@ $accents = array_values(array_unique(array_merge(
       <div class="admin-head__actions final-actions">
         <button type="button" class="btn btn--outline" data-fullscreen="#hasil-akhir" hidden><?= icon('expand') ?> <span data-fullscreen-label>Layar penuh</span></button>
         <button type="button" class="btn btn--outline" data-print hidden><?= icon('printer') ?> Cetak</button>
-        <a class="btn btn--outline" href="<?= site_url('admin/analytics') ?>"><?= icon('chart') ?> Analitik lengkap</a>
+        <a class="btn btn--outline" href="<?= site_url('admin/analitik') ?>"><?= icon('chart') ?> Analitik lengkap</a>
       </div>
     <?php endif; ?>
   </header>
@@ -50,7 +50,7 @@ $accents = array_values(array_unique(array_merge(
         <h2 class="final-locked__title" id="locked-title">Hasil akhir belum tersedia</h2>
         <?php if ($election === null): ?>
           <p>Pemilihan belum dijadwalkan. Hasil akhir baru ada setelah pemilihan berlangsung dan selesai.</p>
-          <p><a class="btn" href="<?= site_url('admin/election') ?>"><?= icon('calendar') ?> Atur jadwal</a></p>
+          <p><a class="btn" href="<?= site_url('admin/jadwal') ?>"><?= icon('calendar') ?> Atur jadwal</a></p>
         <?php else: ?>
           <p>
             Status sekarang <strong><?= esc(election_status_label($status)) ?></strong>. Hasil akhir terbuka pada
@@ -58,7 +58,7 @@ $accents = array_values(array_unique(array_merge(
             (sejak waktu selesai, pencoblosan ditolak server). Selama pemilihan berjalan, pantau angka sementara di dasbor live count.
           </p>
           <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
-          <p><a class="btn" href="<?= site_url('admin/dashboard') ?>"><?= icon('grid') ?> Buka dasbor live count</a></p>
+          <p><a class="btn" href="<?= site_url('admin') ?>"><?= icon('grid') ?> Buka dasbor live count</a></p>
         <?php endif; ?>
       </div>
     </section>

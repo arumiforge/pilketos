@@ -106,20 +106,20 @@ final class AdminPanelTest extends CIUnitTestCase
     public function testAdminRoutesRequireAdminSession(): void
     {
         $paths = [
-            'admin/dashboard', 'admin/live-count', 'admin/analytics', 'admin/analytics/votes',
-            'admin/candidates', 'admin/candidates/new', 'admin/candidates/1/edit', 'admin/candidates/1/preview',
-            'admin/students', 'admin/students/1', 'admin/students/import', 'admin/students/import/template',
-            'admin/teachers', 'admin/teachers/1', 'admin/teachers/import',
-            'admin/election', 'admin/unlock', 'admin/unlock/student/1', 'admin/audit',
+            'admin', 'admin/hitung-suara', 'admin/analitik', 'admin/analitik/suara',
+            'admin/paslon', 'admin/paslon/tambah', 'admin/paslon/1/ubah', 'admin/paslon/1/intip',
+            'admin/siswa', 'admin/siswa/1', 'admin/siswa/impor', 'admin/siswa/impor/templat',
+            'admin/guru', 'admin/guru/1', 'admin/guru/impor',
+            'admin/jadwal', 'admin/buka-kunci', 'admin/buka-kunci/siswa/1', 'admin/riwayat',
         ];
 
         $student = ['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true];
         $teacher = ['user_type' => 'teacher', 'teacher_id' => 1, 'isLoggedIn' => true];
 
         foreach ($paths as $path) {
-            $this->withSession([])->get($path)->assertRedirectTo(site_url('admin/login'));
-            $this->withSession($student)->get($path)->assertRedirectTo(site_url('admin/login'));
-            $this->withSession($teacher)->get($path)->assertRedirectTo(site_url('admin/login'));
+            $this->withSession([])->get($path)->assertRedirectTo(site_url('admin/masuk'));
+            $this->withSession($student)->get($path)->assertRedirectTo(site_url('admin/masuk'));
+            $this->withSession($teacher)->get($path)->assertRedirectTo(site_url('admin/masuk'));
         }
     }
 
@@ -127,18 +127,18 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $result = $this->withSession(['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true])
             ->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
-            ->get('admin/live-count');
+            ->get('admin/hitung-suara');
 
         $result->assertStatus(401);
         $this->assertSame('unauthenticated', $this->json($result)['status']);
-        $this->assertSame(site_url('admin/login'), $this->json($result)['redirect']);
+        $this->assertSame(site_url('admin/masuk'), $this->json($result)['redirect']);
     }
 
     public function testAdminPostRequiresCsrfToken(): void
     {
         $this->expectException(SecurityException::class);
 
-        $this->asAdmin()->post('admin/election/close', []);
+        $this->asAdmin()->post('admin/jadwal/tutup', []);
     }
 
     public function testAdminCannotCastVoteForVoters(): void
@@ -147,8 +147,8 @@ final class AdminPanelTest extends CIUnitTestCase
             ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
             ->withBodyFormat('json');
 
-        $asAdmin->post('student/vote', ['candidate_id' => 1, 'student_id' => 1])->assertStatus(401);
-        $asAdmin->post('teacher/vote', ['candidate_id' => 1, 'teacher_id' => 1])->assertStatus(401);
+        $asAdmin->post('siswa/coblos', ['candidate_id' => 1, 'student_id' => 1])->assertStatus(401);
+        $asAdmin->post('guru/coblos', ['candidate_id' => 1, 'teacher_id' => 1])->assertStatus(401);
 
         $this->assertSame(0, $this->db->table('student_votes')->countAllResults());
         $this->assertSame(0, $this->db->table('teacher_votes')->countAllResults());
@@ -158,7 +158,7 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         service('superglobals')->setServer('CONTENT_LENGTH', (string) (64 * 1024 * 1024 * 1024));
 
-        $result = $this->asAdmin()->post('admin/candidates', []);
+        $result = $this->asAdmin()->post('admin/paslon', []);
 
         $result->assertRedirect();
         $this->assertStringContainsString('melebihi batas server', (string) session('error'));
@@ -173,13 +173,13 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->seedVotes();
 
-        $result = $this->asAdmin()->get('admin/dashboard');
+        $result = $this->asAdmin()->get('admin');
 
         $result->assertStatus(200);
         $result->assertSee('Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE');
         $result->assertSee('Sedang Berlangsung');
         $result->assertSee('Hasil sementara');
-        $result->assertSee('data-live-url="' . site_url('admin/live-count') . '"');
+        $result->assertSee('data-live-url="' . site_url('admin/hitung-suara') . '"');
         $result->assertSee('assets/js/admin-live.js');
         $result->assertSee('noindex, nofollow');
 
@@ -200,7 +200,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $result->assertSee('data-live-table="grade"');
         $result->assertSee('data-live-table="class"');
         $result->assertSee('Kelas 7');
-        $result->assertSee('href="' . site_url('admin/students') . '?status=aktif&amp;kelas=7A"');
+        $result->assertSee('href="' . site_url('admin/siswa') . '?status=aktif&amp;kelas=7A"');
         $result->assertSee('Rekap kelas');
     }
 
@@ -211,11 +211,11 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->db->enableForeignKeyChecks();
         $this->db->enableForeignKeyChecks();
 
-        $result = $this->asAdmin()->get('admin/dashboard');
+        $result = $this->asAdmin()->get('admin');
 
         $result->assertStatus(200);
         $result->assertSee('Belum ada jadwal pemilihan');
-        $result->assertSee('href="' . site_url('admin/election') . '"');
+        $result->assertSee('href="' . site_url('admin/jadwal') . '"');
     }
 
     public function testLiveCountReturnsConsistentJson(): void
@@ -225,7 +225,7 @@ final class AdminPanelTest extends CIUnitTestCase
 
         $result = $this->asAdmin()
             ->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
-            ->get('admin/live-count');
+            ->get('admin/hitung-suara');
 
         $result->assertStatus(200);
         $this->assertStringContainsString('no-store', $result->response()->getHeaderLine('Cache-Control'));
@@ -254,10 +254,10 @@ final class AdminPanelTest extends CIUnitTestCase
     public function testLiveCountPollingFollowsElectionStatus(): void
     {
         $this->scheduleAt('2026-10-01 06:00:00');
-        $this->assertSame(60, $this->json($this->asAdmin()->get('admin/live-count'))['poll']['interval']);
+        $this->assertSame(60, $this->json($this->asAdmin()->get('admin/hitung-suara'))['poll']['interval']);
 
         Time::setTestNow('2026-10-01 12:00:00');
-        $finished = $this->json($this->asAdmin()->get('admin/live-count'));
+        $finished = $this->json($this->asAdmin()->get('admin/hitung-suara'));
         $this->assertSame('FINISHED', $finished['election']['status']);
         $this->assertSame(0, $finished['poll']['interval']);
     }
@@ -270,7 +270,7 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->seedVotes();
 
-        $result = $this->asAdmin()->get('admin/analytics');
+        $result = $this->asAdmin()->get('admin/analitik');
 
         $result->assertStatus(200);
         foreach (['Keseluruhan', 'Jenis pemilih', 'Jenis kelamin siswa', 'Jenjang', 'Kelas', 'Laki-laki', 'Perempuan', 'Siswa', 'Guru'] as $text) {
@@ -287,7 +287,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->seedVotes();
         $this->vote('student', 4, 2, 'UNLOCKED');
 
-        $result = $this->asAdmin()->get('admin/analytics/votes');
+        $result = $this->asAdmin()->get('admin/analitik/suara');
 
         $result->assertStatus(200);
         $result->assertSee('<strong>5</strong> baris suara');
@@ -298,15 +298,15 @@ final class AdminPanelTest extends CIUnitTestCase
         $result->assertSee('0000000001');
         $result->assertDontSee('Dinda Permatasari'); // hanya riwayat UNLOCKED
 
-        $history = $this->asAdmin()->get('admin/analytics/votes?status=UNLOCKED');
+        $history = $this->asAdmin()->get('admin/analitik/suara?status=UNLOCKED');
         $history->assertSee('Dinda Permatasari');
         $history->assertSee('<strong>1</strong> baris suara');
 
-        $teachers = $this->asAdmin()->get('admin/analytics/votes?type=teacher');
+        $teachers = $this->asAdmin()->get('admin/analitik/suara?type=teacher');
         $teachers->assertSee('<strong>1</strong> baris suara');
         $teachers->assertDontSee('Ahmad Fauzan');
 
-        $filtered = $this->asAdmin()->get('admin/analytics/votes?kelas=7A&gender=P&candidate=2');
+        $filtered = $this->asAdmin()->get('admin/analitik/suara?kelas=7A&gender=P&candidate=2');
         $filtered->assertSee('Bunga Larasati');
         $filtered->assertSee('<strong>1</strong> baris suara');
     }
@@ -327,12 +327,12 @@ final class AdminPanelTest extends CIUnitTestCase
             $this->vote('student', (int) $this->db->insertID(), 2, 'LOCKED', sprintf('2026-09-01 10:%02d:00', $id));
         }
 
-        $page1 = $this->asAdmin()->get('admin/analytics/votes');
+        $page1 = $this->asAdmin()->get('admin/analitik/suara');
         $page1->assertSee('<strong>26</strong> baris suara');
         $page1->assertSee('Halaman 1 dari 2');
         $page1->assertSee('Siswa Ekstra 11');   // terbaru lebih dulu
 
-        $page2 = $this->asAdmin()->get('admin/analytics/votes?page=2');
+        $page2 = $this->asAdmin()->get('admin/analitik/suara?page=2');
         $page2->assertSee('Halaman 2 dari 2');
         $page2->assertSee('Ahmad Fauzan');
     }
@@ -342,7 +342,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->db->table('students')->where('id', 1)->update(['name' => '<script>alert(1)</script>']);
         $this->vote('student', 1, 1);
 
-        foreach (['admin/analytics/votes', 'admin/students', 'admin/students/1', 'admin/unlock?q=script'] as $path) {
+        foreach (['admin/analitik/suara', 'admin/siswa', 'admin/siswa/1', 'admin/buka-kunci?q=script'] as $path) {
             $body = $this->asAdmin()->get($path)->getBody();
             $this->assertStringNotContainsString('<script>alert(1)', $body, $path);
             $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body, $path);
@@ -357,14 +357,14 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-09-25 10:00:00', '2026-09-24 07:00:00', '2026-09-26 12:00:00');
 
-        $result = $this->postAdmin('admin/election', [
+        $result = $this->postAdmin('admin/jadwal', [
             'nama'     => 'Pemilihan OSIS 2026',
             'tahun'    => '2026',
             'start_at' => '2026-10-01T07:00',
             'end_at'   => '2026-10-01T12:30',
         ]);
 
-        $result->assertRedirectTo(site_url('admin/election'));
+        $result->assertRedirectTo(site_url('admin/jadwal'));
         $this->seeInDatabase('elections', [
             'id'       => 1,
             'nama'     => 'Pemilihan OSIS 2026',
@@ -381,7 +381,7 @@ final class AdminPanelTest extends CIUnitTestCase
 
         // Pemilih langsung mengikuti jadwal baru (server yang memutuskan).
         $this->withSession(['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true])
-            ->get('student/vote')
+            ->get('siswa/coblos')
             ->assertSee('Pencoblosan belum dibuka');
     }
 
@@ -389,12 +389,12 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-10-01 11:45:00');
 
-        $this->postAdmin('admin/election', [
+        $this->postAdmin('admin/jadwal', [
             'nama'     => 'Pemilihan Ketua dan Wakil Ketua OSIS SMP 1 DAWE',
             'tahun'    => '2026',
             'start_at' => '2026-10-01T07:00',
             'end_at'   => '2026-10-01T13:00',
-        ])->assertRedirectTo(site_url('admin/election'));
+        ])->assertRedirectTo(site_url('admin/jadwal'));
 
         $this->seeInDatabase('elections', ['id' => 1, 'end_at' => '2026-10-01 13:00:00', 'status' => 'ONGOING']);
         $audit = $this->db->table('audit_logs')->where('action', 'SCHEDULE_UPDATE')->get()->getRowArray();
@@ -405,12 +405,12 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $before = $this->db->table('elections')->where('id', 1)->get()->getRowArray();
 
-        $this->postAdmin('admin/election', [
+        $this->postAdmin('admin/jadwal', [
             'nama' => 'X', 'tahun' => '2026', 'start_at' => '2026-10-01T12:00', 'end_at' => '2026-10-01T07:00',
-        ])->assertRedirectTo(site_url('admin/election'));
+        ])->assertRedirectTo(site_url('admin/jadwal'));
         $this->assertSame('Waktu selesai harus setelah waktu mulai.', session('errors')['end_at']);
 
-        $this->postAdmin('admin/election', [
+        $this->postAdmin('admin/jadwal', [
             'nama' => '', 'tahun' => 'abcd', 'start_at' => 'kemarin', 'end_at' => '',
         ]);
         $this->assertArrayHasKey('nama', session('errors'));
@@ -425,7 +425,7 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-10-01 09:30:15');
 
-        $this->postAdmin('admin/election/close')->assertRedirectTo(site_url('admin/election'));
+        $this->postAdmin('admin/jadwal/tutup')->assertRedirectTo(site_url('admin/jadwal'));
 
         $this->seeInDatabase('elections', ['id' => 1, 'end_at' => '2026-10-01 09:30:15', 'status' => 'FINISHED']);
         $this->seeInDatabase('audit_logs', ['action' => 'SCHEDULE_UPDATE', 'election_id' => 1]);
@@ -434,12 +434,12 @@ final class AdminPanelTest extends CIUnitTestCase
         $vote = $this->withSession(['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true])
             ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
             ->withBodyFormat('json')
-            ->post('student/vote', ['candidate_id' => 1]);
+            ->post('siswa/coblos', ['candidate_id' => 1]);
         $vote->assertStatus(403);
 
         // Menutup pemilihan yang sudah selesai ditolak.
         $this->withHeaders([])->withBodyFormat('');
-        $this->postAdmin('admin/election/close');
+        $this->postAdmin('admin/jadwal/tutup');
         $this->assertStringContainsString('hanya dapat ditutup', (string) session('error'));
     }
 
@@ -447,7 +447,7 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-09-30 08:00:00');
 
-        $this->postAdmin('admin/election/open')->assertRedirectTo(site_url('admin/election'));
+        $this->postAdmin('admin/jadwal/buka')->assertRedirectTo(site_url('admin/jadwal'));
 
         $this->seeInDatabase('elections', ['id' => 1, 'start_at' => '2026-09-30 08:00:00', 'status' => 'ONGOING']);
     }
@@ -460,13 +460,13 @@ final class AdminPanelTest extends CIUnitTestCase
         $this->db->enableForeignKeyChecks();
         Time::setTestNow('2026-09-25 10:00:00');
 
-        $this->postAdmin('admin/election', [
+        $this->postAdmin('admin/jadwal', [
             'nama' => 'Pemilihan OSIS 2026', 'tahun' => '2026', 'start_at' => '2026-09-25T09:00', 'end_at' => '2026-09-25T15:00',
-        ])->assertRedirectTo(site_url('admin/election'));
+        ])->assertRedirectTo(site_url('admin/jadwal'));
 
         $this->seeInDatabase('elections', ['nama' => 'Pemilihan OSIS 2026', 'status' => 'ONGOING']);
         $this->seeInDatabase('audit_logs', ['action' => 'ELECTION_CREATE']);
-        $this->asAdmin()->get('admin/election')->assertSee('Tutup pemilihan sekarang');
+        $this->asAdmin()->get('admin/jadwal')->assertSee('Tutup pemilihan sekarang');
     }
 
     // ------------------------------------------------------------------
@@ -477,33 +477,33 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->seedVotes();
 
-        $notVoted = $this->asAdmin()->get('admin/students?vote=belum');
+        $notVoted = $this->asAdmin()->get('admin/siswa?vote=belum');
         $notVoted->assertStatus(200);
         $notVoted->assertSee('<strong>7</strong> siswa sesuai filter');
         $notVoted->assertDontSee('Ahmad Fauzan');
         $notVoted->assertDontSee('Larasati Putri'); // nonaktif tidak dihitung
 
-        $class = $this->asAdmin()->get('admin/students?kelas=7a&jk=P');
+        $class = $this->asAdmin()->get('admin/siswa?kelas=7a&jk=P');
         $class->assertSee('Bunga Larasati');
         $class->assertSee('<strong>1</strong> siswa sesuai filter');
 
-        $search = $this->asAdmin()->get('admin/students?q=0000000003');
+        $search = $this->asAdmin()->get('admin/siswa?q=0000000003');
         $search->assertSee('Candra Setiawan');
         $search->assertSee('Sudah');
 
-        $inactive = $this->asAdmin()->get('admin/students?status=nonaktif');
+        $inactive = $this->asAdmin()->get('admin/siswa?status=nonaktif');
         $inactive->assertSee('Larasati Putri');
         $inactive->assertSee('Nonaktif');
 
         // Kode unik ditampilkan (disamarkan lewat CSS) untuk membantu pemilih yang lupa.
-        $this->asAdmin()->get('admin/students')->assertSee('class="secret">05062013<');
+        $this->asAdmin()->get('admin/siswa')->assertSee('class="secret">05062013<');
     }
 
     public function testTeacherListIsSeparateFromStudents(): void
     {
         $this->seedVotes();
 
-        $result = $this->asAdmin()->get('admin/teachers');
+        $result = $this->asAdmin()->get('admin/guru');
 
         $result->assertStatus(200);
         $result->assertSee('Sudarmanto, S.Pd.');
@@ -517,20 +517,20 @@ final class AdminPanelTest extends CIUnitTestCase
         $old = $this->vote('student', 3, 2, 'UNLOCKED', '2026-09-22 08:00:00');
         $this->vote('student', 3, 1, 'LOCKED', '2026-09-22 09:00:00');
 
-        $result = $this->asAdmin()->get('admin/students/3');
+        $result = $this->asAdmin()->get('admin/siswa/3');
 
         $result->assertStatus(200);
         $result->assertSee('Candra Setiawan');
         $result->assertSee('Sudah memilih');
         $result->assertSee('Arka Wibisana');
         $result->assertSee('Samsung Internet 25');
-        $result->assertSee('href="' . site_url('admin/unlock/student/3') . '"');
+        $result->assertSee('href="' . site_url('admin/buka-kunci/siswa/3') . '"');
         $result->assertSee('Dibuka');           // baris riwayat UNLOCKED
         $result->assertSee('Bagas Prayoga');    // pilihan lama tetap terlihat di riwayat
         $this->assertGreaterThan(0, $old);
 
         try {
-            $this->asAdmin()->get('admin/teachers/99');
+            $this->asAdmin()->get('admin/guru/99');
             $this->fail('Guru yang tidak ada harus 404');
         } catch (PageNotFoundException $e) {
             $this->assertSame('Guru tidak ditemukan.', $e->getMessage());
@@ -539,16 +539,16 @@ final class AdminPanelTest extends CIUnitTestCase
 
     public function testDeactivatingVoterIsAuditedAndBlocksLogin(): void
     {
-        $this->postAdmin('admin/students/2/status', ['status_aktif' => '0'])
-            ->assertRedirectTo(site_url('admin/students/2'));
+        $this->postAdmin('admin/siswa/2/status', ['status_aktif' => '0'])
+            ->assertRedirectTo(site_url('admin/siswa/2'));
 
         $this->seeInDatabase('students', ['id' => 2, 'status_aktif' => 0]);
         $this->seeInDatabase('audit_logs', ['action' => 'STUDENT_STATUS']);
 
-        $this->withSession([])->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0000000002', 'kodeunik' => '17092013']);
+        $this->withSession([])->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000002', 'kodeunik' => '17092013']);
         $this->assertNull(session('user_type'));
 
-        $this->postAdmin('admin/students/2/status', ['status_aktif' => '1']);
+        $this->postAdmin('admin/siswa/2/status', ['status_aktif' => '1']);
         $this->seeInDatabase('students', ['id' => 2, 'status_aktif' => 1]);
     }
 
@@ -556,11 +556,11 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->vote('teacher', 2, 1);
 
-        $this->postAdmin('admin/teachers/2/delete')->assertRedirectTo(site_url('admin/teachers/2'));
+        $this->postAdmin('admin/guru/2/hapus')->assertRedirectTo(site_url('admin/guru/2'));
         $this->seeInDatabase('teachers', ['id' => 2]);
         $this->assertStringContainsString('riwayat suara', (string) session('error'));
 
-        $this->postAdmin('admin/teachers/3/delete')->assertRedirectTo(site_url('admin/teachers'));
+        $this->postAdmin('admin/guru/3/hapus')->assertRedirectTo(site_url('admin/guru'));
         $this->dontSeeInDatabase('teachers', ['id' => 3]);
         $this->seeInDatabase('audit_logs', ['action' => 'TEACHER_DELETE']);
     }
@@ -573,32 +573,32 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->seedVotes();
 
-        $result = $this->asAdmin()->get('admin/unlock?q=0000000001');
+        $result = $this->asAdmin()->get('admin/buka-kunci?q=0000000001');
 
         $result->assertStatus(200);
         $result->assertSee('Ahmad Fauzan');          // NISN 0000000001
         $result->assertSee('Sudarmanto, S.Pd.');     // NIP 000000000000000001
-        $result->assertSee('href="' . site_url('admin/unlock/student/1') . '"');
-        $result->assertSee('href="' . site_url('admin/unlock/teacher/1') . '"');
+        $result->assertSee('href="' . site_url('admin/buka-kunci/siswa/1') . '"');
+        $result->assertSee('href="' . site_url('admin/buka-kunci/guru/1') . '"');
     }
 
     public function testUnlockFlowRequiresReasonAndConfirmation(): void
     {
         $voteId = $this->vote('student', 1, 2);
 
-        $form = $this->asAdmin()->get('admin/unlock/student/1');
+        $form = $this->asAdmin()->get('admin/buka-kunci/siswa/1');
         $form->assertStatus(200);
         $form->assertSee('Bagas Prayoga');
         $form->assertSee('Terkunci (LOCKED)');
         $form->assertSee('name="vote_id" value="' . $voteId . '"');
         $form->assertSee('Unlock Hak Suara');
 
-        $this->postAdmin('admin/unlock/student/1', ['vote_id' => (string) $voteId, 'reason' => 'salah', 'confirm' => '1'])
-            ->assertRedirectTo(site_url('admin/unlock/student/1'));
+        $this->postAdmin('admin/buka-kunci/siswa/1', ['vote_id' => (string) $voteId, 'reason' => 'salah', 'confirm' => '1'])
+            ->assertRedirectTo(site_url('admin/buka-kunci/siswa/1'));
         $this->assertArrayHasKey('reason', session('errors'));
 
-        $this->postAdmin('admin/unlock/student/1', ['vote_id' => (string) $voteId, 'reason' => self::REASON])
-            ->assertRedirectTo(site_url('admin/unlock/student/1'));
+        $this->postAdmin('admin/buka-kunci/siswa/1', ['vote_id' => (string) $voteId, 'reason' => self::REASON])
+            ->assertRedirectTo(site_url('admin/buka-kunci/siswa/1'));
         $this->assertArrayHasKey('confirm', session('errors'));
 
         $this->seeInDatabase('student_votes', ['id' => $voteId, 'status' => 'LOCKED']);
@@ -609,12 +609,12 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $voteId = $this->vote('student', 1, 2);
 
-        $this->postAdmin('admin/unlock/student/1', [
+        $this->postAdmin('admin/buka-kunci/siswa/1', [
             'vote_id'      => (string) $voteId,
             'reason'       => self::REASON,
             'confirm'      => '1',
             'candidate_id' => '3', // diabaikan: admin tidak dapat memilih
-        ])->assertRedirectTo(site_url('admin/students/1'));
+        ])->assertRedirectTo(site_url('admin/siswa/1'));
 
         $this->assertStringContainsString('Hak suara Ahmad Fauzan berhasil dibuka', (string) session('success'));
         $this->seeInDatabase('student_votes', ['id' => $voteId, 'status' => 'UNLOCKED', 'candidate_id' => 2]);
@@ -623,10 +623,10 @@ final class AdminPanelTest extends CIUnitTestCase
 
         // Pemilih kembali "belum memilih" dan memilih sendiri.
         $student = ['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true];
-        $this->withSession($student)->get('student/dashboard')->assertSee('Belum memilih');
+        $this->withSession($student)->get('siswa')->assertSee('Belum memilih');
 
         // Audit menampilkan waktu, admin, pemilih, jenis pemilih, election, alasan, tindakan.
-        $audit = $this->asAdmin()->get('admin/audit?action=UNLOCK_VOTE');
+        $audit = $this->asAdmin()->get('admin/riwayat?action=UNLOCK_VOTE');
         $audit->assertStatus(200);
         $audit->assertSee('Unlock hak suara');
         $audit->assertSee('Administrator OSIS (Dev)');
@@ -644,8 +644,8 @@ final class AdminPanelTest extends CIUnitTestCase
         // Admin lain baru saja membuka suara ini (Stage 4: UNLOCKED wajib punya unlocked_at).
         $this->db->table('teacher_votes')->where('id', $voteId)->update(['status' => 'UNLOCKED', 'unlocked_at' => Time::now()->toDateTimeString()]);
 
-        $this->postAdmin('admin/unlock/teacher/2', ['vote_id' => (string) $voteId, 'reason' => self::REASON, 'confirm' => '1'])
-            ->assertRedirectTo(site_url('admin/unlock/teacher/2'));
+        $this->postAdmin('admin/buka-kunci/guru/2', ['vote_id' => (string) $voteId, 'reason' => self::REASON, 'confirm' => '1'])
+            ->assertRedirectTo(site_url('admin/buka-kunci/guru/2'));
 
         $this->assertStringContainsString('sudah tidak aktif', (string) session('error'));
         $this->assertSame(0, $this->db->table('vote_unlock_logs')->countAllResults());
@@ -656,9 +656,9 @@ final class AdminPanelTest extends CIUnitTestCase
         $voteId = $this->vote('student', 1, 1);
         $this->scheduleAt('2026-10-02 08:00:00');
 
-        $this->asAdmin()->get('admin/unlock/student/1')->assertSee('Unlock hanya dapat dilakukan saat pemilihan sedang berlangsung');
+        $this->asAdmin()->get('admin/buka-kunci/siswa/1')->assertSee('Unlock hanya dapat dilakukan saat pemilihan sedang berlangsung');
 
-        $this->postAdmin('admin/unlock/student/1', ['vote_id' => (string) $voteId, 'reason' => self::REASON, 'confirm' => '1']);
+        $this->postAdmin('admin/buka-kunci/siswa/1', ['vote_id' => (string) $voteId, 'reason' => self::REASON, 'confirm' => '1']);
 
         $this->assertStringContainsString('hasil akhir', (string) session('error'));
         $this->seeInDatabase('student_votes', ['id' => $voteId, 'status' => 'LOCKED']);
@@ -666,11 +666,11 @@ final class AdminPanelTest extends CIUnitTestCase
 
     public function testAuditLogListsAdministrativeActionsNewestFirst(): void
     {
-        $this->postAdmin('admin/students/4/status', ['status_aktif' => '0']);
+        $this->postAdmin('admin/siswa/4/status', ['status_aktif' => '0']);
         Time::setTestNow(Time::now()->addMinutes(1)->toDateTimeString());
-        $this->postAdmin('admin/teachers/3/status', ['status_aktif' => '0']);
+        $this->postAdmin('admin/guru/3/status', ['status_aktif' => '0']);
 
-        $result = $this->asAdmin()->get('admin/audit');
+        $result = $this->asAdmin()->get('admin/riwayat');
 
         $result->assertStatus(200);
         $table = substr($result->getBody(), (int) strpos($result->getBody(), '<tbody>'));
@@ -678,11 +678,11 @@ final class AdminPanelTest extends CIUnitTestCase
         $result->assertSee('Dinda Permatasari');
         $result->assertSee('Bambang Hartono');
 
-        $filtered = $this->asAdmin()->get('admin/audit?action=TEACHER_STATUS');
+        $filtered = $this->asAdmin()->get('admin/riwayat?action=TEACHER_STATUS');
         $filtered->assertSee('<strong>1</strong> catatan');
         $filtered->assertDontSee('Dinda Permatasari');
 
-        $searched = $this->asAdmin()->get('admin/audit?q=Bambang');
+        $searched = $this->asAdmin()->get('admin/riwayat?q=Bambang');
         $searched->assertSee('<strong>1</strong> catatan');
     }
 }

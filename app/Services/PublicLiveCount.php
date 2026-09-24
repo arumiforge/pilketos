@@ -15,7 +15,7 @@ use Config\Homepage;
  * - partisipasi keseluruhan: sudah memilih / seluruh pemilih aktif.
  * Tidak ada identitas pemilih, jumlah suara per pasangan, pemisahan siswa
  * vs guru, maupun rekap kelas/jenjang/jenis kelamin: rincian itu tetap
- * hanya di panel admin (admin/live-count, analitik).
+ * hanya di panel admin (admin/hitung-suara, analitik).
  */
 final class PublicLiveCount
 {

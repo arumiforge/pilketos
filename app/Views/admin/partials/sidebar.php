@@ -8,27 +8,27 @@
  */
 $groups = [
     'Pemilihan' => [
-        'dashboard' => ['admin/dashboard', 'grid', 'Dasbor & live count'],
-        'analytics' => ['admin/analytics', 'chart', 'Analitik'],
-        'votes'     => ['admin/analytics/votes', 'list', 'Detail suara'],
-        'results'   => ['admin/results', 'award', 'Hasil akhir'],
+        'dashboard' => ['admin', 'grid', 'Dasbor & live count'],
+        'analytics' => ['admin/analitik', 'chart', 'Analitik'],
+        'votes'     => ['admin/analitik/suara', 'list', 'Detail suara'],
+        'results'   => ['admin/hasil', 'award', 'Hasil akhir'],
     ],
     'Data' => [
-        'candidates' => ['admin/candidates', 'flag', 'Pasangan calon'],
-        'students'   => ['admin/students', 'users', 'Siswa'],
-        'teachers'   => ['admin/teachers', 'user', 'Guru'],
+        'candidates' => ['admin/paslon', 'flag', 'Pasangan calon'],
+        'students'   => ['admin/siswa', 'users', 'Siswa'],
+        'teachers'   => ['admin/guru', 'user', 'Guru'],
     ],
     'Kontrol' => [
-        'election' => ['admin/election', 'calendar', 'Jadwal pemilihan'],
-        'unlock'   => ['admin/unlock', 'unlock', 'Unlock hak suara'],
-        'audit'    => ['admin/audit', 'file', 'Audit log'],
+        'election' => ['admin/jadwal', 'calendar', 'Jadwal pemilihan'],
+        'unlock'   => ['admin/buka-kunci', 'unlock', 'Unlock hak suara'],
+        'audit'    => ['admin/riwayat', 'file', 'Audit log'],
     ],
 ];
 $number = 0;
 ?>
 <aside class="admin-side" id="admin-nav" aria-label="Menu admin" data-admin-nav>
   <div class="admin-side__brand">
-    <a href="<?= site_url('admin/dashboard') ?>" class="admin-side__mark">
+    <a href="<?= site_url('admin') ?>" class="admin-side__mark">
       <span class="admin-side__word">OSIS</span>
       <span class="admin-side__year">2026</span>
     </a>
@@ -62,7 +62,7 @@ $number = 0;
     </p>
     <div class="admin-side__actions">
       <a href="<?= base_url('/') ?>" class="admin-side__site" target="_blank" rel="noopener">Situs pemilih <?= icon('external') ?></a>
-      <form action="<?= site_url('admin/logout') ?>" method="post">
+      <form action="<?= site_url('admin/keluar') ?>" method="post">
         <?= csrf_field() ?>
         <button type="submit" class="admin-side__logout"><?= icon('logout') ?> Keluar</button>
       </form>

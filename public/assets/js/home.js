@@ -17,7 +17,7 @@
  *    tautan "#", dan fokus Tab (scene mengikuti elemen yang difokus).
  *    Konten yang lebih tinggi dari layar (HP miring, zoom besar) digulir di
  *    dalam scene lebih dulu; scene berpindah di batas atas/bawahnya.
- * 3. Live count publik: GET live-count sesuai irama dari server (30 detik),
+ * 3. Live count publik: GET hitung-suara sesuai irama dari server (30 detik),
  *    dijeda saat tab tidak aktif, angka bergulir halus saat berubah, muat
  *    ulang bila status pemilihan berubah (server merender keadaan baru).
  * 4. Hero berlapis: paralaks pointer berlapis (latar 6 px, kontur 8 px,

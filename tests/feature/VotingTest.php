@@ -1,6 +1,7 @@
 <?php
 
 use App\Database\Seeds\DatabaseSeeder;
+use App\Services\VoterType;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Security\Exceptions\SecurityException;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -74,7 +75,7 @@ final class VotingTest extends CIUnitTestCase
                 'Accept'           => 'application/json',
             ])
             ->withBodyFormat('json')
-            ->post($role . '/vote', ['candidate_id' => $candidateId] + $extra);
+            ->post(VoterType::from($role)->path('coblos'), ['candidate_id' => $candidateId] + $extra);
     }
 
     /**
@@ -85,7 +86,7 @@ final class VotingTest extends CIUnitTestCase
         return $this->withSession($session)
             ->withHeaders([])
             ->withBodyFormat('')
-            ->post($role . '/vote', [csrf_token() => csrf_hash(), 'candidate_id' => (string) $candidateId]);
+            ->post(VoterType::from($role)->path('coblos'), [csrf_token() => csrf_hash(), 'candidate_id' => (string) $candidateId]);
     }
 
     private function lockedVotes(string $table, string $voterColumn, int $voterId): array
@@ -117,30 +118,30 @@ final class VotingTest extends CIUnitTestCase
 
     public function testStudentLoginLeadsToDashboardWithIdentityAndVoteCta(): void
     {
-        $this->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013'])
-            ->assertRedirectTo(site_url('student/dashboard'));
+        $this->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013'])
+            ->assertRedirectTo(site_url('siswa'));
 
-        $result = $this->withSession()->get('student/dashboard');
+        $result = $this->withSession()->get('siswa');
 
         $result->assertStatus(200);
         $result->assertSee('Candra Setiawan');
         $result->assertSee('7B');
         $result->assertSee('Nomor Absen');
         $result->assertSee('Belum memilih');
-        $result->assertSee('href="' . site_url('student/vote') . '"');
+        $result->assertSee('href="' . site_url('siswa/coblos') . '"');
     }
 
     public function testTeacherLoginLeadsToTeacherDashboardWithVoteCta(): void
     {
-        $this->post('teacher/login', [csrf_token() => csrf_hash(), 'nip' => '000000000000000004', 'kodeunik' => '01061992'])
-            ->assertRedirectTo(site_url('teacher/dashboard'));
+        $this->post('guru/masuk', [csrf_token() => csrf_hash(), 'nip' => '000000000000000004', 'kodeunik' => '01061992'])
+            ->assertRedirectTo(site_url('guru'));
 
-        $result = $this->withSession()->get('teacher/dashboard');
+        $result = $this->withSession()->get('guru');
 
         $result->assertStatus(200);
         $result->assertSee('Siti Nur Aini, S.Pd.');
         $result->assertSee('Belum memilih');
-        $result->assertSee('href="' . site_url('teacher/vote') . '"');
+        $result->assertSee('href="' . site_url('guru/coblos') . '"');
         $result->assertDontSee('Nomor Absen');
     }
 
@@ -150,7 +151,7 @@ final class VotingTest extends CIUnitTestCase
 
     public function testBallotPageRendersAllActiveCandidatesWithVisiMisi(): void
     {
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         $result->assertStatus(200);
         foreach (['Arka Wibisana', 'Naya Kirana', 'Bagas Prayoga', 'Citra Maheswari', 'Dewi Anggraini', 'Fajar Nugroho'] as $name) {
@@ -162,12 +163,49 @@ final class VotingTest extends CIUnitTestCase
         $result->assertDontSee('1. Menghidupkan');
         $result->assertSee('Coblos Pasangan 01');
         $result->assertSee('Coblos Pasangan 03');
-        $result->assertSee('href="' . site_url('student/vote/confirm/2') . '"');
+        $result->assertSee('href="' . site_url('siswa/coblos/yakin/2') . '"');
+    }
+
+    /**
+     * Stage 7: "Sekilas paslon" membandingkan ketiga pasangan di atas bab
+     * panjang; tombol "Pilih 0X" & CTA akhir bab menuju kotak surat suara.
+     */
+    public function testLineupComparesPairsAndLinksStraightToBallotBox(): void
+    {
+        $result = $this->withSession($this->student())->get('siswa/coblos');
+        $html   = (string) $result->response()->getBody();
+
+        $result->assertSee('Sekilas paslon');
+        $result->assertSee('Halo, Ahmad Fauzan');
+        foreach (['01', '02', '03'] as $label) {
+            $result->assertSee('href="#pasangan-' . $label . '"');
+            $result->assertSee('id="coblos-' . $label . '"');
+            $result->assertSee('href="#coblos-' . $label . '" data-pick');
+        }
+        $result->assertSee('Pilih pasangan 02');
+        $this->assertSame(3, substr_count($html, 'class="pair-card"'));
+        // Kartu tampil sebelum bab pertama dan surat suara.
+        $this->assertLessThan(strpos($html, 'id="pasangan-01"'), strpos($html, 'class="lineup"'));
+        $this->assertLessThan(strpos($html, 'id="surat-suara"'), strpos($html, 'id="pasangan-03"'));
+    }
+
+    public function testLineupHasNoPickLinksWhenVotingIsClosed(): void
+    {
+        foreach (['2026-09-30 08:00:00', '2026-10-02 00:00:00'] as $now) {
+            $this->scheduleAt($now);
+
+            $result = $this->withSession($this->student())->get('siswa/coblos');
+            $result->assertSee('Sekilas paslon');
+            $result->assertSee('href="#pasangan-01"');
+            $result->assertDontSee('data-pick');
+            $result->assertDontSee('href="#coblos-');
+            $result->assertSee('Lihat surat suara');
+        }
     }
 
     public function testEachCandidateHasItsOwnThemeAndLayout(): void
     {
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         $result->assertSee('--accent: #C4432B;');
         $result->assertSee('--accent: #2F5D50;');
@@ -193,7 +231,7 @@ final class VotingTest extends CIUnitTestCase
             'theme_accent'     => '#f2d14b',
         ]);
 
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         foreach (['ketua-01.webp', 'wakil-01.webp', 'bg-01.webp', 'hero-01.webp', 'tex-01.webp', 'art-01.webp', 'poster-01.webp'] as $file) {
             $result->assertSee(base_url('uploads/candidates/' . $file));
@@ -212,7 +250,7 @@ final class VotingTest extends CIUnitTestCase
             'visi'       => '"><img src=x onerror=alert(1)>',
         ]);
 
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         $body = $result->getBody();
         $this->assertStringNotContainsString('<script>alert(1)', $body);
@@ -223,7 +261,7 @@ final class VotingTest extends CIUnitTestCase
 
     public function testVisiMisiInteractionHooksAreRendered(): void
     {
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
         $body   = $result->getBody();
 
         $this->assertSame(3, substr_count($body, 'data-reveal-words'));
@@ -242,7 +280,7 @@ final class VotingTest extends CIUnitTestCase
 
     public function testBallotLoadsInteractiveScriptsWithLazyWebglAndFallbacks(): void
     {
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         $result->assertSee('assets/js/ballot.js');
         // WebGL tidak dimuat langsung; ballot.js memuatnya malas bila mode 3D.
@@ -262,7 +300,7 @@ final class VotingTest extends CIUnitTestCase
 
     public function testConfirmPageShowsPairPhotoNumberNamesAndLockWarning(): void
     {
-        $result = $this->withSession($this->student())->get('student/vote/confirm/2');
+        $result = $this->withSession($this->student())->get('siswa/coblos/yakin/2');
 
         $result->assertStatus(200);
         $result->assertSee('Pasangan 02');
@@ -278,10 +316,10 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->db->table('candidates')->where('id', 3)->update(['status_aktif' => 0]);
 
-        $this->withSession($this->student())->get('student/vote/confirm/3')
-            ->assertRedirectTo(site_url('student/vote'));
-        $this->withSession($this->student())->get('student/vote/confirm/99')
-            ->assertRedirectTo(site_url('student/vote'));
+        $this->withSession($this->student())->get('siswa/coblos/yakin/3')
+            ->assertRedirectTo(site_url('siswa/coblos'));
+        $this->withSession($this->student())->get('siswa/coblos/yakin/99')
+            ->assertRedirectTo(site_url('siswa/coblos'));
     }
 
     // ------------------------------------------------------------------
@@ -301,7 +339,7 @@ final class VotingTest extends CIUnitTestCase
         $this->assertSame('SUARA BERHASIL DISIMPAN', $data['title']);
         $this->assertSame('Hak suara Anda telah dikunci.', $data['detail']);
         $this->assertSame('02', $data['vote']['number']);
-        $this->assertSame(site_url('student/my-vote'), $data['redirect']);
+        $this->assertSame(site_url('siswa/pilihanku'), $data['redirect']);
 
         $rows = $this->lockedVotes('student_votes', 'student_id', 1);
         $this->assertCount(1, $rows);
@@ -321,7 +359,7 @@ final class VotingTest extends CIUnitTestCase
     {
         $result = $this->voteForm('student', $this->student(2), 3);
 
-        $result->assertRedirectTo(site_url('student/my-vote'));
+        $result->assertRedirectTo(site_url('siswa/pilihanku'));
         $result->assertSessionHas('success');
         $this->assertCount(1, $this->lockedVotes('student_votes', 'student_id', 2));
     }
@@ -351,7 +389,7 @@ final class VotingTest extends CIUnitTestCase
         $second->assertStatus(409);
         $data = $this->json($second);
         $this->assertSame('already_voted', $data['status']);
-        $this->assertSame(site_url('student/my-vote'), $data['redirect']);
+        $this->assertSame(site_url('siswa/pilihanku'), $data['redirect']);
 
         $rows = $this->lockedVotes('student_votes', 'student_id', 1);
         $this->assertCount(1, $rows);
@@ -363,7 +401,7 @@ final class VotingTest extends CIUnitTestCase
         $this->voteForm('teacher', $this->teacher(2), 1);
         $result = $this->voteForm('teacher', $this->teacher(2), 1);
 
-        $result->assertRedirectTo(site_url('teacher/my-vote'));
+        $result->assertRedirectTo(site_url('guru/pilihanku'));
         $result->assertSessionHas('error');
         $this->assertCount(1, $this->lockedVotes('teacher_votes', 'teacher_id', 2));
     }
@@ -388,7 +426,7 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->expectException(SecurityException::class);
 
-        $this->withSession($this->student())->post('student/vote', ['candidate_id' => '1']);
+        $this->withSession($this->student())->post('siswa/coblos', ['candidate_id' => '1']);
     }
 
     // ------------------------------------------------------------------
@@ -399,36 +437,36 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->voteJson('student', $this->student(1), 2)->assertStatus(200);
 
-        $this->withSession($this->student(1))->get('student/vote')
-            ->assertRedirectTo(site_url('student/my-vote'));
-        $this->withSession($this->student(1))->get('student/vote/confirm/1')
-            ->assertRedirectTo(site_url('student/my-vote'));
+        $this->withSession($this->student(1))->get('siswa/coblos')
+            ->assertRedirectTo(site_url('siswa/pilihanku'));
+        $this->withSession($this->student(1))->get('siswa/coblos/yakin/1')
+            ->assertRedirectTo(site_url('siswa/pilihanku'));
     }
 
     public function testReloginShowsLockedOwnChoiceWithoutVotingCta(): void
     {
-        $this->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013']);
+        $this->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013']);
         $this->withSession()->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'X-Requested-With' => 'XMLHttpRequest'])
             ->withBodyFormat('json')
-            ->post('student/vote', ['candidate_id' => 2])
+            ->post('siswa/coblos', ['candidate_id' => 2])
             ->assertStatus(200);
 
         $this->withSession()->withHeaders([])->withBodyFormat('')
-            ->post('student/logout', [csrf_token() => csrf_hash()]);
+            ->post('siswa/keluar', [csrf_token() => csrf_hash()]);
         $this->assertNull(session('user_type'));
 
-        $this->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013'])
-            ->assertRedirectTo(site_url('student/dashboard'));
+        $this->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000003', 'kodeunik' => '01032013'])
+            ->assertRedirectTo(site_url('siswa'));
 
-        $dashboard = $this->withSession()->get('student/dashboard');
+        $dashboard = $this->withSession()->get('siswa');
         $dashboard->assertSee('Sudah memilih');
         $dashboard->assertSee('Terkunci');
         $dashboard->assertSee('Bagas Prayoga');
-        $dashboard->assertSee('href="' . site_url('student/my-vote') . '"');
-        $dashboard->assertDontSee('href="' . site_url('student/vote') . '"');
+        $dashboard->assertSee('href="' . site_url('siswa/pilihanku') . '"');
+        $dashboard->assertDontSee('href="' . site_url('siswa/coblos') . '"');
         $dashboard->assertDontSee('Lihat kandidat');
 
-        $choice = $this->withSession()->get('student/my-vote');
+        $choice = $this->withSession()->get('siswa/pilihanku');
         $choice->assertStatus(200);
         $choice->assertSee('Anda memilih');
         $choice->assertSee('Pasangan 02');
@@ -445,7 +483,7 @@ final class VotingTest extends CIUnitTestCase
         $this->voteJson('student', $this->student(2), 3)->assertStatus(200);
         $this->voteJson('teacher', $this->teacher(1), 1)->assertStatus(200);
 
-        $result = $this->withSession($this->student(1))->get('student/my-vote');
+        $result = $this->withSession($this->student(1))->get('siswa/pilihanku');
 
         $result->assertSee('Bagas Prayoga');
         $result->assertDontSee('Arka Wibisana');
@@ -456,8 +494,8 @@ final class VotingTest extends CIUnitTestCase
 
     public function testOwnChoicePageWithoutVoteRedirectsToDashboard(): void
     {
-        $this->withSession($this->student(4))->get('student/my-vote')
-            ->assertRedirectTo(site_url('student/dashboard'));
+        $this->withSession($this->student(4))->get('siswa/pilihanku')
+            ->assertRedirectTo(site_url('siswa'));
     }
 
     public function testUnlockedHistoryAllowsVotingAgain(): void
@@ -468,7 +506,7 @@ final class VotingTest extends CIUnitTestCase
         $this->db->table('student_votes')->where('student_id', 1)
             ->update(['status' => 'UNLOCKED', 'unlocked_at' => Time::now()->toDateTimeString()]);
 
-        $this->withSession($this->student(1))->get('student/dashboard')->assertSee('Belum memilih');
+        $this->withSession($this->student(1))->get('siswa')->assertSee('Belum memilih');
 
         $this->voteJson('student', $this->student(1), 3)->assertStatus(200);
 
@@ -512,7 +550,7 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-09-30 08:00:00');
 
-        $result = $this->withSession($this->student())->get('student/vote');
+        $result = $this->withSession($this->student())->get('siswa/coblos');
 
         $result->assertStatus(200);
         $result->assertSee('Arka Wibisana');
@@ -521,10 +559,10 @@ final class VotingTest extends CIUnitTestCase
         $result->assertDontSee('assets/js/ballot.js');
         $result->assertDontSee('id="vote-confirm"');
 
-        $this->withSession($this->student())->get('student/vote/confirm/1')
-            ->assertRedirectTo(site_url('student/vote'));
+        $this->withSession($this->student())->get('siswa/coblos/yakin/1')
+            ->assertRedirectTo(site_url('siswa/coblos'));
 
-        $this->withSession($this->student())->get('student/dashboard')
+        $this->withSession($this->student())->get('siswa')
             ->assertSee('Pencoblosan dibuka pada');
     }
 
@@ -532,10 +570,10 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-10-02 00:00:00');
 
-        $this->withSession($this->teacher(2))->get('teacher/dashboard')
+        $this->withSession($this->teacher(2))->get('guru')
             ->assertSee('Tidak memberikan suara');
 
-        $ballot = $this->withSession($this->teacher(2))->get('teacher/vote');
+        $ballot = $this->withSession($this->teacher(2))->get('guru/coblos');
         $ballot->assertSee('Pemilihan telah ditutup');
         $ballot->assertDontSee('data-coblos');
     }
@@ -548,7 +586,7 @@ final class VotingTest extends CIUnitTestCase
     {
         $asStudent = $this->voteJson('teacher', $this->student(1), 1);
         $asStudent->assertStatus(401);
-        $this->assertSame(site_url('teacher/login'), $this->json($asStudent)['redirect']);
+        $this->assertSame(site_url('guru/masuk'), $this->json($asStudent)['redirect']);
 
         $this->voteJson('student', $this->teacher(1), 1)->assertStatus(401);
 
@@ -610,7 +648,7 @@ final class VotingTest extends CIUnitTestCase
     {
         $this->scheduleAt('2026-10-01 06:00:00');
 
-        $result = $this->get('election/clock');
+        $result = $this->get('jam-server');
 
         $result->assertStatus(200);
         $this->assertStringContainsString('no-store', $result->response()->getHeaderLine('Cache-Control'));

@@ -4,121 +4,122 @@ use CodeIgniter\Router\RouteCollection;
 
 /**
  * @var RouteCollection $routes
+ *
+ * Stage 7: seluruh URL memakai bahasa Indonesia santai (siswa/guru/admin,
+ * masuk/keluar, coblos, pilihanku, paslon, impor, jadwal, buka-kunci, ...).
+ * URL bahasa Inggris lama sengaja tidak dialihkan (404). Nilai internal
+ * (user_type di sesi, VoterType, nama tabel) tetap bahasa Inggris.
  */
 
 // -----------------------------------------------------------------
-// PUBLIC
+// PUBLIK
 // -----------------------------------------------------------------
 $routes->get('/', 'Home::index');
 
 // Jam server untuk countdown (JSON publik, tanpa data pemilih/suara).
-$routes->get('election/clock', 'ElectionController::clock');
+$routes->get('jam-server', 'ElectionController::clock');
 
-// Live count publik beranda (JSON): hanya persentase per pasangan +
-// partisipasi, tanpa identitas/rincian. Rincian tetap di admin/live-count.
-$routes->get('live-count', 'Home::liveCount');
+// Hitung suara publik beranda (JSON): hanya persentase per pasangan +
+// partisipasi, tanpa identitas/rincian. Rincian tetap di admin/hitung-suara.
+$routes->get('hitung-suara', 'Home::liveCount');
 
-$routes->get('student/login', 'Student\AuthController::loginForm');
-$routes->post('student/login', 'Student\AuthController::attemptLogin');
+$routes->get('siswa/masuk', 'Student\AuthController::loginForm');
+$routes->post('siswa/masuk', 'Student\AuthController::attemptLogin');
 
-$routes->get('teacher/login', 'Teacher\AuthController::loginForm');
-$routes->post('teacher/login', 'Teacher\AuthController::attemptLogin');
+$routes->get('guru/masuk', 'Teacher\AuthController::loginForm');
+$routes->post('guru/masuk', 'Teacher\AuthController::attemptLogin');
 
-$routes->get('admin/login', 'Admin\AuthController::loginForm');
-$routes->post('admin/login', 'Admin\AuthController::attemptLogin');
-
-// Alamat pendek -> dasbor (tetap melewati filter auth masing-masing).
-$routes->addRedirect('student', 'student/dashboard');
-$routes->addRedirect('teacher', 'teacher/dashboard');
-$routes->addRedirect('admin', 'admin/dashboard');
+$routes->get('admin/masuk', 'Admin\AuthController::loginForm');
+$routes->post('admin/masuk', 'Admin\AuthController::attemptLogin');
 
 // -----------------------------------------------------------------
-// STUDENT (protected by studentauth filter)
+// SISWA (filter studentauth). Dasbor = /siswa.
 // Voting (Stage 2): identitas pemilih hanya dari sesi, tidak ada id di URL.
 // -----------------------------------------------------------------
-$routes->group('student', ['filter' => 'studentauth'], static function (RouteCollection $routes) {
-    $routes->get('dashboard', 'Student\DashboardController::index');
-    $routes->get('vote', 'Student\VoteController::index');
-    $routes->post('vote', 'Student\VoteController::submit');
-    $routes->get('vote/confirm/(:num)', 'Student\VoteController::confirm/$1');
-    $routes->get('my-vote', 'Student\VoteController::myVote');
-    $routes->post('logout', 'Student\AuthController::logout');
+$routes->group('siswa', ['filter' => 'studentauth'], static function (RouteCollection $routes) {
+    $routes->get('/', 'Student\DashboardController::index');
+    $routes->get('coblos', 'Student\VoteController::index');
+    $routes->post('coblos', 'Student\VoteController::submit');
+    $routes->get('coblos/yakin/(:num)', 'Student\VoteController::confirm/$1');
+    $routes->get('pilihanku', 'Student\VoteController::myVote');
+    $routes->post('keluar', 'Student\AuthController::logout');
 });
 
 // -----------------------------------------------------------------
-// TEACHER (protected by teacherauth filter)
+// GURU (filter teacherauth). Dasbor = /guru.
 // Voting (Stage 2): identitas pemilih hanya dari sesi, tidak ada id di URL.
 // -----------------------------------------------------------------
-$routes->group('teacher', ['filter' => 'teacherauth'], static function (RouteCollection $routes) {
-    $routes->get('dashboard', 'Teacher\DashboardController::index');
-    $routes->get('vote', 'Teacher\VoteController::index');
-    $routes->post('vote', 'Teacher\VoteController::submit');
-    $routes->get('vote/confirm/(:num)', 'Teacher\VoteController::confirm/$1');
-    $routes->get('my-vote', 'Teacher\VoteController::myVote');
-    $routes->post('logout', 'Teacher\AuthController::logout');
+$routes->group('guru', ['filter' => 'teacherauth'], static function (RouteCollection $routes) {
+    $routes->get('/', 'Teacher\DashboardController::index');
+    $routes->get('coblos', 'Teacher\VoteController::index');
+    $routes->post('coblos', 'Teacher\VoteController::submit');
+    $routes->get('coblos/yakin/(:num)', 'Teacher\VoteController::confirm/$1');
+    $routes->get('pilihanku', 'Teacher\VoteController::myVote');
+    $routes->post('keluar', 'Teacher\AuthController::logout');
 });
 
 // -----------------------------------------------------------------
-// ADMIN (protected by adminauth filter)
+// ADMIN (filter adminauth). Dasbor = /admin.
 // Panel admin Stage 3. Semua POST melewati CSRF global. Tidak ada route
-// admin yang menulis suara: unlock hanya membuka hak suara.
+// admin yang menulis suara: buka-kunci hanya membuka hak suara.
 // -----------------------------------------------------------------
 $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
-    $routes->get('dashboard', 'Admin\DashboardController::index');
-    $routes->post('logout', 'Admin\AuthController::logout');
+    $routes->get('/', 'Admin\DashboardController::index');
+    $routes->post('keluar', 'Admin\AuthController::logout');
 
-    // Live count (AJAX JSON) & analitik
-    $routes->get('live-count', 'Admin\LiveCountController::index');
-    $routes->get('analytics', 'Admin\AnalyticsController::index');
-    $routes->get('analytics/votes', 'Admin\AnalyticsController::votes');
+    // Hitung suara (AJAX JSON) & analitik
+    $routes->get('hitung-suara', 'Admin\LiveCountController::index');
+    $routes->get('analitik', 'Admin\AnalyticsController::index');
+    $routes->get('analitik/suara', 'Admin\AnalyticsController::votes');
 
     // Hasil akhir + confetti (Stage 4): aktif hanya saat pemilihan FINISHED
-    $routes->get('results', 'Admin\ResultController::index');
+    $routes->get('hasil', 'Admin\ResultController::index');
 
-    // Pasangan calon + tema
-    $routes->get('candidates', 'Admin\CandidateController::index');
-    $routes->get('candidates/new', 'Admin\CandidateController::new');
-    $routes->post('candidates', 'Admin\CandidateController::create');
-    $routes->get('candidates/(:num)/edit', 'Admin\CandidateController::edit/$1');
-    $routes->get('candidates/(:num)/preview', 'Admin\CandidateController::preview/$1');
-    $routes->post('candidates/(:num)', 'Admin\CandidateController::update/$1');
-    $routes->post('candidates/(:num)/delete', 'Admin\CandidateController::delete/$1');
+    // Pasangan calon (paslon) + tema
+    $routes->get('paslon', 'Admin\CandidateController::index');
+    $routes->get('paslon/tambah', 'Admin\CandidateController::new');
+    $routes->post('paslon', 'Admin\CandidateController::create');
+    $routes->get('paslon/(:num)/ubah', 'Admin\CandidateController::edit/$1');
+    $routes->get('paslon/(:num)/intip', 'Admin\CandidateController::preview/$1');
+    $routes->post('paslon/(:num)', 'Admin\CandidateController::update/$1');
+    $routes->post('paslon/(:num)/hapus', 'Admin\CandidateController::delete/$1');
 
     // Siswa + impor Excel
-    $routes->get('students', 'Admin\StudentController::index');
-    $routes->get('students/import', 'Admin\StudentImportController::index');
-    $routes->post('students/import', 'Admin\StudentImportController::upload');
-    $routes->get('students/import/template', 'Admin\StudentImportController::template');
-    $routes->get('students/import/preview/(:segment)', 'Admin\StudentImportController::preview/$1');
-    $routes->post('students/import/commit', 'Admin\StudentImportController::commit');
-    $routes->get('students/import/result', 'Admin\StudentImportController::result');
-    $routes->get('students/(:num)', 'Admin\StudentController::show/$1');
-    $routes->post('students/(:num)/status', 'Admin\StudentController::status/$1');
-    $routes->post('students/(:num)/delete', 'Admin\StudentController::delete/$1');
+    $routes->get('siswa', 'Admin\StudentController::index');
+    $routes->get('siswa/impor', 'Admin\StudentImportController::index');
+    $routes->post('siswa/impor', 'Admin\StudentImportController::upload');
+    $routes->get('siswa/impor/templat', 'Admin\StudentImportController::template');
+    $routes->get('siswa/impor/cek/(:segment)', 'Admin\StudentImportController::preview/$1');
+    $routes->post('siswa/impor/simpan', 'Admin\StudentImportController::commit');
+    $routes->get('siswa/impor/selesai', 'Admin\StudentImportController::result');
+    $routes->get('siswa/(:num)', 'Admin\StudentController::show/$1');
+    $routes->post('siswa/(:num)/status', 'Admin\StudentController::status/$1');
+    $routes->post('siswa/(:num)/hapus', 'Admin\StudentController::delete/$1');
 
     // Guru + impor Excel
-    $routes->get('teachers', 'Admin\TeacherController::index');
-    $routes->get('teachers/import', 'Admin\TeacherImportController::index');
-    $routes->post('teachers/import', 'Admin\TeacherImportController::upload');
-    $routes->get('teachers/import/template', 'Admin\TeacherImportController::template');
-    $routes->get('teachers/import/preview/(:segment)', 'Admin\TeacherImportController::preview/$1');
-    $routes->post('teachers/import/commit', 'Admin\TeacherImportController::commit');
-    $routes->get('teachers/import/result', 'Admin\TeacherImportController::result');
-    $routes->get('teachers/(:num)', 'Admin\TeacherController::show/$1');
-    $routes->post('teachers/(:num)/status', 'Admin\TeacherController::status/$1');
-    $routes->post('teachers/(:num)/delete', 'Admin\TeacherController::delete/$1');
+    $routes->get('guru', 'Admin\TeacherController::index');
+    $routes->get('guru/impor', 'Admin\TeacherImportController::index');
+    $routes->post('guru/impor', 'Admin\TeacherImportController::upload');
+    $routes->get('guru/impor/templat', 'Admin\TeacherImportController::template');
+    $routes->get('guru/impor/cek/(:segment)', 'Admin\TeacherImportController::preview/$1');
+    $routes->post('guru/impor/simpan', 'Admin\TeacherImportController::commit');
+    $routes->get('guru/impor/selesai', 'Admin\TeacherImportController::result');
+    $routes->get('guru/(:num)', 'Admin\TeacherController::show/$1');
+    $routes->post('guru/(:num)/status', 'Admin\TeacherController::status/$1');
+    $routes->post('guru/(:num)/hapus', 'Admin\TeacherController::delete/$1');
 
     // Jadwal pemilihan (status dihitung dari jadwal & jam server)
-    $routes->get('election', 'Admin\ElectionController::index');
-    $routes->post('election', 'Admin\ElectionController::save');
-    $routes->post('election/close', 'Admin\ElectionController::close');
-    $routes->post('election/open', 'Admin\ElectionController::open');
+    $routes->get('jadwal', 'Admin\ElectionController::index');
+    $routes->post('jadwal', 'Admin\ElectionController::save');
+    $routes->post('jadwal/tutup', 'Admin\ElectionController::close');
+    $routes->post('jadwal/buka', 'Admin\ElectionController::open');
 
-    // Unlock hak suara & audit log
-    $routes->get('unlock', 'Admin\UnlockController::index');
-    $routes->get('unlock/student/(:num)', 'Admin\UnlockController::form/student/$1');
-    $routes->post('unlock/student/(:num)', 'Admin\UnlockController::unlock/student/$1');
-    $routes->get('unlock/teacher/(:num)', 'Admin\UnlockController::form/teacher/$1');
-    $routes->post('unlock/teacher/(:num)', 'Admin\UnlockController::unlock/teacher/$1');
-    $routes->get('audit', 'Admin\AuditController::index');
+    // Buka kunci hak suara & riwayat (audit log). Segmen jenis pemilih di URL
+    // (siswa/guru) dipetakan ke nilai internal VoterType (student/teacher).
+    $routes->get('buka-kunci', 'Admin\UnlockController::index');
+    $routes->get('buka-kunci/siswa/(:num)', 'Admin\UnlockController::form/student/$1');
+    $routes->post('buka-kunci/siswa/(:num)', 'Admin\UnlockController::unlock/student/$1');
+    $routes->get('buka-kunci/guru/(:num)', 'Admin\UnlockController::form/teacher/$1');
+    $routes->post('buka-kunci/guru/(:num)', 'Admin\UnlockController::unlock/teacher/$1');
+    $routes->get('riwayat', 'Admin\AuditController::index');
 });

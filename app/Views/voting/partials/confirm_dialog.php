@@ -39,7 +39,7 @@
     <p class="confirm__lock"><?= icon('lock') ?> Hak suara Anda telah dikunci.</p>
     <p class="confirm__meta" data-slot="success-meta"></p>
     <div class="modal__actions">
-      <a class="btn btn--lg" href="<?= esc(site_url($type->path('my-vote')), 'attr') ?>" data-success-link>Lihat pilihan saya</a>
+      <a class="btn btn--lg" href="<?= esc(site_url($type->path('pilihanku')), 'attr') ?>" data-success-link>Lihat pilihan saya</a>
     </div>
   </div>
 </dialog>

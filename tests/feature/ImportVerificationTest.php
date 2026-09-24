@@ -97,7 +97,7 @@ final class ImportVerificationTest extends CIUnitTestCase
         UploadFixture::attach(['file' => ['path' => $this->keep($path), 'name' => basename($path)]]);
 
         return $this->withSession(['user_type' => 'admin', 'admin_id' => 1, 'isLoggedIn' => true])
-            ->post('admin/' . $role . '/import', [csrf_token() => csrf_hash()]);
+            ->post('admin/' . $role . '/impor', [csrf_token() => csrf_hash()]);
     }
 
     /**
@@ -110,7 +110,7 @@ final class ImportVerificationTest extends CIUnitTestCase
         $this->assertMatchesRegularExpression('/^[a-f0-9]{32}$/', $token);
 
         $commit = $this->withSession(['user_type' => 'admin', 'admin_id' => 1, 'isLoggedIn' => true])
-            ->post('admin/' . $role . '/import/commit', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1']);
+            ->post('admin/' . $role . '/impor/simpan', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1']);
 
         return [$token, $commit];
     }
@@ -118,7 +118,7 @@ final class ImportVerificationTest extends CIUnitTestCase
     private function importThroughHttp(string $role, string $path): void
     {
         [, $commit] = $this->commitThroughHttp($role, $path);
-        $commit->assertRedirectTo(site_url('admin/' . $role . '/import/result'));
+        $commit->assertRedirectTo(site_url('admin/' . $role . '/impor/selesai'));
     }
 
     // ------------------------------------------------------------------
@@ -190,13 +190,13 @@ final class ImportVerificationTest extends CIUnitTestCase
             [1, 12345679, 'Nol Hilang Excel', 'L', '7A', 1, 1032013], // sel angka: 0012345679 / 01032013
             [2, '0012345680', 'Teks Aman', 'P', '7A', 2, '02032013'],
         ]);
-        $this->importThroughHttp('students', $path);
+        $this->importThroughHttp('siswa', $path);
 
         $this->seeInDatabase('students', ['nisn' => '0012345679', 'kodeunik' => '01032013']);
         $this->seeInDatabase('students', ['nisn' => '0012345680', 'kodeunik' => '02032013']);
 
-        $this->withSession([])->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0012345679', 'kodeunik' => '01032013'])
-            ->assertRedirectTo(site_url('student/dashboard'));
+        $this->withSession([])->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0012345679', 'kodeunik' => '01032013'])
+            ->assertRedirectTo(site_url('siswa'));
     }
 
     public function testLargeFilesAreRejectedByRowsAndBytes(): void
@@ -214,7 +214,7 @@ final class ImportVerificationTest extends CIUnitTestCase
         $big   = tempnam(sys_get_temp_dir(), 'big') . '.xlsx';
         file_put_contents($big, str_repeat('x', $max + 1024));
 
-        $this->upload('students', $big)->assertRedirectTo(site_url('admin/students/import'));
+        $this->upload('siswa', $big)->assertRedirectTo(site_url('admin/siswa/impor'));
         $this->assertStringContainsString('Ukuran file maksimal', (string) session('error'));
         $this->assertSame(12, $this->db->table('students')->countAllResults());
     }
@@ -226,16 +226,16 @@ final class ImportVerificationTest extends CIUnitTestCase
             [2, '0077700002', 'Ulang Dua', 'P', '9A', 2, '02012011'],
         ];
 
-        $this->importThroughHttp('students', SpreadsheetFactory::students($rows));
+        $this->importThroughHttp('siswa', SpreadsheetFactory::students($rows));
 
         // Impor ulang file yang sama: semua "tidak berubah", tidak ada yang ditulis.
-        [$token, $again] = $this->commitThroughHttp('students', SpreadsheetFactory::students($rows));
-        $again->assertRedirectTo(site_url('admin/students/import/preview/' . $token));
+        [$token, $again] = $this->commitThroughHttp('siswa', SpreadsheetFactory::students($rows));
+        $again->assertRedirectTo(site_url('admin/siswa/impor/cek/' . $token));
         $this->assertStringContainsString('Tidak ada baris baru atau berubah', (string) session('error'));
 
         // Data berubah pada impor berikutnya = upsert (nama diperbarui), tetap satu baris.
         $rows[1][2] = 'Ulang Dua Diperbarui';
-        $this->importThroughHttp('students', SpreadsheetFactory::students($rows));
+        $this->importThroughHttp('siswa', SpreadsheetFactory::students($rows));
 
         $this->assertSame(1, $this->db->table('students')->where('nisn', '0077700001')->countAllResults());
         $this->assertSame(1, $this->db->table('students')->where('nisn', '0077700002')->countAllResults());

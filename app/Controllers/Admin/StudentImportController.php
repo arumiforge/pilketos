@@ -6,7 +6,7 @@ use App\Services\Import\StudentImporter;
 use App\Services\Import\VoterImporter;
 
 /**
- * Import siswa: admin/students/import (template student-import-template.xlsx).
+ * Import siswa: admin/siswa/impor (templat templat-impor-siswa.xlsx).
  */
 class StudentImportController extends ImportController
 {

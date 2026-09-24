@@ -21,7 +21,7 @@ use CodeIgniter\HTTP\RedirectResponse;
 class UnlockController extends AdminController
 {
     /**
-     * GET admin/unlock?q=
+     * GET admin/buka-kunci?q=
      */
     public function index()
     {
@@ -37,7 +37,7 @@ class UnlockController extends AdminController
     }
 
     /**
-     * GET admin/unlock/{student|teacher}/{id}
+     * GET admin/buka-kunci/{siswa|guru}/{id}
      */
     public function form($type = null, $id = null)
     {
@@ -57,13 +57,13 @@ class UnlockController extends AdminController
     }
 
     /**
-     * POST admin/unlock/{student|teacher}/{id}
+     * POST admin/buka-kunci/{siswa|guru}/{id}
      * Body: vote_id (suara yang dilihat admin), reason, confirm=1.
      */
     public function unlock($type = null, $id = null): RedirectResponse
     {
         [$voterType, $voter] = $this->voterOr404($type, $id);
-        $back                = 'admin/unlock/' . $voterType->value . '/' . $voter['id'];
+        $back                = $voterType->unlockPath($voter['id']);
         $voteId              = (string) $this->request->getPost('vote_id');
         $reason              = $this->request->getPost('reason');
 

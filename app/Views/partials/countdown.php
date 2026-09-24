@@ -55,7 +55,7 @@ $srText = match ($status) {
      data-now="<?= esc((string) $clock['now'], 'attr') ?>"
      data-start="<?= esc((string) $clock['start'], 'attr') ?>"
      data-end="<?= esc((string) $clock['end'], 'attr') ?>"
-     data-clock-url="<?= esc(site_url('election/clock'), 'attr') ?>">
+     data-clock-url="<?= esc(site_url('jam-server'), 'attr') ?>">
   <p class="countdown__label" data-countdown-label><?= esc($label) ?></p>
 
   <?php if ($target !== null): ?>

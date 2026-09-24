@@ -46,7 +46,7 @@ $isStudent = $type === VoterType::Student;
           <?php endforeach; ?>
         </tbody>
       </table>
-      <a class="btn" href="<?= site_url($type->adminPath('import/template')) ?>"><?= icon('download') ?> Unduh <?= esc($importer->templateFilename()) ?></a>
+      <a class="btn" href="<?= site_url($type->adminPath('impor/templat')) ?>"><?= icon('download') ?> Unduh <?= esc($importer->templateFilename()) ?></a>
     </section>
 
     <section class="panel" aria-labelledby="upload-title">
@@ -54,7 +54,7 @@ $isStudent = $type === VoterType::Student;
       <?php if ($resultsLocked ?? false): ?>
       <p class="notice"><?= icon('lock') ?><span>Pemilihan sudah selesai: impor dikunci karena dapat mengubah jumlah pemilih dan rekap hasil akhir. Template tetap dapat diunduh.</span></p>
       <?php else: ?>
-      <form action="<?= site_url($type->adminPath('import')) ?>" method="post" enctype="multipart/form-data" class="stack" data-upload-form data-post-max="<?= CandidateAssets::iniBytes((string) ini_get('post_max_size')) ?>">
+      <form action="<?= site_url($type->adminPath('impor')) ?>" method="post" enctype="multipart/form-data" class="stack" data-upload-form data-post-max="<?= CandidateAssets::iniBytes((string) ini_get('post_max_size')) ?>">
         <?= csrf_field() ?>
         <div class="field">
           <label for="file">File Excel (.xlsx)</label>

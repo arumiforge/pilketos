@@ -6,6 +6,8 @@
  *   animasi tusuk, dampak pada kotak, lalu modal konfirmasi + POST JSON.
  * - Tanpa JavaScript: tombol "Coblos" adalah tautan ke halaman konfirmasi
  *   biasa (form POST), jadi voting tidak bergantung pada efek visual.
+ * - Stage 7: tiap kotak punya id "coblos-0X" (tujuan tombol "Pilih" di
+ *   kartu Sekilas paslon & akhir bab); kotak tujuan disorot lewat :target.
  *
  * @var list<array>             $candidates Hasil CandidateTheme::presentAll()
  * @var bool                    $canVote
@@ -16,15 +18,15 @@ $status = $election['status'] ?? null;
 ?>
 <section class="ballot<?= $canVote ? '' : ' ballot--closed' ?>" id="surat-suara" aria-labelledby="ballot-title"
          data-ballot<?php if ($canVote): ?>
-         data-submit-url="<?= esc(site_url($type->path('vote')), 'attr') ?>"
-         data-myvote-url="<?= esc(site_url($type->path('my-vote')), 'attr') ?>"
+         data-submit-url="<?= esc(site_url($type->path('coblos')), 'attr') ?>"
+         data-myvote-url="<?= esc(site_url($type->path('pilihanku')), 'attr') ?>"
          data-webgl-src="<?= esc(asset_url('assets/js/nail-webgl.js'), 'attr') ?>"<?php endif; ?>>
   <div class="container">
     <header class="ballot__head">
       <p class="ballot__kicker">Bilik suara digital &middot; <?= esc($type->label()) ?></p>
       <h2 class="ballot__title" id="ballot-title">Surat Suara</h2>
       <?php if ($canVote): ?>
-        <p class="ballot__hint" id="ballot-hint">Tekan dan tahan paku, arahkan ke kotak pasangan pilihan, lalu lepaskan untuk mencoblos. Bisa juga dengan tombol <strong>Coblos</strong> di setiap kotak.</p>
+        <p class="ballot__hint" id="ballot-hint">Tekan <strong>Coblos</strong> di kotak pilihanmu, atau tahan paku lalu seret ke kotaknya.</p>
       <?php elseif ($status === 'UPCOMING'): ?>
         <p class="ballot__hint"><?= icon('clock') ?> Surat suara dapat dicoblos mulai <strong><?= esc(format_waktu($election['start_at'])) ?></strong>.</p>
       <?php elseif ($status === 'FINISHED'): ?>
@@ -45,7 +47,7 @@ $status = $election['status'] ?? null;
       <?php else: ?>
         <ol class="ballot__grid" aria-label="Pasangan calon pada surat suara">
           <?php foreach ($candidates as $c): ?>
-            <li class="ballot-cell" style="<?= esc($c['style'], 'attr') ?>" data-cell
+            <li class="ballot-cell" id="coblos-<?= esc($c['label'], 'attr') ?>" style="<?= esc($c['style'], 'attr') ?>" data-cell
                 data-candidate-id="<?= esc((string) $c['id'], 'attr') ?>"
                 data-number="<?= esc($c['label'], 'attr') ?>"
                 data-ketua="<?= esc($c['ketua'], 'attr') ?>"
@@ -62,7 +64,7 @@ $status = $election['status'] ?? null;
                 <span class="ballot-cell__aim" aria-hidden="true">Lepas untuk mencoblos</span>
               </div>
               <?php if ($canVote): ?>
-                <a class="ballot-cell__btn" href="<?= esc(site_url($type->path('vote/confirm/' . $c['id'])), 'attr') ?>" data-coblos>
+                <a class="ballot-cell__btn" href="<?= esc(site_url($type->path('coblos/yakin/' . $c['id'])), 'attr') ?>" data-coblos>
                   <?= icon('nail') ?> Coblos Pasangan <?= esc($c['label']) ?>
                 </a>
               <?php endif; ?>

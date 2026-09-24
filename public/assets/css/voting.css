@@ -1,6 +1,8 @@
 /* ==========================================================================
    SMP 1 DAWE — Pemilihan Ketua OSIS 2026
    Stage 2: pengalaman kandidat, visi-misi interaktif, surat suara & paku coblos.
+   Stage 7: bilik suara ringkas (pembuka pendek, "Sekilas paslon", kotak
+   surat suara ringkas di HP, kotak tujuan disorot lewat :target).
    Dimuat hanya di halaman voting (voting/index, confirm, my_vote).
 
    Aturan: tanpa gradient, tanpa emoji. Warna hanya dari token netral app.css
@@ -8,31 +10,31 @@
    Semua efek gerak mati dengan prefers-reduced-motion (lihat bawah file).
    ========================================================================== */
 
-/* -- intro halaman voting -- */
-.vote-intro {
-  padding-block: var(--space-6);
+/* -- pembuka bilik suara (Stage 7: ringkas, tidak memakan satu layar HP) -- */
+.booth-intro {
+  padding-block: var(--space-5);
   border-bottom: 1px solid var(--line);
 }
 
-.vote-intro__grid {
+.booth-intro__grid {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
-.vote-intro__title {
-  margin-top: var(--space-3);
-  font-size: clamp(2.6rem, 11vw, 5.6rem);
-  line-height: 0.95;
+.booth-intro__title {
+  margin-top: var(--space-2);
+  font-size: clamp(2.1rem, 9vw, 4.2rem);
+  line-height: 0.98;
   letter-spacing: -0.035em;
 }
 
 /* "coblos" diberi bekas lubang tusuk kecil, referensi surat suara kertas */
-.vote-intro__verb {
+.booth-intro__verb {
   position: relative;
   white-space: nowrap;
 }
 
-.vote-intro__verb::after {
+.booth-intro__verb::after {
   content: '';
   position: absolute;
   top: 0.14em;
@@ -44,43 +46,241 @@
   box-shadow: 0 0 0 0.045em var(--paper), 0 0 0 0.07em var(--ink);
 }
 
-.vote-steps {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2) var(--space-4);
-  margin-top: var(--space-5);
-  font-size: 0.875rem;
-  font-weight: 500;
+/* .booth-intro: menang atas reset ol[class] di app.css */
+.booth-intro .booth-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
-.vote-steps span {
-  margin-right: var(--space-1);
-  font-family: var(--font-display);
-  color: var(--gray-500);
+.booth-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.booth-steps__no {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 
-.vote-intro__status {
+.booth-intro__status {
   display: grid;
   gap: var(--space-3);
   align-content: end;
 }
 
-@media (min-width: 720px) {
-  .vote-steps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-5);
-  }
+/* countdown lebih pipih di HP agar kartu paslon ikut terlihat di layar pertama */
+.booth-intro .countdown--compact { padding: var(--space-3); }
+.booth-intro .countdown--compact .countdown__digits { font-size: 1.45rem; }
+.booth-intro .countdown--compact .countdown__units { gap: var(--space-3); }
 
-  .vote-steps li { white-space: nowrap; }
+@media (min-width: 720px) {
+  .booth-intro { padding-block: var(--space-6); }
+  .booth-intro .booth-steps { gap: var(--space-2) var(--space-5); font-size: 0.875rem; }
+  .booth-intro .countdown--compact { padding: var(--space-4); }
+  .booth-intro .countdown--compact .countdown__digits { font-size: 1.9rem; }
+  .booth-intro .countdown--compact .countdown__units { gap: var(--space-4); }
 }
 
 @media (min-width: 960px) {
-  .vote-intro__grid {
+  .booth-intro__grid {
     grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     align-items: end;
   }
+}
+
+/* -- Sekilas paslon (Stage 7): bandingkan ketiganya, lalu baca atau pilih -- */
+.lineup {
+  padding-block: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-dim);
+  scroll-margin-top: 0;
+}
+
+.lineup__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
+.lineup__title {
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  letter-spacing: -0.02em;
+}
+
+.lineup__hint {
+  max-width: 46ch;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+/* HP: kartu digeser, kartu berikutnya mengintip; tanpa JS tetap bisa digeser.
+   .lineup: menang atas reset ol[class] di app.css */
+.lineup .lineup__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 84%;
+  gap: var(--space-3);
+  margin: var(--space-4) calc(var(--space-4) * -1) 0;
+  padding: 0 var(--space-4) var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--space-4);
+  scrollbar-width: thin;
+}
+
+.pair-card {
+  position: relative; /* teks visually-hidden ikut terpotong carousel */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-top: 6px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--paper);
+  scroll-snap-align: start;
+}
+
+.pair-card__band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 132px);
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pair-card__no {
+  font-family: var(--font-display);
+  font-size: 3.4rem;
+  font-weight: 600;
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pair-card__theme {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.pair-card__names {
+  display: grid;
+  gap: 2px;
+  margin-top: calc(var(--space-2) * -1);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.pair-card__names > span + span { font-weight: 500; color: var(--gray-700); }
+
+.pair-card__role {
+  display: inline-block;
+  min-width: 3.6em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.pair-card__visi {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent);
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.pair-card__meta {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.pair-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-1);
+}
+
+.pair-card__read {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.pair-card__pick {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pair-card__pick:hover { opacity: 0.88; }
+.pair-card__pick .icon { width: 1.1em; height: 1.1em; }
+
+@media (min-width: 720px) {
+  .lineup { padding-block: var(--space-6) var(--space-7); }
+
+  .lineup .lineup__list {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .pair-card { padding: var(--space-5); }
+  .pair-card__no { font-size: 4rem; }
 }
 
 /* -- navigasi bab (sticky) -- */
@@ -166,7 +366,7 @@
   isolation: isolate;
   display: grid;
   place-items: end center;
-  min-height: 380px;
+  min-height: 300px;
   padding: var(--space-6) var(--space-4) var(--space-4);
   overflow: hidden;
 }
@@ -672,7 +872,7 @@
 
 .ballot {
   position: relative;
-  padding-top: var(--space-7);
+  padding-top: var(--space-6);
   background: var(--ink);
   color: var(--paper);
   scroll-margin-top: 56px;
@@ -693,7 +893,7 @@
 .ballot__title {
   margin-top: var(--space-2);
   color: var(--paper);
-  font-size: clamp(2.4rem, 10vw, 4.6rem);
+  font-size: clamp(2.1rem, 9vw, 4.2rem);
   letter-spacing: -0.03em;
 }
 
@@ -706,7 +906,7 @@
 .ballot__hint .icon { margin-right: var(--space-1); }
 
 .ballot__sheet {
-  margin-top: var(--space-6);
+  margin-top: var(--space-5);
   padding: var(--space-3);
   border-radius: 2px;
   background: var(--paper);
@@ -747,22 +947,20 @@
   position: relative;
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
+  grid-template-columns: auto minmax(0, 88px) minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2) var(--space-4);
-  min-height: 150px;
-  padding: var(--space-3);
+  gap: var(--space-3);
+  min-height: 104px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
   overflow: hidden;
   transition: background-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 
 .ballot-cell__no {
-  grid-row: 1 / span 2;
   align-self: stretch;
   display: grid;
   place-items: center;
-  min-width: 68px;
+  min-width: 56px;
   background: var(--accent);
   color: var(--accent-ink);
   font-family: var(--font-display);
@@ -771,7 +969,11 @@
   line-height: 1;
 }
 
-.ballot-cell .portraits--sm { max-width: 156px; }
+.ballot-cell .portraits--sm { max-width: 88px; gap: var(--space-1); }
+
+/* HP: foto kecil tanpa label peran (nama ketua & wakil sudah tertulis) */
+.ballot-cell .portraits--sm .portrait__role { display: none; }
+.ballot-cell .portraits--sm .portrait__initials { font-size: 1.05rem; }
 
 .ballot-cell__names {
   font-size: 0.9375rem;
@@ -810,7 +1012,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 52px;
+  min-height: 48px;
   padding: var(--space-2) var(--space-3);
   border-top: 1px solid var(--line-strong);
   background: var(--paper);
@@ -826,6 +1028,19 @@
 }
 
 .ballot-cell__btn:focus-visible { outline-offset: -4px; }
+
+/* kotak tujuan tombol "Pilih 0X" (Stage 7) */
+.ballot-cell { scroll-margin-top: 72px; }
+
+/* tanpa ballot.js: :target; dengan ballot.js: .is-picked (dapat dilepas) */
+.ballot:not(.ballot--picks) .ballot-cell:target .ballot-cell__target,
+.ballot-cell.is-picked .ballot-cell__target { box-shadow: inset 0 0 0 4px var(--accent); }
+
+.ballot:not(.ballot--picks) .ballot-cell:target .ballot-cell__btn,
+.ballot-cell.is-picked .ballot-cell__btn {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
 
 /* sedang dibidik paku */
 .ballot-cell.is-aimed .ballot-cell__target {
@@ -915,17 +1130,20 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
     align-items: start;
-    min-height: 360px;
+    gap: var(--space-3);
+    min-height: 340px;
     padding: var(--space-4);
   }
 
   .ballot-cell__no {
-    grid-row: auto;
     min-height: 76px;
     font-size: 3.4rem;
   }
 
-  .ballot-cell .portraits--sm { max-width: none; }
+  .ballot-cell .portraits--sm { max-width: none; gap: var(--space-2); }
+  .ballot-cell .portraits--sm .portrait__role { display: block; }
+  .ballot-cell .portraits--sm .portrait__initials { font-size: 1.5rem; }
+  .ballot-cell__btn { min-height: 52px; }
   .ballot-cell__names { font-size: 1.0625rem; }
 }
 

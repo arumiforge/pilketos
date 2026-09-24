@@ -35,7 +35,7 @@
 
   <div class="cluster">
     <a class="btn" href="<?= site_url($type->adminPath()) ?>"><?= icon('users') ?> Lihat data <?= esc(strtolower($type->label())) ?></a>
-    <a class="btn btn--outline" href="<?= site_url($type->adminPath('import')) ?>"><?= icon('upload') ?> Impor file lain</a>
+    <a class="btn btn--outline" href="<?= site_url($type->adminPath('impor')) ?>"><?= icon('upload') ?> Impor file lain</a>
   </div>
 </div>
 <?= $this->endSection() ?>

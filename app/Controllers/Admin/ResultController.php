@@ -20,7 +20,7 @@ use App\Services\FinalResult;
 class ResultController extends AdminController
 {
     /**
-     * GET admin/results
+     * GET admin/hasil
      */
     public function index()
     {

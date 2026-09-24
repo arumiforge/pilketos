@@ -14,7 +14,7 @@ class AuditController extends AdminController
     public const PER_PAGE = 30;
 
     /**
-     * GET admin/audit?action=&q=
+     * GET admin/riwayat?action=&q=
      */
     public function index()
     {

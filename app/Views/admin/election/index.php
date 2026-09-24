@@ -54,7 +54,7 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
       <header class="panel__head">
         <h2 class="panel__title" id="schedule-title"><?= $election ? 'Ubah jadwal' : 'Buat pemilihan' ?></h2>
       </header>
-      <form action="<?= site_url('admin/election') ?>" method="post" class="stack" novalidate
+      <form action="<?= site_url('admin/jadwal') ?>" method="post" class="stack" novalidate
             <?php if ($status === 'ONGOING'): ?>data-confirm="Pemilihan sedang berlangsung. Simpan perubahan jadwal? Pemilih langsung mengikuti jadwal baru." data-confirm-button="Simpan jadwal"<?php endif; ?>
             <?php if ($status === 'FINISHED'): ?>data-confirm="Pemilihan sudah selesai dan hasil akhir sudah final. Simpan jadwal baru? Bila waktu selesai dipindah ke masa depan, pencoblosan dibuka kembali." data-confirm-button="Simpan jadwal" data-confirm-danger<?php endif; ?>>
         <?= csrf_field() ?>
@@ -99,7 +99,7 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
         </header>
 
         <?php if ($status === 'UPCOMING'): ?>
-          <form action="<?= site_url('admin/election/open') ?>" method="post" class="quick-action"
+          <form action="<?= site_url('admin/jadwal/buka') ?>" method="post" class="quick-action"
                 data-confirm="Buka pemilihan sekarang? Waktu mulai diganti menjadi jam server saat ini dan siswa/guru dapat langsung mencoblos."
                 data-confirm-button="Buka sekarang">
             <?= csrf_field() ?>
@@ -108,7 +108,7 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
             <button type="submit" class="btn"><?= icon('clock') ?> Buka pemilihan sekarang</button>
           </form>
         <?php elseif ($status === 'ONGOING'): ?>
-          <form action="<?= site_url('admin/election/close') ?>" method="post" class="quick-action quick-action--danger"
+          <form action="<?= site_url('admin/jadwal/tutup') ?>" method="post" class="quick-action quick-action--danger"
                 data-confirm="Tutup pemilihan sekarang? Waktu selesai diganti menjadi jam server saat ini. Pencoblosan langsung ditolak dan hasil menjadi final."
                 data-confirm-button="Tutup sekarang" data-confirm-danger>
             <?= csrf_field() ?>
@@ -119,7 +119,7 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
         <?php else: ?>
           <div class="quick-action">
             <h3>Pemilihan sudah selesai</h3>
-            <p>Lihat <a href="<?= site_url('admin/results') ?>">hasil akhir</a>. Untuk membuka kembali, ubah waktu selesai ke waktu mendatang dan centang konfirmasi pembukaan kembali (tercatat di audit log).</p>
+            <p>Lihat <a href="<?= site_url('admin/hasil') ?>">hasil akhir</a>. Untuk membuka kembali, ubah waktu selesai ke waktu mendatang dan centang konfirmasi pembukaan kembali (tercatat di audit log).</p>
           </div>
         <?php endif; ?>
 

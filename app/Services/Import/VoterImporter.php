@@ -101,9 +101,13 @@ abstract class VoterImporter
      */
     abstract protected function instructions(): array;
 
+    /**
+     * Nama file templat unduhan (Stage 7: bahasa Indonesia), contoh
+     * "templat-impor-siswa.xlsx".
+     */
     public function templateFilename(): string
     {
-        return $this->type()->value . '-import-template.xlsx';
+        return 'templat-impor-' . $this->type()->slug() . '.xlsx';
     }
 
     /**

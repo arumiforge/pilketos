@@ -14,7 +14,7 @@ use Config\Services;
  * Stage 4: route matrix & role permission matrix (04-FINAL... bagian 2, 17, 18).
  *
  * 1. Setiap route yang terdaftar dicek filternya: di luar daftar publik yang
- *    eksplisit, route admin/student/teacher WAJIB memakai filter role-nya,
+ *    eksplisit, route admin/siswa/guru WAJIB memakai filter role-nya,
  *    sehingga route baru tidak mungkin lolos tanpa proteksi.
  * 2. Tabel kapabilitas (Student / Teacher / Admin) diuji lewat HTTP.
  *
@@ -32,11 +32,20 @@ final class RoleMatrixTest extends CIUnitTestCase
 
     /**
      * Satu-satunya route tanpa filter autentikasi (route matrix "public").
-     * live-count (redesign beranda): hanya persentase per pasangan + partisipasi.
+     * hitung-suara (redesign beranda): hanya persentase per pasangan + partisipasi.
      */
     private const PUBLIC_ROUTES = [
-        'GET'  => ['/', 'election/clock', 'live-count', 'student/login', 'teacher/login', 'admin/login', 'student', 'teacher', 'admin'],
-        'POST' => ['student/login', 'teacher/login', 'admin/login', 'student', 'teacher', 'admin'],
+        'GET'  => ['/', 'jam-server', 'hitung-suara', 'siswa/masuk', 'guru/masuk', 'admin/masuk'],
+        'POST' => ['siswa/masuk', 'guru/masuk', 'admin/masuk'],
+    ];
+
+    /**
+     * Segmen pertama URL (Stage 7: bahasa Indonesia) -> filter wajib.
+     */
+    private const ROLE_FILTERS = [
+        'admin' => 'adminauth',
+        'siswa' => 'studentauth',
+        'guru'  => 'teacherauth',
     ];
 
     private const STUDENT = ['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true];
@@ -95,18 +104,13 @@ final class RoleMatrixTest extends CIUnitTestCase
             $path = (string) $route['route'];
 
             if (! isset($seen[$verb])) {
-                continue; // HEAD/PUT/... hanya muncul dari addRedirect()
+                continue;
             }
 
             $seen[$verb][] = $path;
 
-            // Alamat pendek (student -> student/dashboard) hanya redirect ke route terproteksi.
-            if ($collection->isRedirect($path)) {
-                $this->assertContains($path, self::PUBLIC_ROUTES[$verb], "{$verb} {$path} redirect tidak terdokumentasi");
-                $this->assertSame($path . '/dashboard', $route['handler'], "{$verb} {$path}");
-
-                continue;
-            }
+            // Stage 7: URL Inggris lama tidak dialihkan; tidak ada route redirect.
+            $this->assertFalse($collection->isRedirect($path), "{$verb} {$path} tidak boleh berupa redirect");
 
             $before = $finder->get($verb, $samples->get($path))['before'];
             $auth   = array_values(array_intersect($before, ['adminauth', 'studentauth', 'teacherauth']));
@@ -121,8 +125,8 @@ final class RoleMatrixTest extends CIUnitTestCase
             }
 
             $prefix = strtok($path, '/');
-            $this->assertContains($prefix, ['admin', 'student', 'teacher'], "{$verb} {$path} tidak terdaftar di route matrix");
-            $this->assertSame([$prefix . 'auth'], $auth, "{$verb} {$path} wajib memakai filter {$prefix}auth");
+            $this->assertArrayHasKey($prefix, self::ROLE_FILTERS, "{$verb} {$path} tidak terdaftar di route matrix");
+            $this->assertSame([self::ROLE_FILTERS[$prefix]], $auth, "{$verb} {$path} wajib memakai filter " . self::ROLE_FILTERS[$prefix]);
         }
 
         foreach (self::PUBLIC_ROUTES as $verb => $list) {
@@ -153,65 +157,65 @@ final class RoleMatrixTest extends CIUnitTestCase
         $teacherCred = ['nip' => '000000000000000004', 'kodeunik' => '01061992'];
 
         // Login Student: Yes / No / No
-        $this->postAs([], 'student/login', $studentCred)->assertRedirectTo(site_url('student/dashboard'));
-        $this->postAs([], 'student/login', ['nisn' => '000000000000000004', 'kodeunik' => '01061992']);
+        $this->postAs([], 'siswa/masuk', $studentCred)->assertRedirectTo(site_url('siswa'));
+        $this->postAs([], 'siswa/masuk', ['nisn' => '000000000000000004', 'kodeunik' => '01061992']);
         $this->assertNotSame('teacher', session('user_type'));
-        $this->postAs([], 'student/login', ['nisn' => 'admin', 'kodeunik' => 'admin123']);
+        $this->postAs([], 'siswa/masuk', ['nisn' => 'admin', 'kodeunik' => 'admin123']);
         $this->assertNotSame('admin', session('user_type'));
 
         // Login Teacher: No / Yes / No
-        $this->postAs([], 'teacher/login', $teacherCred)->assertRedirectTo(site_url('teacher/dashboard'));
-        $this->postAs([], 'teacher/login', ['nip' => '0000000001', 'kodeunik' => '05062013']);
+        $this->postAs([], 'guru/masuk', $teacherCred)->assertRedirectTo(site_url('guru'));
+        $this->postAs([], 'guru/masuk', ['nip' => '0000000001', 'kodeunik' => '05062013']);
         $this->assertNotSame('student', session('user_type'));
 
         // Admin Login: No / No / Yes
-        $this->postAs([], 'admin/login', ['username' => 'admin', 'password' => 'admin123'])->assertRedirectTo(site_url('admin/dashboard'));
-        $this->postAs([], 'admin/login', ['username' => '0000000001', 'password' => '05062013']);
+        $this->postAs([], 'admin/masuk', ['username' => 'admin', 'password' => 'admin123'])->assertRedirectTo(site_url('admin'));
+        $this->postAs([], 'admin/masuk', ['username' => '0000000001', 'password' => '05062013']);
         $this->assertNotSame('student', session('user_type'));
     }
 
     public function testStudentCannotEnterTeacherOrAdminAreas(): void
     {
-        foreach (['teacher/dashboard', 'teacher/vote', 'teacher/my-vote'] as $path) {
-            $this->page(self::STUDENT, $path)->assertRedirectTo(site_url('teacher/login'));
+        foreach (['guru', 'guru/coblos', 'guru/pilihanku'] as $path) {
+            $this->page(self::STUDENT, $path)->assertRedirectTo(site_url('guru/masuk'));
         }
 
-        foreach (['admin/dashboard', 'admin/analytics', 'admin/analytics/votes', 'admin/results', 'admin/students', 'admin/audit'] as $path) {
-            $this->page(self::STUDENT, $path)->assertRedirectTo(site_url('admin/login'));
+        foreach (['admin', 'admin/analitik', 'admin/analitik/suara', 'admin/hasil', 'admin/siswa', 'admin/riwayat'] as $path) {
+            $this->page(self::STUDENT, $path)->assertRedirectTo(site_url('admin/masuk'));
         }
 
-        $this->ajax(self::STUDENT)->get('admin/live-count')->assertStatus(401);
+        $this->ajax(self::STUDENT)->get('admin/hitung-suara')->assertStatus(401);
     }
 
     public function testTeacherCannotEnterStudentOrAdminAreas(): void
     {
-        foreach (['student/dashboard', 'student/vote', 'student/my-vote'] as $path) {
-            $this->page(self::TEACHER, $path)->assertRedirectTo(site_url('student/login'));
+        foreach (['siswa', 'siswa/coblos', 'siswa/pilihanku'] as $path) {
+            $this->page(self::TEACHER, $path)->assertRedirectTo(site_url('siswa/masuk'));
         }
 
-        foreach (['admin/dashboard', 'admin/analytics', 'admin/results', 'admin/teachers', 'admin/unlock'] as $path) {
-            $this->page(self::TEACHER, $path)->assertRedirectTo(site_url('admin/login'));
+        foreach (['admin', 'admin/analitik', 'admin/hasil', 'admin/guru', 'admin/buka-kunci'] as $path) {
+            $this->page(self::TEACHER, $path)->assertRedirectTo(site_url('admin/masuk'));
         }
 
-        $this->ajax(self::TEACHER)->get('admin/live-count')->assertStatus(401);
+        $this->ajax(self::TEACHER)->get('admin/hitung-suara')->assertStatus(401);
     }
 
     public function testVotersCannotUseAdminActions(): void
     {
         $actions = [
-            ['admin/candidates', ['nomor_urut' => '4', 'nama_ketua' => 'X', 'nama_wakil' => 'Y']],
-            ['admin/candidates/1/delete', []],
-            ['admin/students/1/status', ['status_aktif' => '0']],
-            ['admin/teachers/1/delete', []],
-            ['admin/students/import/commit', ['token' => str_repeat('a', 32)]],
-            ['admin/election/close', []],
-            ['admin/election', ['nama' => 'X', 'tahun' => '2026', 'start_at' => '2026-10-01T07:00', 'end_at' => '2026-10-01T12:00']],
-            ['admin/unlock/student/1', ['vote_id' => '1', 'reason' => 'Percobaan tanpa hak akses.', 'confirm' => '1']],
+            ['admin/paslon', ['nomor_urut' => '4', 'nama_ketua' => 'X', 'nama_wakil' => 'Y']],
+            ['admin/paslon/1/hapus', []],
+            ['admin/siswa/1/status', ['status_aktif' => '0']],
+            ['admin/guru/1/hapus', []],
+            ['admin/siswa/impor/simpan', ['token' => str_repeat('a', 32)]],
+            ['admin/jadwal/tutup', []],
+            ['admin/jadwal', ['nama' => 'X', 'tahun' => '2026', 'start_at' => '2026-10-01T07:00', 'end_at' => '2026-10-01T12:00']],
+            ['admin/buka-kunci/siswa/1', ['vote_id' => '1', 'reason' => 'Percobaan tanpa hak akses.', 'confirm' => '1']],
         ];
 
         foreach ([self::STUDENT, self::TEACHER] as $session) {
             foreach ($actions as [$path, $data]) {
-                $this->postAs($session, $path, $data)->assertRedirectTo(site_url('admin/login'));
+                $this->postAs($session, $path, $data)->assertRedirectTo(site_url('admin/masuk'));
             }
         }
 
@@ -224,16 +228,16 @@ final class RoleMatrixTest extends CIUnitTestCase
     public function testVoteCapabilitiesPerRole(): void
     {
         // Vote: Yes / Yes / No
-        $this->ajax(self::STUDENT)->post('student/vote', ['candidate_id' => 2])->assertStatus(200);
-        $this->ajax(self::TEACHER)->post('teacher/vote', ['candidate_id' => 3])->assertStatus(200);
-        $this->ajax(self::ADMIN)->post('student/vote', ['candidate_id' => 1, 'student_id' => 2])->assertStatus(401);
-        $this->ajax(self::ADMIN)->post('teacher/vote', ['candidate_id' => 1, 'teacher_id' => 2])->assertStatus(401);
+        $this->ajax(self::STUDENT)->post('siswa/coblos', ['candidate_id' => 2])->assertStatus(200);
+        $this->ajax(self::TEACHER)->post('guru/coblos', ['candidate_id' => 3])->assertStatus(200);
+        $this->ajax(self::ADMIN)->post('siswa/coblos', ['candidate_id' => 1, 'student_id' => 2])->assertStatus(401);
+        $this->ajax(self::ADMIN)->post('guru/coblos', ['candidate_id' => 1, 'teacher_id' => 2])->assertStatus(401);
 
         // Re-vote while locked: No / No / No
-        $again = $this->ajax(self::STUDENT)->post('student/vote', ['candidate_id' => 1]);
+        $again = $this->ajax(self::STUDENT)->post('siswa/coblos', ['candidate_id' => 1]);
         $again->assertStatus(409);
         $this->assertSame('already_voted', $this->json($again)['status']);
-        $this->ajax(self::TEACHER)->post('teacher/vote', ['candidate_id' => 1])->assertStatus(409);
+        $this->ajax(self::TEACHER)->post('guru/coblos', ['candidate_id' => 1])->assertStatus(409);
 
         $this->assertSame(1, $this->db->table('student_votes')->countAllResults());
         $this->assertSame(1, $this->db->table('teacher_votes')->countAllResults());
@@ -244,32 +248,32 @@ final class RoleMatrixTest extends CIUnitTestCase
     public function testOwnVoteOnlyAndNoResultsForVoters(): void
     {
         // Pemilih lain (siswa 2) memilih 03; siswa 1 memilih 02.
-        $this->ajax(['user_type' => 'student', 'student_id' => 2, 'isLoggedIn' => true])->post('student/vote', ['candidate_id' => 3])->assertStatus(200);
-        $this->ajax(self::STUDENT)->post('student/vote', ['candidate_id' => 2])->assertStatus(200);
+        $this->ajax(['user_type' => 'student', 'student_id' => 2, 'isLoggedIn' => true])->post('siswa/coblos', ['candidate_id' => 3])->assertStatus(200);
+        $this->ajax(self::STUDENT)->post('siswa/coblos', ['candidate_id' => 2])->assertStatus(200);
 
         // View Own Vote: Yes / Yes / N/A
-        $mine = $this->page(self::STUDENT, 'student/my-vote');
+        $mine = $this->page(self::STUDENT, 'siswa/pilihanku');
         $mine->assertStatus(200);
         $mine->assertSee('Bagas Prayoga');
         $mine->assertDontSee('Dewi Anggraini'); // pilihan pemilih lain
         $mine->assertDontSee('Bunga Larasati'); // identitas pemilih lain
         $mine->assertDontSee('suara sah');
 
-        $this->page(self::ADMIN, 'student/my-vote')->assertRedirectTo(site_url('student/login'));
+        $this->page(self::ADMIN, 'siswa/pilihanku')->assertRedirectTo(site_url('siswa/masuk'));
 
         // View Analytics / hasil: No / No / Yes
-        $this->page(self::ADMIN, 'admin/analytics')->assertStatus(200);
-        $this->page(self::STUDENT, 'admin/analytics')->assertRedirectTo(site_url('admin/login'));
+        $this->page(self::ADMIN, 'admin/analitik')->assertStatus(200);
+        $this->page(self::STUDENT, 'admin/analitik')->assertRedirectTo(site_url('admin/masuk'));
 
         // Dasbor pemilih tidak memuat jumlah suara pasangan mana pun.
-        $dashboard = $this->page(self::STUDENT, 'student/dashboard');
+        $dashboard = $this->page(self::STUDENT, 'siswa');
         $dashboard->assertDontSee('data-live');
         $dashboard->assertDontSee('suara sah');
     }
 
     public function testViewCandidatesForAllRoles(): void
     {
-        foreach ([[self::STUDENT, 'student/vote'], [self::TEACHER, 'teacher/vote'], [self::ADMIN, 'admin/candidates']] as [$session, $path]) {
+        foreach ([[self::STUDENT, 'siswa/coblos'], [self::TEACHER, 'guru/coblos'], [self::ADMIN, 'admin/paslon']] as [$session, $path]) {
             $page = $this->page($session, $path);
             $page->assertStatus(200);
             $page->assertSee('Arka Wibisana');

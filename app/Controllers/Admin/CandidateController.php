@@ -44,7 +44,7 @@ class CandidateController extends AdminController
     ];
 
     /**
-     * GET admin/candidates
+     * GET admin/paslon
      */
     public function index()
     {
@@ -72,12 +72,12 @@ class CandidateController extends AdminController
     }
 
     /**
-     * GET admin/candidates/new
+     * GET admin/paslon/tambah
      */
     public function new()
     {
         if ($this->resultsLocked()) {
-            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+            return redirect()->to('admin/paslon')->with('error', self::RESULTS_LOCKED_MESSAGE);
         }
 
         $max = (int) (model(CandidateModel::class)->builder()->selectMax('nomor_urut', 'max')->get()->getRowArray()['max'] ?? 0);
@@ -86,7 +86,7 @@ class CandidateController extends AdminController
     }
 
     /**
-     * POST admin/candidates
+     * POST admin/paslon
      */
     public function create()
     {
@@ -94,7 +94,7 @@ class CandidateController extends AdminController
     }
 
     /**
-     * GET admin/candidates/{id}/edit
+     * GET admin/paslon/{id}/ubah
      */
     public function edit($id = null)
     {
@@ -104,7 +104,7 @@ class CandidateController extends AdminController
     }
 
     /**
-     * POST admin/candidates/{id}
+     * POST admin/paslon/{id}
      */
     public function update($id = null)
     {
@@ -112,7 +112,7 @@ class CandidateController extends AdminController
     }
 
     /**
-     * POST admin/candidates/{id}/delete
+     * POST admin/paslon/{id}/hapus
      */
     public function delete($id = null)
     {
@@ -122,11 +122,11 @@ class CandidateController extends AdminController
         $label     = sprintf('Pasangan %02d (%s & %s)', $candidate['nomor_urut'], $candidate['nama_ketua'], $candidate['nama_wakil']);
 
         if ($this->resultsLocked()) {
-            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+            return redirect()->to('admin/paslon')->with('error', self::RESULTS_LOCKED_MESSAGE);
         }
 
         if ($voteRows > 0) {
-            return redirect()->to('admin/candidates')->with('error', sprintf(
+            return redirect()->to('admin/paslon')->with('error', sprintf(
                 '%s sudah memiliki %d baris suara (termasuk riwayat) sehingga tidak dapat dihapus. Nonaktifkan pasangan ini bila perlu.',
                 $label,
                 $voteRows,
@@ -136,7 +136,7 @@ class CandidateController extends AdminController
         try {
             $model->delete((int) $candidate['id']);
         } catch (DatabaseException) {
-            return redirect()->to('admin/candidates')->with('error', $label . ' tidak dapat dihapus karena sudah dipakai data suara.');
+            return redirect()->to('admin/paslon')->with('error', $label . ' tidak dapat dihapus karena sudah dipakai data suara.');
         }
 
         $assets = service('candidateAssets');
@@ -146,11 +146,11 @@ class CandidateController extends AdminController
 
         $this->audit(AuditLogModel::CANDIDATE_DELETE, $label . ' dihapus beserta file tema.');
 
-        return redirect()->to('admin/candidates')->with('success', $label . ' dihapus.');
+        return redirect()->to('admin/paslon')->with('success', $label . ' dihapus.');
     }
 
     /**
-     * GET admin/candidates/{id}/preview
+     * GET admin/paslon/{id}/intip
      * Pratinjau halaman kandidat persis seperti yang dilihat pemilih (tanpa surat suara).
      */
     public function preview($id = null)
@@ -196,7 +196,7 @@ class CandidateController extends AdminController
         $locked = $this->resultsLocked();
 
         if ($locked && $existing === null) {
-            return redirect()->to('admin/candidates')->with('error', self::RESULTS_LOCKED_MESSAGE);
+            return redirect()->to('admin/paslon')->with('error', self::RESULTS_LOCKED_MESSAGE);
         }
 
         $model  = model(CandidateModel::class);
@@ -210,7 +210,7 @@ class CandidateController extends AdminController
         }
 
         $data   = $input + ($existing === null ? [] : ['id' => (int) $existing['id']]);
-        $back   = $existing === null ? 'admin/candidates/new' : 'admin/candidates/' . $existing['id'] . '/edit';
+        $back   = $existing === null ? 'admin/paslon/tambah' : 'admin/paslon/' . $existing['id'] . '/ubah';
 
         if (! $model->validate($data)) {
             return redirect()->to($back)->withInput()->with('errors', $model->errors());
@@ -264,7 +264,7 @@ class CandidateController extends AdminController
         if ($existing === null) {
             $this->audit(AuditLogModel::CANDIDATE_CREATE, $label . ' ditambahkan' . ($fileChanges === [] ? '.' : '; file: ' . implode(', ', $fileChanges) . '.'));
 
-            return redirect()->to('admin/candidates')->with('success', $label . ' ditambahkan.');
+            return redirect()->to('admin/paslon')->with('success', $label . ' ditambahkan.');
         }
 
         $changes = array_merge($this->changedFields($existing, $input), $fileChanges);
@@ -273,7 +273,7 @@ class CandidateController extends AdminController
             $this->audit(AuditLogModel::CANDIDATE_UPDATE, $label . ' diubah: ' . implode(', ', $changes) . '.');
         }
 
-        return redirect()->to('admin/candidates')->with('success', $label . ($changes === [] ? ' tidak berubah.' : ' disimpan.'));
+        return redirect()->to('admin/paslon')->with('success', $label . ($changes === [] ? ' tidak berubah.' : ' disimpan.'));
     }
 
     /**

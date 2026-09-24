@@ -13,7 +13,7 @@ class AdminAuthFilter extends AuthFilter
 
     protected function loginPath(): string
     {
-        return 'admin/login';
+        return 'admin/masuk';
     }
 
     protected function deniedMessage(): string

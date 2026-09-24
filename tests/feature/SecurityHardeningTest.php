@@ -93,7 +93,7 @@ final class SecurityHardeningTest extends CIUnitTestCase
 
     public function testHtmlPagesCarryStrictCspWithMatchingNonce(): void
     {
-        foreach ([[[], '/'], [$this->student(), 'student/vote'], [$this->admin(), 'admin/dashboard']] as [$session, $path]) {
+        foreach ([[[], '/'], [$this->student(), 'siswa/coblos'], [$this->admin(), 'admin']] as [$session, $path]) {
             $response = $this->finalized($this->withSession($session)->get($path));
             $csp      = $response->getHeaderLine('Content-Security-Policy');
             $body     = (string) $response->getBody();
@@ -116,7 +116,7 @@ final class SecurityHardeningTest extends CIUnitTestCase
 
     public function testSecurityHeadersAndNoStoreOnEveryArea(): void
     {
-        foreach ([[[], 'student/login'], [$this->student(), 'student/dashboard'], [$this->admin(), 'admin/results']] as [$session, $path]) {
+        foreach ([[[], 'siswa/masuk'], [$this->student(), 'siswa'], [$this->admin(), 'admin/hasil']] as [$session, $path]) {
             $response = $this->withSession($session)->get($path)->response();
 
             $this->assertSame('SAMEORIGIN', $response->getHeaderLine('X-Frame-Options'), $path);
@@ -129,7 +129,7 @@ final class SecurityHardeningTest extends CIUnitTestCase
         }
 
         // Endpoint JSON publik juga tidak di-cache (jam server, live count beranda).
-        foreach (['election/clock', 'live-count'] as $path) {
+        foreach (['jam-server', 'hitung-suara'] as $path) {
             $json = $this->get($path)->response();
             $this->assertStringContainsString('no-store', $json->getHeaderLine('Cache-Control'), $path);
             $this->assertSame('nosniff', $json->getHeaderLine('X-Content-Type-Options'), $path);
@@ -143,12 +143,12 @@ final class SecurityHardeningTest extends CIUnitTestCase
     public function testLoginRecordsActivityAndLogoutClearsIdentity(): void
     {
         Time::setTestNow('2026-09-24 08:00:00');
-        $this->post('student/login', [csrf_token() => csrf_hash(), 'nisn' => '0000000001', 'kodeunik' => '05062013']);
+        $this->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000001', 'kodeunik' => '05062013']);
 
         $this->assertSame('student', session('user_type'));
         $this->assertSame(Time::now()->getTimestamp(), session(BaseController::AUTH_SEEN_KEY));
 
-        $this->withSession()->post('student/logout', [csrf_token() => csrf_hash()]);
+        $this->withSession()->post('siswa/keluar', [csrf_token() => csrf_hash()]);
         $this->assertNull(session('user_type'));
         $this->assertNull(session(BaseController::AUTH_SEEN_KEY));
     }
@@ -159,8 +159,8 @@ final class SecurityHardeningTest extends CIUnitTestCase
         $stale = Time::now()->getTimestamp() - AuthFilter::VOTER_IDLE_SECONDS - 1;
 
         $this->withSession($this->student([BaseController::AUTH_SEEN_KEY => $stale]))
-            ->get('student/dashboard')
-            ->assertRedirectTo(site_url('student/login'));
+            ->get('siswa')
+            ->assertRedirectTo(site_url('siswa/masuk'));
         $this->assertSame(AuthFilter::IDLE_MESSAGE, session('error'));
         $this->assertNull(session('student_id'));
 
@@ -168,7 +168,7 @@ final class SecurityHardeningTest extends CIUnitTestCase
         $result = $this->withSession($this->student([BaseController::AUTH_SEEN_KEY => $stale]))
             ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
             ->withBodyFormat('json')
-            ->post('student/vote', ['candidate_id' => 1]);
+            ->post('siswa/coblos', ['candidate_id' => 1]);
         $result->assertStatus(401);
         $this->assertSame(AuthFilter::IDLE_MESSAGE, json_decode($result->getJSON(), true)['message']);
         $this->assertSame(0, $this->db->table('student_votes')->countAllResults());
@@ -176,8 +176,8 @@ final class SecurityHardeningTest extends CIUnitTestCase
         // Guru sama.
         $this->withSession(['user_type' => 'teacher', 'teacher_id' => 1, 'isLoggedIn' => true, BaseController::AUTH_SEEN_KEY => $stale])
             ->withHeaders([])->withBodyFormat('')
-            ->get('teacher/dashboard')
-            ->assertRedirectTo(site_url('teacher/login'));
+            ->get('guru')
+            ->assertRedirectTo(site_url('guru/masuk'));
     }
 
     public function testActiveVoterSessionIsExtendedAndAdminHasNoShortIdle(): void
@@ -185,12 +185,12 @@ final class SecurityHardeningTest extends CIUnitTestCase
         Time::setTestNow('2026-09-24 10:00:00');
         $recent = Time::now()->getTimestamp() - AuthFilter::VOTER_IDLE_SECONDS + 60;
 
-        $this->withSession($this->student([BaseController::AUTH_SEEN_KEY => $recent]))->get('student/dashboard')->assertStatus(200);
+        $this->withSession($this->student([BaseController::AUTH_SEEN_KEY => $recent]))->get('siswa')->assertStatus(200);
         $this->assertSame(Time::now()->getTimestamp(), session(BaseController::AUTH_SEEN_KEY));
 
         // Admin memantau live count lama: tanpa batas idle 15 menit (batas sesi 2 jam tetap berlaku).
         $this->withSession($this->admin() + [BaseController::AUTH_SEEN_KEY => Time::now()->getTimestamp() - 3600])
-            ->get('admin/dashboard')
+            ->get('admin')
             ->assertStatus(200);
     }
 
@@ -208,22 +208,22 @@ final class SecurityHardeningTest extends CIUnitTestCase
         $this->files[] = $path;
 
         UploadFixture::attach(['file' => ['path' => $path, 'name' => 'siswa.xlsx']]);
-        $upload = $this->withSession($this->admin())->post('admin/students/import', [csrf_token() => csrf_hash()]);
+        $upload = $this->withSession($this->admin())->post('admin/siswa/impor', [csrf_token() => csrf_hash()]);
         $token  = substr($upload->response()->getHeaderLine('Location'), -32);
 
         // Tanpa konfirmasi baris bermasalah: ditolak, pratinjau tetap dapat dipakai lagi.
-        $this->withSession($this->admin())->post('admin/students/import/commit', [csrf_token() => csrf_hash(), 'token' => $token])
-            ->assertRedirectTo(site_url('admin/students/import/preview/' . $token));
-        $this->withSession($this->admin())->get('admin/students/import/preview/' . $token)->assertStatus(200);
+        $this->withSession($this->admin())->post('admin/siswa/impor/simpan', [csrf_token() => csrf_hash(), 'token' => $token])
+            ->assertRedirectTo(site_url('admin/siswa/impor/cek/' . $token));
+        $this->withSession($this->admin())->get('admin/siswa/impor/cek/' . $token)->assertStatus(200);
 
         // Impor pertama berhasil.
-        $this->withSession($this->admin())->post('admin/students/import/commit', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1'])
-            ->assertRedirectTo(site_url('admin/students/import/result'));
+        $this->withSession($this->admin())->post('admin/siswa/impor/simpan', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1'])
+            ->assertRedirectTo(site_url('admin/siswa/impor/selesai'));
         $this->seeInDatabase('students', ['nisn' => '0098765432']);
 
         // POST yang sama dikirim ulang: tidak diproses lagi.
-        $this->withSession($this->admin())->post('admin/students/import/commit', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1'])
-            ->assertRedirectTo(site_url('admin/students/import'));
+        $this->withSession($this->admin())->post('admin/siswa/impor/simpan', [csrf_token() => csrf_hash(), 'token' => $token, 'confirm_skip' => '1'])
+            ->assertRedirectTo(site_url('admin/siswa/impor'));
         $this->assertStringContainsString('sudah diimpor', (string) session('error'));
 
         $this->assertSame(1, $this->db->table('students')->where('nisn', '0098765432')->countAllResults());

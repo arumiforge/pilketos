@@ -34,7 +34,7 @@ $ongoing = ($election['status'] ?? null) === 'ONGOING';
     <li class="steps__item"><span>04</span> Konfirmasi</li>
   </ol>
 
-  <form class="search-hero" method="get" action="<?= site_url('admin/unlock') ?>" role="search">
+  <form class="search-hero" method="get" action="<?= site_url('admin/buka-kunci') ?>" role="search">
     <label for="q" class="search-hero__label">Cari siswa atau guru</label>
     <div class="search-hero__row">
       <input type="search" id="q" name="q" value="<?= esc($query, 'attr') ?>" maxlength="100" placeholder="Nama, NISN, atau NIP" autocomplete="off" autofocus>
@@ -89,7 +89,7 @@ $ongoing = ($election['status'] ?? null) === 'ONGOING';
                 </td>
                 <td>
                   <?php if ($r['vote_id'] !== null && $ongoing): ?>
-                    <a class="btn btn--sm btn--danger" href="<?= site_url('admin/unlock/' . $t->value . '/' . $r['id']) ?>"><?= icon('unlock') ?> Unlock Hak Suara<span class="visually-hidden"> <?= esc($r['name']) ?></span></a>
+                    <a class="btn btn--sm btn--danger" href="<?= site_url($t->unlockPath($r['id'])) ?>"><?= icon('unlock') ?> Unlock Hak Suara<span class="visually-hidden"> <?= esc($r['name']) ?></span></a>
                   <?php endif; ?>
                 </td>
               </tr>
@@ -103,7 +103,7 @@ $ongoing = ($election['status'] ?? null) === 'ONGOING';
   <section class="panel" aria-labelledby="recent-title">
     <header class="panel__head">
       <h2 class="panel__title" id="recent-title">Unlock terakhir</h2>
-      <a class="panel__link" href="<?= site_url('admin/audit?action=UNLOCK_VOTE') ?>">Audit log unlock <?= icon('arrow-right') ?></a>
+      <a class="panel__link" href="<?= site_url('admin/riwayat?action=UNLOCK_VOTE') ?>">Audit log unlock <?= icon('arrow-right') ?></a>
     </header>
     <?php if ($recent === []): ?>
       <p class="empty">Belum pernah ada unlock.</p>

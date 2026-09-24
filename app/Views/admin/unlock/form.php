@@ -29,7 +29,7 @@ $c       = $vote === null ? null : CandidateTheme::present([
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url('admin/unlock') ?>">Unlock</a> &middot; <?= esc($type->label()) ?></p>
+      <p class="eyebrow-x"><a href="<?= site_url('admin/buka-kunci') ?>">Unlock</a> &middot; <?= esc($type->label()) ?></p>
       <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
       <p class="admin-head__lede">
         <?= esc($type->identifierLabel()) ?> <span class="mono"><?= esc($voter[$type->identifierColumn()]) ?></span>
@@ -75,7 +75,7 @@ $c       = $vote === null ? null : CandidateTheme::present([
         <?php if (! $ongoing): ?>
           <p class="notice"><?= icon('lock') ?><span>Unlock hanya dapat dilakukan saat pemilihan sedang berlangsung.</span></p>
         <?php else: ?>
-          <form action="<?= site_url('admin/unlock/' . $type->value . '/' . $voter['id']) ?>" method="post" class="stack" novalidate
+          <form action="<?= site_url($type->unlockPath($voter['id'])) ?>" method="post" class="stack" novalidate
                 data-confirm="<?= esc('Unlock hak suara ' . $voter['name'] . '? Suara Pasangan ' . $c['label'] . ' menjadi riwayat dan tidak dihitung. Pemilih harus memilih ulang sendiri.', 'attr') ?>"
                 data-confirm-button="Unlock Hak Suara" data-confirm-danger>
             <?= csrf_field() ?>

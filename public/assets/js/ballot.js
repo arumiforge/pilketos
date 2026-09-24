@@ -602,6 +602,7 @@
     pointerOffset = event.pointerType === 'mouse' ? 0 : TOUCH_OFFSET;
     leftDock = false;
     phase = 'holding';
+    setPicked(null);
     document.body.classList.add('is-holding-nail');
 
     aim.x = event.clientX;
@@ -808,6 +809,41 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* "Pilih 0X" dari kartu Sekilas paslon / akhir bab (Stage 7)         */
+  /* ------------------------------------------------------------------ */
+
+  var pickedCell = null;
+
+  function setPicked(cell) {
+    if (pickedCell) {
+      pickedCell.classList.remove('is-picked');
+    }
+    pickedCell = cell;
+    if (cell) {
+      cell.classList.add('is-picked');
+    }
+  }
+
+  /**
+   * Tautan #coblos-0X: biarkan browser menggulir ke kotaknya (tanpa JS pun
+   * jalan lewat :target), lalu tandai kotak & fokuskan tombol Coblos-nya
+   * supaya pengguna keyboard/pembaca layar langsung sampai di sana.
+   */
+  function pickFromHash() {
+    var match = /^#coblos-(\d{2})$/.exec(window.location.hash);
+    var cell = match ? ballot.querySelector('#coblos-' + match[1]) : null;
+    if (!cell || phase !== 'idle') {
+      return;
+    }
+    setPicked(cell);
+    var button = cell.querySelector('[data-coblos]');
+    if (button) {
+      button.focus({ preventScroll: true });
+    }
+    say('Kotak pasangan ' + cell.getAttribute('data-number') + '. Tekan Coblos untuk mencoblos.');
+  }
+
+  /* ------------------------------------------------------------------ */
   /* init                                                               */
   /* ------------------------------------------------------------------ */
 
@@ -853,6 +889,7 @@
         if (phase !== 'idle') {
           return;
         }
+        setPicked(null);
         flyAndStab(cell, button.getBoundingClientRect());
       });
     });
@@ -866,6 +903,20 @@
         say(mode === '3d' ? 'Efek 3D dinyalakan.' : 'Mode ringan dinyalakan.');
       });
     }
+
+    // Kotak tujuan kini disorot lewat .is-picked (bukan :target) agar sorotan
+    // bisa dilepas saat pemilih mencoblos kotak lain.
+    ballot.classList.add('ballot--picks');
+    window.addEventListener('hashchange', pickFromHash);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pick]'), function (link) {
+      link.addEventListener('click', function () {
+        // Hash sama (klik ulang) tidak memicu hashchange.
+        if (link.getAttribute('href') === window.location.hash) {
+          window.setTimeout(pickFromHash, 0);
+        }
+      });
+    });
+    pickFromHash();
 
     submitBtn.addEventListener('click', submit);
     cancelBtn.addEventListener('click', function () {

@@ -24,7 +24,7 @@ use CodeIgniter\I18n\Time;
     </div>
   </header>
 
-  <form class="filters" method="get" action="<?= site_url('admin/audit') ?>" role="search" data-autosubmit>
+  <form class="filters" method="get" action="<?= site_url('admin/riwayat') ?>" role="search" data-autosubmit>
     <div class="field filters__search">
       <label for="a-q">Cari (keterangan, alasan, pemilih, admin)</label>
       <input type="search" id="a-q" name="q" value="<?= esc($query, 'attr') ?>" maxlength="100" autocomplete="off">
@@ -40,7 +40,7 @@ use CodeIgniter\I18n\Time;
     </div>
     <div class="filters__actions">
       <button type="submit" class="btn btn--sm"><?= icon('search') ?> Terapkan</button>
-      <?php if ($action !== '' || $query !== ''): ?><a class="btn btn--sm btn--outline" href="<?= site_url('admin/audit') ?>">Reset</a><?php endif; ?>
+      <?php if ($action !== '' || $query !== ''): ?><a class="btn btn--sm btn--outline" href="<?= site_url('admin/riwayat') ?>">Reset</a><?php endif; ?>
     </div>
   </form>
 

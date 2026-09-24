@@ -24,7 +24,7 @@ abstract class VoterController extends AdminController
     abstract protected function voterType(): VoterType;
 
     /**
-     * GET admin/students | admin/teachers
+     * GET admin/siswa | admin/guru
      */
     public function index()
     {
@@ -50,7 +50,7 @@ abstract class VoterController extends AdminController
     }
 
     /**
-     * GET admin/students/{id} | admin/teachers/{id}
+     * GET admin/siswa/{id} | admin/guru/{id}
      */
     public function show($id = null)
     {
@@ -71,7 +71,7 @@ abstract class VoterController extends AdminController
     }
 
     /**
-     * POST admin/students/{id}/status  (status_aktif = 0|1)
+     * POST admin/siswa/{id}/status  (status_aktif = 0|1)
      * Pemilih nonaktif tidak dapat login dan tidak dihitung dalam analitik.
      */
     public function status($id = null)
@@ -117,7 +117,7 @@ abstract class VoterController extends AdminController
     }
 
     /**
-     * POST admin/students/{id}/delete
+     * POST admin/siswa/{id}/hapus
      * Hanya untuk data tanpa riwayat suara/unlock (mis. salah impor).
      */
     public function delete($id = null)

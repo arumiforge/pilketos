@@ -33,7 +33,7 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
       </p>
     </div>
     <div class="admin-head__actions">
-      <a class="btn" href="<?= site_url($type->adminPath('import')) ?>"><?= icon('upload') ?> Impor Excel</a>
+      <a class="btn" href="<?= site_url($type->adminPath('impor')) ?>"><?= icon('upload') ?> Impor Excel</a>
     </div>
   </header>
 
@@ -93,7 +93,7 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
       <?php if ($filtered): ?>
         Tidak ada <?= esc(strtolower($type->label())) ?> yang cocok dengan filter.
       <?php else: ?>
-        Belum ada data <?= esc(strtolower($type->label())) ?>. <a href="<?= site_url($type->adminPath('import')) ?>">Impor dari Excel</a>.
+        Belum ada data <?= esc(strtolower($type->label())) ?>. <a href="<?= site_url($type->adminPath('impor')) ?>">Impor dari Excel</a>.
       <?php endif; ?>
     </p>
   <?php else: ?>

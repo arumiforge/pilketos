@@ -10,7 +10,7 @@ class AuthController extends BaseController
     public function loginForm()
     {
         if (session()->get('user_type') === 'teacher') {
-            return redirect()->to('teacher/dashboard');
+            return redirect()->to('guru');
         }
 
         return view('teacher/login', ['title' => 'Masuk Guru']);
@@ -71,7 +71,7 @@ class AuthController extends BaseController
         $this->clearLoginFailures('teacher', $data['nip']);
         $this->startAuthSession('teacher', (int) $teacher['id']);
 
-        return redirect()->to('teacher/dashboard');
+        return redirect()->to('guru');
     }
 
     public function logout()

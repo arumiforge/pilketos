@@ -5,7 +5,7 @@
  * (data-start / data-end, milidetik epoch). Waktu berjalan dihitung dengan
  * performance.now() (monoton), jadi mengubah jam perangkat tidak berpengaruh.
  * Countdown hanya visual: saat mencapai nol, status dikonfirmasi ke server
- * (GET election/clock) lalu halaman dimuat ulang agar server yang memutuskan.
+ * (GET jam-server) lalu halaman dimuat ulang agar server yang memutuskan.
  *
  * - tidak pernah negatif, berhenti pada status akhir;
  * - tick 1x per detik, dijeda saat tab tidak terlihat;

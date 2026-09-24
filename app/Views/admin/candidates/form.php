@@ -21,7 +21,7 @@ use App\Models\CandidateModel;
 $value  = static fn (string $key): string => esc((string) ($values[$key] ?? ''), 'attr');
 $error  = static fn (string $key): string => isset($errors[$key]) ? '<p class="field-error" id="err-' . esc($key, 'attr') . '">' . esc($errors[$key]) . '</p>' : '';
 $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-invalid="true" aria-describedby="err-' . esc($key, 'attr') . '"' : '';
-$action = $candidate === null ? site_url('admin/candidates') : site_url('admin/candidates/' . $candidate['id']);
+$action = $candidate === null ? site_url('admin/paslon') : site_url('admin/paslon/' . $candidate['id']);
 $accent = CandidateTheme::accent($values['theme_accent'] ?? null);
 $layout = (string) ($values['theme_layout'] ?? '');
 $active = (string) ($values['status_aktif'] ?? '1') === '1';
@@ -36,12 +36,12 @@ $layouts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url('admin/candidates') ?>">Pasangan calon</a> &middot; <?= $candidate === null ? 'Baru' : 'Ubah' ?></p>
+      <p class="eyebrow-x"><a href="<?= site_url('admin/paslon') ?>">Pasangan calon</a> &middot; <?= $candidate === null ? 'Baru' : 'Ubah' ?></p>
       <h1 class="admin-head__title"><?= $candidate === null ? 'Tambah pasangan' : esc(sprintf('Pasangan %02d', $candidate['nomor_urut'])) ?></h1>
     </div>
     <?php if ($candidate !== null): ?>
       <div class="admin-head__actions">
-        <a class="btn btn--outline" href="<?= site_url('admin/candidates/' . $candidate['id'] . '/preview') ?>"><?= icon('eye') ?> Pratinjau halaman pemilih</a>
+        <a class="btn btn--outline" href="<?= site_url('admin/paslon/' . $candidate['id'] . '/intip') ?>"><?= icon('eye') ?> Pratinjau halaman pemilih</a>
       </div>
     <?php endif; ?>
   </header>
@@ -197,7 +197,7 @@ $layouts = [
 
     <div class="form-x__submit">
       <button type="submit" class="btn btn--lg" data-loading-text="Menyimpan &amp; memproses gambar..."><?= icon('check') ?> <?= $candidate === null ? 'Simpan pasangan' : 'Simpan perubahan' ?></button>
-      <a class="btn btn--lg btn--outline" href="<?= site_url('admin/candidates') ?>">Batal</a>
+      <a class="btn btn--lg btn--outline" href="<?= site_url('admin/paslon') ?>">Batal</a>
       <p class="field-error" data-upload-total-error hidden></p>
     </div>
   </form>

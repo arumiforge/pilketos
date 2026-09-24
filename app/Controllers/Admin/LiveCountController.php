@@ -9,7 +9,7 @@ use CodeIgniter\I18n\Time;
 /**
  * Endpoint AJAX live count (MASTER section 15, Stage 3).
  *
- * GET admin/live-count -> JSON angka dasbor/analitik (ringkasan, suara &
+ * GET admin/hitung-suara -> JSON angka dasbor/analitik (ringkasan, suara &
  * persentase per pasangan, rekap jenis pemilih, jenis kelamin, kelas,
  * jenjang). Hanya admin (filter adminauth; AJAX tanpa sesi = 401 JSON).
  *

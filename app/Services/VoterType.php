@@ -19,7 +19,8 @@ use App\Models\TeacherVoteModel;
  *
  * Stage 3 menambahkan pemetaan untuk panel admin (kolom identitas, path
  * admin, kolom vote_unlock_logs, aksi audit). Di panel admin jenis pemilih
- * dari URL selalu divalidasi lewat VoterType::tryFrom().
+ * dari route selalu divalidasi lewat VoterType::tryFrom(). Stage 7: segmen
+ * URL memakai slug() (siswa/guru), bukan nilai enum.
  */
 enum VoterType: string
 {
@@ -120,21 +121,41 @@ enum VoterType: string
     }
 
     /**
-     * Path route relatif untuk jenis pemilih ini, contoh path('vote') = "student/vote".
+     * Segmen URL untuk jenis pemilih ini (Stage 7: bahasa Indonesia).
+     * Nilai enum (student/teacher) tetap dipakai untuk sesi & database.
      */
-    public function path(string $suffix = ''): string
+    public function slug(): string
     {
-        return $suffix === '' ? $this->value : $this->value . '/' . ltrim($suffix, '/');
+        return match ($this) {
+            self::Student => 'siswa',
+            self::Teacher => 'guru',
+        };
     }
 
     /**
-     * Path panel admin, contoh adminPath('import') = "admin/students/import".
+     * Path route relatif untuk jenis pemilih ini, contoh path('coblos') = "siswa/coblos".
+     */
+    public function path(string $suffix = ''): string
+    {
+        return $suffix === '' ? $this->slug() : $this->slug() . '/' . ltrim($suffix, '/');
+    }
+
+    /**
+     * Path panel admin, contoh adminPath('impor') = "admin/siswa/impor".
      */
     public function adminPath(string $suffix = ''): string
     {
-        $base = 'admin/' . $this->voterTable();
+        $base = 'admin/' . $this->slug();
 
         return $suffix === '' ? $base : $base . '/' . ltrim($suffix, '/');
+    }
+
+    /**
+     * Path halaman buka kunci hak suara satu pemilih, contoh "admin/buka-kunci/siswa/12".
+     */
+    public function unlockPath(int|string $id): string
+    {
+        return 'admin/buka-kunci/' . $this->slug() . '/' . $id;
     }
 
     /**

@@ -21,7 +21,7 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
     </div>
     <?php if (! ($resultsLocked ?? false)): ?>
       <div class="admin-head__actions">
-        <a class="btn" href="<?= site_url('admin/candidates/new') ?>"><?= icon('plus') ?> Tambah pasangan</a>
+        <a class="btn" href="<?= site_url('admin/paslon/tambah') ?>"><?= icon('plus') ?> Tambah pasangan</a>
       </div>
     <?php endif; ?>
   </header>
@@ -35,7 +35,7 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
   <?php endif; ?>
 
   <?php if ($rows === []): ?>
-    <p class="empty">Belum ada pasangan calon. <a href="<?= site_url('admin/candidates/new') ?>">Tambah pasangan pertama</a>.</p>
+    <p class="empty">Belum ada pasangan calon. <a href="<?= site_url('admin/paslon/tambah') ?>">Tambah pasangan pertama</a>.</p>
   <?php endif; ?>
 
   <ol class="cand-list">
@@ -76,12 +76,12 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
         </div>
 
         <div class="cand-card__actions">
-          <a class="btn btn--sm" href="<?= site_url('admin/candidates/' . $t['id'] . '/edit') ?>"><?= icon('edit') ?> Ubah</a>
-          <a class="btn btn--sm btn--outline" href="<?= site_url('admin/candidates/' . $t['id'] . '/preview') ?>"><?= icon('eye') ?> Pratinjau</a>
+          <a class="btn btn--sm" href="<?= site_url('admin/paslon/' . $t['id'] . '/ubah') ?>"><?= icon('edit') ?> Ubah</a>
+          <a class="btn btn--sm btn--outline" href="<?= site_url('admin/paslon/' . $t['id'] . '/intip') ?>"><?= icon('eye') ?> Pratinjau</a>
           <?php if ($resultsLocked ?? false): ?>
             <p class="cand-card__lock"><?= icon('lock') ?> Dikunci: pemilihan sudah selesai</p>
           <?php elseif ($row['vote_rows'] === 0): ?>
-            <form action="<?= site_url('admin/candidates/' . $t['id'] . '/delete') ?>" method="post"
+            <form action="<?= site_url('admin/paslon/' . $t['id'] . '/hapus') ?>" method="post"
                   data-confirm="Hapus Pasangan <?= esc($t['label'], 'attr') ?> (<?= esc($t['ketua'], 'attr') ?> &amp; <?= esc($t['wakil'], 'attr') ?>) beserta semua file temanya? Tindakan ini tidak dapat dibatalkan."
                   data-confirm-button="Hapus pasangan" data-confirm-danger>
               <?= csrf_field() ?>

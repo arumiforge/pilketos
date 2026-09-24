@@ -95,12 +95,12 @@ final class FinalResultTest extends CIUnitTestCase
         $this->scheduleAt('2026-10-01 13:00:00');
 
         foreach ([[], ['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true], ['user_type' => 'teacher', 'teacher_id' => 1, 'isLoggedIn' => true]] as $session) {
-            $this->withSession($session)->get('admin/results')->assertRedirectTo(site_url('admin/login'));
+            $this->withSession($session)->get('admin/hasil')->assertRedirectTo(site_url('admin/masuk'));
         }
 
         $this->withSession(['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true])
             ->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
-            ->get('admin/results')
+            ->get('admin/hasil')
             ->assertStatus(401);
     }
 
@@ -113,7 +113,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->seedWinnerTwo();
         $this->scheduleAt('2026-10-01 11:59:59');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
 
         $result->assertStatus(200);
         $result->assertSee('Hasil akhir belum tersedia');
@@ -128,14 +128,14 @@ final class FinalResultTest extends CIUnitTestCase
     public function testResultsStayLockedBeforeStartAndWithoutElection(): void
     {
         $this->scheduleAt('2026-10-01 06:00:00');
-        $upcoming = $this->asAdmin()->get('admin/results');
+        $upcoming = $this->asAdmin()->get('admin/hasil');
         $upcoming->assertSee('Belum Dibuka');
         $upcoming->assertDontSee('data-confetti');
 
         $this->db->disableForeignKeyChecks();
         $this->db->table('elections')->truncate();
         $this->db->enableForeignKeyChecks();
-        $none = $this->asAdmin()->get('admin/results');
+        $none = $this->asAdmin()->get('admin/hasil');
         $none->assertSee('Pemilihan belum dijadwalkan');
         $none->assertDontSee('data-confetti');
     }
@@ -145,7 +145,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->seedWinnerTwo();
         $this->scheduleAt('2026-10-01 12:00:00'); // tepat end_at = FINISHED
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
         $body   = (string) $result->response()->getBody();
 
         $result->assertStatus(200);
@@ -186,7 +186,7 @@ final class FinalResultTest extends CIUnitTestCase
         ]);
         $this->scheduleAt('2026-10-01 13:00:00');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
 
         $result->assertSee('victor victor--column');
         $result->assertSee('victor__pattern--dots');
@@ -202,7 +202,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->vote('teacher', 1, 3);
         $this->scheduleAt('2026-10-01 13:00:00');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
 
         $result->assertSee('Perolehan suara tertinggi sama');
         $result->assertSee('Pasangan 01 dan Pasangan 02 dan Pasangan 03');
@@ -216,7 +216,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->vote('student', 1, 2, 'UNLOCKED'); // riwayat tidak dihitung
         $this->scheduleAt('2026-10-01 13:00:00');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
 
         $result->assertSee('Tidak ada suara sah');
         $result->assertDontSee('Pasangan terpilih');
@@ -233,7 +233,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->vote('student', 12, 2); // siswa 12 nonaktif (seeder)
         $this->scheduleAt('2026-10-01 13:00:00');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
         $body   = (string) $result->response()->getBody();
 
         $result->assertSee('Arka Wibisana'); // 01 menang 2-1
@@ -250,7 +250,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->db->table('candidates')->where('id', 3)->update(['status_aktif' => 0]);
         $this->scheduleAt('2026-10-01 13:00:00');
 
-        $result = $this->asAdmin()->get('admin/results');
+        $result = $this->asAdmin()->get('admin/hasil');
 
         $result->assertSee('Dewi Anggraini');
         $result->assertSee('nonaktif');
@@ -265,15 +265,15 @@ final class FinalResultTest extends CIUnitTestCase
         $this->seedWinnerTwo();
         $this->scheduleAt('2026-10-01 12:30:00');
 
-        $dashboard = $this->asAdmin()->get('admin/dashboard');
+        $dashboard = $this->asAdmin()->get('admin');
 
         $dashboard->assertSee('Pemilihan selesai');
         $dashboard->assertSee('Pasangan 02 terpilih');
-        $dashboard->assertSee('href="' . site_url('admin/results') . '"');
+        $dashboard->assertSee('href="' . site_url('admin/hasil') . '"');
         $dashboard->assertDontSee('data-confetti');
         $dashboard->assertDontSee('assets/js/confetti.js');
 
-        foreach (['admin/analytics', 'admin/analytics/votes'] as $path) {
+        foreach (['admin/analitik', 'admin/analitik/suara'] as $path) {
             $page = $this->asAdmin()->get($path);
             $page->assertDontSee('data-confetti');
             $page->assertDontSee('assets/js/confetti.js');
@@ -285,7 +285,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->seedWinnerTwo();
         $this->scheduleAt('2026-10-01 10:00:00');
 
-        $dashboard = $this->asAdmin()->get('admin/dashboard');
+        $dashboard = $this->asAdmin()->get('admin');
 
         $dashboard->assertSee('Hasil sementara');
         $dashboard->assertDontSee('final-banner');
@@ -300,7 +300,7 @@ final class FinalResultTest extends CIUnitTestCase
         $vote = $this->withSession(['user_type' => 'student', 'student_id' => 4, 'isLoggedIn' => true])
             ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
             ->withBodyFormat('json')
-            ->post('student/vote', ['candidate_id' => 1]);
+            ->post('siswa/coblos', ['candidate_id' => 1]);
 
         $vote->assertStatus(403);
         $this->assertSame('voting_closed', $this->json($vote)['status']);
@@ -312,7 +312,7 @@ final class FinalResultTest extends CIUnitTestCase
         $this->seedWinnerTwo();
         $this->scheduleAt('2026-10-01 12:00:00');
 
-        $live = $this->json($this->asAdmin()->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])->get('admin/live-count'));
+        $live = $this->json($this->asAdmin()->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])->get('admin/hitung-suara'));
 
         $this->assertSame('FINISHED', $live['election']['status']);
         $this->assertSame(0, $live['poll']['interval']);
@@ -324,6 +324,6 @@ final class FinalResultTest extends CIUnitTestCase
 
     public function testResultsNavigationIsListedForAdmin(): void
     {
-        $this->asAdmin()->get('admin/dashboard')->assertSee('href="' . site_url('admin/results') . '"');
+        $this->asAdmin()->get('admin')->assertSee('href="' . site_url('admin/hasil') . '"');
     }
 }

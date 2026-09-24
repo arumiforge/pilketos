@@ -36,7 +36,7 @@ abstract class ImportController extends AdminController
     abstract protected function importer(): VoterImporter;
 
     /**
-     * GET admin/{students|teachers}/import
+     * GET admin/{siswa|guru}/impor
      */
     public function index()
     {
@@ -51,7 +51,7 @@ abstract class ImportController extends AdminController
     }
 
     /**
-     * GET admin/{students|teachers}/import/template
+     * GET admin/{siswa|guru}/impor/templat
      */
     public function template()
     {
@@ -64,13 +64,13 @@ abstract class ImportController extends AdminController
     }
 
     /**
-     * POST admin/{students|teachers}/import
+     * POST admin/{siswa|guru}/impor
      */
     public function upload(): RedirectResponse
     {
         $importer = $this->importer();
         $type     = $importer->type();
-        $back     = redirect()->to($type->adminPath('import'));
+        $back     = redirect()->to($type->adminPath('impor'));
         $file     = $this->request->getFile('file');
 
         // Stage 4: impor dapat mengubah jumlah pemilih & rekap kelas/jenjang hasil akhir.
@@ -113,11 +113,11 @@ abstract class ImportController extends AdminController
             'rows'      => $result['rows'],
         ]);
 
-        return redirect()->to($type->adminPath('import/preview/' . $token));
+        return redirect()->to($type->adminPath('impor/cek/' . $token));
     }
 
     /**
-     * GET admin/{students|teachers}/import/preview/{token}
+     * GET admin/{siswa|guru}/impor/cek/{token}
      */
     public function preview($token = null)
     {
@@ -126,7 +126,7 @@ abstract class ImportController extends AdminController
         $payload  = $this->loadPayload($token);
 
         if ($payload === null) {
-            return redirect()->to($type->adminPath('import'))->with('error', 'Pratinjau tidak ditemukan atau sudah kedaluwarsa (1 jam). Unggah ulang file.');
+            return redirect()->to($type->adminPath('impor'))->with('error', 'Pratinjau tidak ditemukan atau sudah kedaluwarsa (1 jam). Unggah ulang file.');
         }
 
         $summary = $payload['summary'];
@@ -162,7 +162,7 @@ abstract class ImportController extends AdminController
     }
 
     /**
-     * POST admin/{students|teachers}/import/commit
+     * POST admin/{siswa|guru}/impor/simpan
      */
     public function commit(): RedirectResponse
     {
@@ -171,7 +171,7 @@ abstract class ImportController extends AdminController
         $token    = (string) $this->request->getPost('token');
 
         if ($this->resultsLocked()) {
-            return redirect()->to($type->adminPath('import'))->with('error', self::RESULTS_LOCKED_MESSAGE);
+            return redirect()->to($type->adminPath('impor'))->with('error', self::RESULTS_LOCKED_MESSAGE);
         }
 
         // Stage 4: pratinjau diklaim atomik; POST kedua (klik ganda / diulang)
@@ -180,11 +180,11 @@ abstract class ImportController extends AdminController
         $payload = ImportStore::validToken($token) ? $store->claim($token, $this->adminId(), $type) : null;
 
         if ($payload === null) {
-            return redirect()->to($type->adminPath('import'))->with('error', 'Pratinjau tidak ditemukan, sudah kedaluwarsa, atau sudah diimpor. Periksa data, lalu unggah ulang file bila perlu.');
+            return redirect()->to($type->adminPath('impor'))->with('error', 'Pratinjau tidak ditemukan, sudah kedaluwarsa, atau sudah diimpor. Periksa data, lalu unggah ulang file bila perlu.');
         }
 
         $summary = $payload['summary'];
-        $preview = redirect()->to($type->adminPath('import/preview/' . $token));
+        $preview = redirect()->to($type->adminPath('impor/cek/' . $token));
 
         if ($summary['importable'] === 0) {
             $store->release($token);
@@ -223,12 +223,12 @@ abstract class ImportController extends AdminController
             $counts['skipped'],
         ));
 
-        return redirect()->to($type->adminPath('import/result'))
+        return redirect()->to($type->adminPath('impor/selesai'))
             ->with('import_result', $counts + ['file_name' => $payload['file_name'], 'rows' => $summary['rows']]);
     }
 
     /**
-     * GET admin/{students|teachers}/import/result
+     * GET admin/{siswa|guru}/impor/selesai
      */
     public function result()
     {
@@ -236,7 +236,7 @@ abstract class ImportController extends AdminController
         $result = session()->getFlashdata('import_result');
 
         if (! is_array($result)) {
-            return redirect()->to($type->adminPath('import'));
+            return redirect()->to($type->adminPath('impor'));
         }
 
         return $this->render('admin/import/result', [
