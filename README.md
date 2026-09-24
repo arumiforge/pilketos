@@ -463,17 +463,18 @@ foto kandidat, impor Excel, batas ukuran (40-50 MB pesan aplikasi, di atasnya
    sudah ada; putuskan apakah perolehan suara boleh tampil publik selama
    pencoblosan (`homepage.publicLiveCount`).
 
-Hari H: pantau **Dasbor** (live count); bila perlu unlock, lihat bagian 14.
+Hari H: pantau **Beranda** panel admin (live count); bila perlu unlock, lihat bagian 14.
 Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
 
 ## 8. Admin
 
 Login: `/admin/masuk` (username + kata sandi, dibatasi 5 percobaan gagal per
-akun lalu 1 per menit). Menu panel:
+akun lalu 1 per menit). Menu panel (Stage 9: tanpa nomor & judul kelompok;
+brand "SMP 1 DAWE / Panel Admin"; **Home** membuka situs pemilih di tab baru):
 
 | Menu | Fungsi |
 |---|---|
-| Dasbor | status & jadwal, countdown, ringkasan pemilih, suara per pasangan, rekap jenjang & kelas, live count; saat selesai tampil keadaan final + tautan hasil akhir |
+| Beranda | jadwal (mulai & berakhir) + countdown, ringkasan pemilih, suara per pasangan, rekap jenjang & kelas, live count; saat selesai tampil keadaan final + tautan hasil akhir |
 | Analitik | keseluruhan, jenis pemilih, jenis kelamin siswa, jenjang, kelas, detail suara (cari, filter, paginasi) |
 | Hasil akhir | hanya aktif saat pemilihan selesai (bagian 16) |
 | Pasangan calon | tambah/ubah/nonaktifkan/hapus + unggah tema, pratinjau halaman pemilih |
@@ -481,6 +482,10 @@ akun lalu 1 per menit). Menu panel:
 | Jadwal pemilihan | nama, tahun, mulai, selesai; tutup sekarang; buka sekarang |
 | Unlock | cari pemilih, buka hak suara dengan alasan |
 | Audit log | riwayat tindakan admin (hanya-baca) |
+
+Setiap halaman diawali breadcrumb (Beranda > ... > halaman ini); keterangan
+halaman muncul saat ikon "i" di samping judul ditekan. Di HP waktu
+"diperbarui" + tombol **Perbarui** live count menempel di bawah layar.
 
 Admin **tidak dapat memilih** atas nama pemilih dan tidak dapat mengubah
 pilihan siapa pun. Setelah pemilihan selesai, tindakan yang dapat mengubah
@@ -491,8 +496,11 @@ lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
 ## 9. Siswa
 
 1. Buka alamat aplikasi, gulir/geser ke bagian **Masuk sebagai**, pilih
-   **SISWA** (atau buka `/siswa/masuk`): NISN (10 digit, nol di depan tetap)
-   + kode unik (tanggal lahir `DDMMYYYY`; `05-06-2013` juga diterima).
+   **SISWA** (atau buka `/siswa/masuk`). Login dua tahap (Stage 9): isi NISN
+   (10 digit, nol di depan tetap) > **Lanjut** > kode unik (tanggal lahir
+   `DDMMYYYY`; `05-06-2013` juga diterima) > **Masuk**. Setelah diterima
+   gembok di kartu terbuka, lalu dasbor terbuka. Tanpa JavaScript kedua isian
+   tampil sekaligus.
 2. Dasbor menampilkan identitas, status hak suara, dan jadwal.
 3. **Lihat kandidat & coblos** (hanya saat pemilihan berlangsung).
 4. Setelah memilih: pilihan terkunci; login ulang hanya menampilkan pilihan
@@ -503,7 +511,7 @@ Sesi pemilih berakhir otomatis setelah 15 menit tanpa aktivitas.
 ## 10. Guru
 
 Sama dengan siswa: pilih **GURU** di bagian **Masuk sebagai** (atau buka
-`/guru/masuk`) dengan NIP + kode unik. Guru
+`/guru/masuk`) dengan NIP > **Lanjut** > kode unik (dua tahap, Stage 9). Guru
 adalah pemilih biasa: tidak memiliki akses admin maupun analitik. Suara guru
 dan siswa disimpan di tabel terpisah dan dihitung bersama pada hasil.
 
@@ -551,8 +559,10 @@ Siswa > Impor atau Guru > Impor:
   melayang di bawah layar. Di HP tombol Dasbor & Keluar cukup ikon.
 - Bilik suara (`/siswa/coblos`, `/guru/coblos`, Stage 7-8): pembuka rata
   tengah "Kenali, lalu coblos." dengan journey timeline tiga langkah (Kenali
-  paslon, Coblos satu, Konfirmasi & kunci) dan countdown bergaya terminal;
-  di HP tiap bagian setinggi satu layar. Lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
+  paslon, Coblos satu, Konfirmasi & kunci) dan countdown bergaya terminal
+  (Stage 9: tanpa teks bilah judul/perintah, angka satu baris di HP); di HP
+  pembuka + Sekilas paslon berbagi layar pertama, bab & surat suara setinggi
+  satu layar. Lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
   tema, kutipan visi, jumlah misi; digeser di HP). **Baca visi & misi** menuju
   bab pasangan, **Pilih 0X** langsung ke kotak pasangan itu di surat suara
   (kotak disorot dan tombol Coblos-nya difokuskan).
@@ -682,8 +692,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 8): **331 test, 2.741 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 7: 323 test, Stage 6: 316 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 9): **340 test, 2.966 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -702,6 +712,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `06`–`10-*-PILKETOS.md` + `STAGE6-NOTES.md` | Stage 6: identitas visual SMP 1 DAWE (arah visual "lereng Muria", font Plus Jakarta Sans, spesifikasi & prompt aset, sistem gerak, layar pembuka selalu tampil) |
 | `STAGE7-NOTES.md` | Stage 7: URL bahasa Indonesia santai, nama templat impor, redesain bilik suara siswa & guru |
 | `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
+| `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
 
 ## 21. Beranda imersif & aset visual
 
