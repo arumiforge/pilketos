@@ -1,35 +1,21 @@
 <?= $this->extend('layouts/main') ?>
 
+<?= $this->section('head') ?>
+<link rel="stylesheet" href="<?= asset_url('assets/css/auth.css') ?>">
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
-<section class="section">
-  <div class="container">
-    <div class="card card--auth stack">
-      <div>
-        <p class="eyebrow">Masuk Guru</p>
-        <h1 class="card__title">Selamat datang, silakan masuk untuk memilih</h1>
-      </div>
+<?= view('partials/voter_login', [
+    'action'  => 'guru/masuk',
+    'title'   => 'Selamat datang, silakan masuk untuk memilih',
+    'idField' => 'nip',
+    'idLabel' => 'NIP',
+    'idMax'   => 30,
+]) ?>
 
-      <form action="<?= base_url('guru/masuk') ?>" method="post" class="stack" novalidate>
-        <?= csrf_field() ?>
+<?= $this->endSection() ?>
 
-        <div class="field">
-          <label for="nip">NIP</label>
-          <input type="text" id="nip" name="nip" inputmode="numeric" autocomplete="off"
-                 maxlength="30" value="<?= esc(session()->getFlashdata('old_nip') ?? '', 'attr') ?>" required>
-        </div>
-
-        <div class="field">
-          <label for="kodeunik">Kode Unik</label>
-          <input type="password" id="kodeunik" name="kodeunik" inputmode="numeric" autocomplete="off"
-                 maxlength="10" aria-describedby="kodeunik-hint" required>
-          <p class="field-hint" id="kodeunik-hint">Kode unik adalah tanggal lahir Anda (DDMMYYYY), contoh: 01032006.</p>
-        </div>
-
-        <button type="submit" class="btn btn--block" data-loading-text="Memeriksa...">Masuk</button>
-      </form>
-    </div>
-  </div>
-</section>
-
+<?= $this->section('scripts') ?>
+<script src="<?= asset_url('assets/js/auth.js') ?>" defer></script>
 <?= $this->endSection() ?>

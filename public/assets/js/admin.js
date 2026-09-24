@@ -3,6 +3,8 @@
  * Panel admin (Stage 3): drawer menu HP, dialog konfirmasi, pemeriksaan
  * file sebelum unggah, pratinjau warna aksen, filter otomatis, dan tombol
  * tampilkan kode unik. Stage 4: tombol layar penuh & cetak di hasil akhir.
+ * Stage 9: keterangan halaman di balik ikon "i", Escape menutup tooltip
+ * catatan panel.
  * Semua progressive enhancement: tanpa JavaScript seluruh fitur tetap
  * berjalan lewat form biasa dan validasi server.
  *
@@ -451,8 +453,49 @@
     });
   }
 
+  /* -- keterangan halaman di balik ikon "i" (Stage 9) ----------------------- */
+  function initLede() {
+    var button = document.querySelector('[data-lede-toggle]');
+    var lede = document.getElementById('admin-head-lede');
+
+    if (!button) {
+      return;
+    }
+    if (!lede) {
+      button.hidden = true;
+      return;
+    }
+
+    button.addEventListener('click', function () {
+      var open = !lede.classList.contains('is-open');
+      lede.classList.toggle('is-open', open);
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  /* -- tooltip catatan panel: Escape menutup (WCAG 1.4.13) ------------------ */
+  function initNoteTips() {
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      document.querySelectorAll('[data-note-tip]').forEach(function (tip) {
+        tip.classList.add('is-dismissed');
+      });
+    });
+    document.querySelectorAll('[data-note-tip]').forEach(function (tip) {
+      ['mouseenter', 'focusin'].forEach(function (type) {
+        tip.addEventListener(type, function () {
+          tip.classList.remove('is-dismissed');
+        });
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initDrawer();
+    initLede();
+    initNoteTips();
     initConfirm();
     initFileInputs();
     initAccent();

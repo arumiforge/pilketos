@@ -17,9 +17,12 @@ $ongoing = ($election['status'] ?? null) === 'ONGOING';
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Kontrol &middot; Unlock</p>
-      <h1 class="admin-head__title">Unlock hak suara</h1>
-      <p class="admin-head__lede">Untuk pemilih yang benar-benar salah memilih. Unlock hanya membuka kembali hak suara: admin tidak memilihkan dan tidak mengubah pilihan. Suara lama disimpan sebagai riwayat dan tidak dihitung; pemilih harus login lalu memilih sendiri.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [['Unlock hak suara']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Unlock hak suara</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Untuk pemilih yang benar-benar salah memilih. Unlock hanya membuka kembali hak suara: admin tidak memilihkan dan tidak mengubah pilihan. Suara lama disimpan sebagai riwayat dan tidak dihitung; pemilih harus login lalu memilih sendiri.</p>
     </div>
   </header>
 

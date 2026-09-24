@@ -97,15 +97,47 @@ abstract class BaseController extends Controller
      * sebagai isian ulang. Sengaja tidak memakai withInput() karena itu menyalin
      * seluruh POST (termasuk kode unik/password) ke session.
      *
+     * Stage 9: login pemilih dua tahap mengirim form lewat fetch (AJAX); pesan
+     * yang sama dikirim sebagai JSON. "step" = tahap form yang perlu diperbaiki
+     * (1 = identitas, 2 = kode unik). Isinya sama dengan pesan flash, jadi
+     * tidak membocorkan apakah NISN/NIP terdaftar.
+     *
      * @param array<string, string>|string $message
      */
-    protected function failLogin(string $field, string $value, array|string $message): RedirectResponse
+    protected function failLogin(string $field, string $value, array|string $message, int $status = 422): RedirectResponse|ResponseInterface
     {
+        if ($this->wantsLoginJson()) {
+            return $this->response->setStatusCode($status)->setJSON([
+                'ok'       => false,
+                'step'     => is_array($message) && isset($message[$field]) ? 1 : 2,
+                'messages' => array_values((array) $message),
+            ]);
+        }
+
         $response = redirect()->back()->with('old_' . $field, $value);
 
         return is_array($message)
             ? $response->with('errors', $message)
             : $response->with('error', $message);
+    }
+
+    /**
+     * Login berhasil: redirect biasa, atau JSON berisi tujuan untuk login
+     * dua tahap (animasi gembok terbuka dulu, baru pindah halaman).
+     */
+    protected function loginSucceeded(string $path): RedirectResponse|ResponseInterface
+    {
+        if ($this->wantsLoginJson()) {
+            return $this->response->setJSON(['ok' => true, 'redirect' => site_url($path)]);
+        }
+
+        return redirect()->to($path);
+    }
+
+    protected function wantsLoginJson(): bool
+    {
+        return $this->request->isAJAX()
+            || str_contains(strtolower($this->request->getHeaderLine('Accept')), 'application/json');
     }
 
     /**

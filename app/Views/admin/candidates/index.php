@@ -15,9 +15,12 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Data &middot; Pasangan calon</p>
-      <h1 class="admin-head__title">Pasangan calon</h1>
-      <p class="admin-head__lede">Identitas, visi-misi, dan tema visual yang tampil di halaman kandidat pemilih. Setiap pasangan punya warna aksen solid, layout, dan asset sendiri.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Pasangan calon</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Identitas, visi-misi, dan tema visual yang tampil di halaman kandidat pemilih. Setiap pasangan punya warna aksen solid, layout, dan asset sendiri.</p>
     </div>
     <?php if (! ($resultsLocked ?? false)): ?>
       <div class="admin-head__actions">

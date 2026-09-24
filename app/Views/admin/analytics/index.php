@@ -16,9 +16,12 @@ $groups     = $snapshot['groups'];
 
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Analitik</p>
-      <h1 class="admin-head__title">Rekap suara</h1>
-      <p class="admin-head__lede">Hanya suara berstatus terkunci (LOCKED) dari pemilih aktif. Persentase pasangan dihitung dari pemilih yang sudah memilih di setiap kelompok.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [['Analitik']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Rekap suara</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Hanya suara berstatus terkunci (LOCKED) dari pemilih aktif. Persentase pasangan dihitung dari pemilih yang sudah memilih di setiap kelompok.</p>
     </div>
     <?= $this->include('admin/partials/live_status') ?>
   </header>

@@ -36,8 +36,10 @@ $layouts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url('admin/paslon') ?>">Pasangan calon</a> &middot; <?= $candidate === null ? 'Baru' : 'Ubah' ?></p>
-      <h1 class="admin-head__title"><?= $candidate === null ? 'Tambah pasangan' : esc(sprintf('Pasangan %02d', $candidate['nomor_urut'])) ?></h1>
+      <?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon', 'admin/paslon'], [$candidate === null ? 'Baru' : 'Ubah']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title"><?= $candidate === null ? 'Tambah pasangan' : esc(sprintf('Pasangan %02d', $candidate['nomor_urut'])) ?></h1>
+      </div>
     </div>
     <?php if ($candidate !== null): ?>
       <div class="admin-head__actions">

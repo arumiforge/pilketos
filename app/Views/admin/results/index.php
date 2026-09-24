@@ -28,10 +28,13 @@ $accents = array_values(array_unique(array_merge(
 <div class="admin-page final-page" id="hasil-akhir" data-final-stage>
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Pemilihan &middot; Hasil akhir</p>
-      <h1 class="admin-head__title">Hasil akhir</h1>
+      <?= view('admin/partials/crumbs', ['trail' => [['Hasil akhir']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Hasil akhir</h1>
+        <?php if (! $result['available']): ?><?= view('admin/partials/head_hint') ?><?php endif; ?>
+      </div>
       <?php if (! $result['available']): ?>
-        <p class="admin-head__lede">Hasil akhir terbuka otomatis saat pemilihan selesai menurut jam server.</p>
+        <p class="admin-head__lede" id="admin-head-lede" data-lede>Hasil akhir terbuka otomatis saat pemilihan selesai menurut jam server.</p>
       <?php endif; ?>
     </div>
     <?php if ($result['available']): ?>
@@ -55,10 +58,10 @@ $accents = array_values(array_unique(array_merge(
           <p>
             Status sekarang <strong><?= esc(election_status_label($status)) ?></strong>. Hasil akhir terbuka pada
             <strong><time datetime="<?= esc($election['end_at'], 'attr') ?>"><?= esc(format_waktu($election['end_at'])) ?></time></strong>
-            (sejak waktu selesai, pencoblosan ditolak server). Selama pemilihan berjalan, pantau angka sementara di dasbor live count.
+            (sejak waktu selesai, pencoblosan ditolak server). Selama pemilihan berjalan, pantau angka sementara di Beranda.
           </p>
           <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
-          <p><a class="btn" href="<?= site_url('admin') ?>"><?= icon('grid') ?> Buka dasbor live count</a></p>
+          <p><a class="btn" href="<?= site_url('admin') ?>"><?= icon('grid') ?> Buka Beranda</a></p>
         <?php endif; ?>
       </div>
     </section>

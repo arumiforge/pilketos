@@ -12,9 +12,12 @@
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Impor <?= esc(strtolower($type->label())) ?> &middot; Hasil</p>
-      <h1 class="admin-head__title">Impor selesai</h1>
-      <p class="admin-head__lede">File <strong><?= esc($result['file_name']) ?></strong> &middot; <?= angka($result['rows']) ?> baris dibaca. Tindakan ini tercatat di audit log.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel', $type->adminPath('impor')], ['Hasil']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Impor selesai</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>File <strong><?= esc($result['file_name']) ?></strong> &middot; <?= angka($result['rows']) ?> baris dibaca. Tindakan ini tercatat di audit log.</p>
     </div>
   </header>
 

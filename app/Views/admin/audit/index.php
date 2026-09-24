@@ -18,9 +18,12 @@ use CodeIgniter\I18n\Time;
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x">Kontrol &middot; Audit</p>
-      <h1 class="admin-head__title">Audit log</h1>
-      <p class="admin-head__lede">Jejak tindakan administratif penting: unlock hak suara, perubahan jadwal, perubahan pasangan calon, impor data, serta perubahan status/penghapusan pemilih. Log tidak dapat diubah atau dihapus dari panel.</p>
+      <?= view('admin/partials/crumbs', ['trail' => [['Audit log']]]) ?>
+      <div class="admin-head__heading">
+        <h1 class="admin-head__title">Audit log</h1>
+        <?= view('admin/partials/head_hint') ?>
+      </div>
+      <p class="admin-head__lede" id="admin-head-lede" data-lede>Jejak tindakan administratif penting: unlock hak suara, perubahan jadwal, perubahan pasangan calon, impor data, serta perubahan status/penghapusan pemilih. Log tidak dapat diubah atau dihapus dari panel.</p>
     </div>
   </header>
 
