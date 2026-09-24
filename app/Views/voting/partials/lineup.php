@@ -10,6 +10,10 @@
  * - "Pilih 0X" -> kotak surat suara (#coblos-0X, disorot lewat :target),
  *   hanya tampil saat pencoblosan dibuka. Tanpa JavaScript tetap berfungsi.
  *
+ * Stage 10 (HP): kartu bergeser sendiri 01 -> terakhir -> 01 tiap 2 detik
+ * (candidates.js, [data-lineup]); berhenti sejenak saat disentuh/difokus.
+ * Panah halus di bawah menggulir ke navigasi bab (#navigasi-paslon).
+ *
  * @var list<array> $candidates Hasil CandidateTheme::presentAll()
  * @var bool        $canVote
  */
@@ -21,7 +25,7 @@
       <p class="lineup__hint">Bandingkan ketiganya, lalu baca visi &amp; misi lengkapnya<?= $canVote ? ' atau langsung pilih' : '' ?>.</p>
     </header>
 
-    <ol class="lineup__list" aria-label="Pasangan calon">
+    <ol class="lineup__list" aria-label="Pasangan calon" data-lineup>
       <?php foreach ($candidates as $c): ?>
         <li class="pair-card" style="<?= esc($c['style'], 'attr') ?>">
           <div class="pair-card__band">
@@ -55,5 +59,7 @@
         </li>
       <?php endforeach; ?>
     </ol>
+
+    <a class="lineup__next" href="#navigasi-paslon" aria-label="Lanjut ke bab tiap pasangan calon"><?= icon('chevron-down') ?></a>
   </div>
 </section>

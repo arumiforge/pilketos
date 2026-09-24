@@ -776,8 +776,22 @@
       }
     });
 
+    // "Pasangan 02 · dicoblos ..." (Stage 10: di HP waktu turun ke baris
+    // kedua dan titik pemisah disembunyikan lewat CSS).
     var vote = data.vote || {};
-    slots.successMeta.textContent = 'Pasangan ' + (vote.number || '') + ' · dicoblos ' + (vote.voted_at || '');
+    var metaPair = document.createElement('span');
+    var metaSep = document.createElement('span');
+    var metaTime = document.createElement('span');
+    metaPair.className = 'confirm__meta-pair';
+    metaPair.textContent = 'Pasangan ' + (vote.number || '');
+    metaSep.className = 'confirm__meta-sep';
+    metaSep.textContent = ' · ';
+    metaTime.className = 'confirm__meta-time';
+    metaTime.textContent = 'dicoblos ' + (vote.voted_at || '');
+    slots.successMeta.textContent = '';
+    slots.successMeta.appendChild(metaPair);
+    slots.successMeta.appendChild(metaSep);
+    slots.successMeta.appendChild(metaTime);
     reviewState.hidden = true;
     successState.hidden = false;
 

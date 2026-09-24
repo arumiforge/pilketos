@@ -937,7 +937,13 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
    Hanya palet netral + warna aksen pasangan; semua pasangan setara.
    ========================================================================== */
 
+/* Stage 10: judul & pasangan rata tengah, tanpa label status di samping
+   judul (status ada di dock); "Suara masuk" menjadi baris penutup. */
 .live {
+  /* tinggi foto pasangan: setinggi mungkin tanpa membuat scene perlu
+     digulir di layar laptop; lebar kolom mengikuti foto 4:5 */
+  --photo-h: clamp(140px, calc(100svh - 590px), 440px);
+  --pair-w: max(200px, calc(var(--photo-h) * 0.8));
   display: grid;
   gap: clamp(14px, 2.6vh, 30px);
   width: 100%;
@@ -947,10 +953,8 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 
 .live__head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
+  justify-content: center;
+  text-align: center;
 }
 
 .live__title {
@@ -961,24 +965,9 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   letter-spacing: -0.015em;
 }
 
-.live__tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  border: 1px solid var(--night-line-2);
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
 /* Lampu status netral (tanpa hijau/kuning: tidak bersaing dengan warna
    pasangan, dan tidak bergantung pada warna): berlangsung = titik penuh
    berdenyut, belum dibuka = cincin kosong, selesai/tanpa jadwal = redup. */
-.live__led,
 .dock__led {
   flex: 0 0 auto;
   width: 8px;
@@ -987,13 +976,11 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   background: var(--on-night-3);
 }
 
-.live--ongoing .live__led,
 .dock--ongoing .dock__led {
   background: var(--on-night);
   animation: led 1.8s ease-in-out infinite;
 }
 
-.live--upcoming .live__led,
 .dock--upcoming .dock__led {
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--on-night-2);
@@ -1004,18 +991,11 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(242, 241, 236, 0); }
 }
 
-.live__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
-  align-items: end;
-  gap: clamp(20px, 3.4vw, 56px);
-}
-
-.live--teaser .live__grid { grid-template-columns: minmax(0, 1fr); }
-
+/* kolom seukuran foto, satu kelompok di tengah scene */
 .live__pairs {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, var(--pair-w)));
+  justify-content: center;
   gap: clamp(12px, 2vw, 28px);
 }
 
@@ -1024,6 +1004,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   display: flex;
   flex-direction: column;
   min-width: 0;
+  text-align: center;
 }
 
 .pair__photo {
@@ -1032,8 +1013,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   display: flex;
   width: 100%;
   aspect-ratio: 4 / 5;
-  /* setinggi mungkin tanpa membuat scene perlu digulir di layar laptop */
-  max-height: clamp(140px, calc(100svh - 520px), 440px);
+  max-height: var(--photo-h);
   overflow: hidden;
   border-radius: 16px;
   background: var(--accent);
@@ -1120,6 +1100,7 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   order: 1;
   display: flex;
   align-items: baseline;
+  justify-content: center;
   margin-top: clamp(8px, 1.4vh, 14px);
   font-family: var(--font-display);
   font-size: clamp(2.5rem, min(4.4vw, 7.4vh), 4rem);
@@ -1200,15 +1181,28 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   100% { transform: scaleY(1); }
 }
 
-/* partisipasi: suara yang sudah masuk / seluruh pemilih */
+/* partisipasi (Stage 10: baris penutup di tengah, menggantikan catatan):
+   persentase besar di kiri; judul, jumlah pemilih, dan waktu pembaruan di
+   kanannya; meter bersegmen selebar blok di bawah. */
 .turnout {
   display: grid;
-  gap: 10px;
-  padding-top: 18px;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'pct title'
+    'pct count'
+    'pct updated'
+    'meter meter';
+  align-items: center;
+  gap: 2px clamp(14px, 1.8vw, 22px);
+  width: min(100%, 560px);
+  padding-top: clamp(10px, 1.6vh, 16px);
   border-top: 1px solid var(--night-line-2);
+  text-align: left;
 }
 
 .turnout__title {
+  grid-area: title;
+  align-self: end;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -1218,10 +1212,11 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 }
 
 .turnout__pct {
+  grid-area: pct;
   display: flex;
   align-items: baseline;
   font-family: var(--font-display);
-  font-size: clamp(2.75rem, min(5vw, 8.4vh), 4.75rem);
+  font-size: clamp(2.5rem, min(4.2vw, 7vh), 3.75rem);
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.025em;
@@ -1237,9 +1232,11 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 
 /* meter bersegmen ala terminal (mask pola garis, tanpa gradient) */
 .turnout__meter {
+  grid-area: meter;
   position: relative;
   display: block;
   height: 12px;
+  margin-top: clamp(6px, 1.2vh, 10px);
   background: var(--night-line-2);
   -webkit-mask-image: url('../img/patterns/ticks.svg');
   mask-image: url('../img/patterns/ticks.svg');
@@ -1259,17 +1256,25 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 }
 
 .turnout__count {
-  font-size: 0.875rem;
+  grid-area: count;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.3;
   color: var(--on-night-2);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-wrap: balance;
 }
 
+.turnout__count span { color: var(--on-night); }
+
+/* baris penutup rata tengah: blok "Suara masuk" (teaser tanpa live count:
+   catatan + tombol masuk) */
 .live__foot {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px 24px;
+  gap: 8px;
+  text-align: center;
 }
 
 .live__note {
@@ -1278,14 +1283,15 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   color: var(--on-night-2);
 }
 
-.live__cadence { color: var(--on-night-3); }
-
 .live__updated {
+  grid-area: updated;
+  align-self: start;
   max-width: none;
+  margin-top: 2px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
-  color: var(--on-night-2);
+  color: var(--on-night-3);
 }
 
 @media (min-width: 900px) {
@@ -1576,18 +1582,6 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
 @media (max-width: 900px) {
   .hero { max-width: min(560px, 100%); }
 
-  .live__grid { grid-template-columns: minmax(0, 1fr); }
-
-  .turnout {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: end;
-    gap: 6px 18px;
-  }
-
-  .turnout__title,
-  .turnout__meter,
-  .turnout__count { grid-column: 1 / -1; }
-
   .dock__prompt { display: none; }
 }
 
@@ -1655,7 +1649,20 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
   .pair__ketua { font-size: 0.875rem; }
   .pair__wakil { color: var(--on-night-3); }
 
-  .live__foot { display: grid; gap: 6px; }
+  .live__foot { gap: 8px; }
+
+  /* HP: waktu pembaruan turun ke bawah meter, rata tengah */
+  .turnout {
+    grid-template-areas:
+      'pct title'
+      'pct count'
+      'meter meter'
+      'updated updated';
+  }
+
+  .turnout__pct { font-size: clamp(2.25rem, 10vw, 2.75rem); }
+  .turnout__count { font-size: 0.9375rem; }
+  .turnout .live__updated { margin-top: 6px; text-align: center; }
 
   .scene__end {
     grid-template-columns: minmax(0, 1fr);
@@ -1763,15 +1770,9 @@ html.is-immersive:not(.has-scenes) { scroll-snap-type: y mandatory; }
     .portal__who { font-size: clamp(1.75rem, min(14cqi, 12vh), 3rem); }
   }
 
-  .live__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(170px, 240px);
-    align-items: end;
-  }
-
-  .turnout { display: grid; grid-template-columns: minmax(0, 1fr); }
-
-  .live__pairs { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
-  .pair__photo { max-height: 34vh; }
+  .live { --photo-h: 34vh; }
+  .live__pairs { grid-template-columns: repeat(var(--cols, 3), minmax(0, var(--pair-w))); }
+  .pair__photo { max-height: var(--photo-h); }
   .pair__pct { font-size: clamp(1.6rem, 4.4vw, 2.5rem); }
 
   .dock__row {

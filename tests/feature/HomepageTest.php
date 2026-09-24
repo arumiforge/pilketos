@@ -311,11 +311,10 @@ final class HomepageTest extends CIUnitTestCase
         $page->assertSee('data-value="25.00">25,0<');
         $page->assertSee('data-value="50.00">50,0<');
         $page->assertSee('data-value="26.67">26,7<');
-        $page->assertSee('pemilih sudah memilih');
+        $page->assertSee('pemilih telah memberikan suara');
         $page->assertSee('Suara masuk');
         $page->assertSee('Diperbarui');
         $page->assertSee('1 Oktober 2026, 09.00.00 WIB');
-        $page->assertSee('Diperbarui otomatis tiap 30 detik.');
         // Foto/monogram pasangan adalah fokus visual; nama tetap terbaca.
         $page->assertSee('pair__photo');
         $page->assertSee('Arka Wibisana');
@@ -348,7 +347,7 @@ final class HomepageTest extends CIUnitTestCase
         $upcoming = $this->json($this->get('hitung-suara'));
         $this->assertSame('UPCOMING', $upcoming['status']);
         $this->assertSame(30, $upcoming['poll']['interval']);
-        $this->get('/')->assertSee('Penghitungan dimulai saat pencoblosan dibuka.');
+        $this->get('/')->assertSee('data-live-status="UPCOMING"');
 
         // Tepat pada end_at: selesai, polling berhenti.
         $this->scheduleAt('2026-10-01 12:00:00');
@@ -357,10 +356,10 @@ final class HomepageTest extends CIUnitTestCase
         $this->assertSame(0, $finished['poll']['interval']);
 
         $page = $this->get('/');
-        $page->assertSee('Perolehan akhir');
-        $page->assertSee('Hasil resmi diumumkan oleh panitia pemilihan OSIS.');
+        // Status cukup di panel dock (Stage 10: tanpa label status di judul).
+        $page->assertSee('Sudah Selesai');
+        $page->assertSee('data-live-status="FINISHED"');
         $page->assertSee('data-live-interval="0"');
-        $page->assertDontSee('Diperbarui otomatis');
 
         // Tanpa jadwal pemilihan: tanpa status, tanpa polling.
         $this->db->table('elections')->delete(['id' => 1]);
