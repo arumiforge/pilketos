@@ -159,7 +159,8 @@ enum VoterType: string
     }
 
     /**
-     * Aksi audit untuk impor, perubahan status akun, dan penghapusan.
+     * Aksi audit untuk impor, tambah/ubah (Stage 11), perubahan status akun,
+     * dan penghapusan.
      */
     public function auditAction(string $event): string
     {
@@ -170,6 +171,10 @@ enum VoterType: string
             [self::Teacher, 'status'] => AuditLogModel::TEACHER_STATUS,
             [self::Student, 'delete'] => AuditLogModel::STUDENT_DELETE,
             [self::Teacher, 'delete'] => AuditLogModel::TEACHER_DELETE,
+            [self::Student, 'create'] => AuditLogModel::STUDENT_CREATE,
+            [self::Teacher, 'create'] => AuditLogModel::TEACHER_CREATE,
+            [self::Student, 'update'] => AuditLogModel::STUDENT_UPDATE,
+            [self::Teacher, 'update'] => AuditLogModel::TEACHER_UPDATE,
         };
     }
 }

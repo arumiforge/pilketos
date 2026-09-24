@@ -47,7 +47,7 @@ Daftar isi:
 | Pemilih | Siswa (NISN + kode unik tanggal lahir DDMMYYYY) dan guru (NIP + kode unik), tabel & login terpisah, satu pemilihan yang sama |
 | Beranda publik | lockup PILKETOS 2026 di tengah tanpa tombol masuk; layar pembuka "kabut tersingkap"; hero lereng Muria berlapis; scene layar penuh (roda mouse, trackpad, geser sentuh, keyboard); pintu masuk Siswa/Guru bergambar; perolehan suara (persentase per pasangan + partisipasi) diperbarui tiap 30 detik; panel status terminal dengan countdown jam server |
 | Pengalaman memilih | halaman kandidat bertema per pasangan, visi-misi interaktif, surat suara dengan paku coblos 3D/2D, konfirmasi, suara terkunci, halaman "pilihan saya" |
-| Admin | dasbor & live count, analitik (jenis pemilih, jenis kelamin, jenjang, kelas, detail suara), pasangan calon + unggah tema, data & impor Excel siswa/guru, jadwal, unlock, audit log, hasil akhir + confetti |
+| Admin | dasbor & live count, analitik (jenis pemilih, jenis kelamin, kelas, rombel, detail suara), pasangan calon + unggah tema, data siswa/guru (tambah, ubah, impor Excel), jadwal, unlock, audit log, hasil akhir + confetti |
 | Integritas | transaction + row lock, unique key satu suara aktif, CHECK & trigger database (suara/audit tidak dapat dihapus atau diubah), hasil dikunci setelah selesai |
 | Jadwal | status UPCOMING / ONGOING / FINISHED dihitung dari `start_at`/`end_at` terhadap jam server (WIB); sejak `end_at` pencoblosan ditolak |
 
@@ -181,7 +181,7 @@ seperti `/student/login` sudah tidak ada dan menjawab 404):
 |---|---|
 | Siswa | `/siswa/masuk`, `/siswa` (dasbor), `/siswa/coblos` (bilik suara), `/siswa/pilihanku` |
 | Guru | `/guru/masuk`, `/guru`, `/guru/coblos`, `/guru/pilihanku` |
-| Admin | `/admin/masuk`, `/admin` (dasbor), `/admin/analitik`, `/admin/analitik/suara`, `/admin/hasil`, `/admin/paslon`, `/admin/siswa`, `/admin/guru`, `/admin/siswa/impor`, `/admin/guru/impor`, `/admin/jadwal`, `/admin/buka-kunci`, `/admin/riwayat` |
+| Admin | `/admin/masuk`, `/admin` (dasbor), `/admin/analitik` (+ `/jenis-pemilih`, `/jenis-kelamin`, `/kelas`, `/rombel`), `/admin/analitik/suara`, `/admin/hasil`, `/admin/paslon`, `/admin/siswa`, `/admin/siswa/tambah`, `/admin/guru`, `/admin/guru/tambah`, `/admin/siswa/impor`, `/admin/guru/impor`, `/admin/jadwal`, `/admin/buka-kunci`, `/admin/riwayat` |
 | JSON (dipakai halaman) | `/jam-server` (countdown), `/hitung-suara` (beranda), `/admin/hitung-suara` (dasbor admin) |
 
 Peta lengkap lama -> baru: `STAGE7-NOTES.md`.
@@ -223,7 +223,7 @@ komputer server harus benar.
 | `elections` | nama, tahun, `start_at`, `end_at`, status |
 | `student_votes`, `teacher_votes` | election, pemilih, pasangan, `status` LOCKED/UNLOCKED, waktu, perangkat, browser |
 | `vote_unlock_logs` | unlock: suara yang dibuka, admin, alasan, waktu |
-| `audit_logs` | tindakan admin (unlock, jadwal, pasangan, impor, status/hapus pemilih) |
+| `audit_logs` | tindakan admin (unlock, jadwal, pasangan, impor, tambah/ubah/status/hapus pemilih) |
 
 Penjaga integritas (migration `2026-04-01-000001_AddVoteIntegrityGuards`):
 
@@ -474,22 +474,24 @@ brand "SMP 1 DAWE / Panel Admin"; **Home** membuka situs pemilih di tab baru):
 
 | Menu | Fungsi |
 |---|---|
-| Beranda | jadwal (mulai & berakhir) + countdown, ringkasan pemilih, suara per pasangan, rekap jenjang & kelas, live count; saat selesai tampil keadaan final + tautan hasil akhir |
-| Analitik | keseluruhan, jenis pemilih, jenis kelamin siswa, jenjang, kelas, detail suara (cari, filter, paginasi) |
+| Beranda | jadwal (mulai & berakhir) + countdown (di HP bergaya terminal selebar layar), ringkasan pemilih, suara per pasangan, rekap kelas (7/8/9) & rombel (7A, 8B, ...), live count; saat selesai tampil keadaan final + tautan hasil akhir |
+| Analitik | deretan pil (Keseluruhan, Jenis pemilih, Jenis kelamin, Kelas, Rombel, Detail suara); isi bagian dimuat tanpa memuat ulang halaman. Detail suara: tabel siswa & guru terpisah (cari, filter, paginasi masing-masing) |
 | Hasil akhir | hanya aktif saat pemilihan selesai (bagian 16) |
 | Pasangan calon | tambah/ubah/nonaktifkan/hapus + unggah tema, pratinjau halaman pemilih |
-| Siswa / Guru | daftar, cari, filter, detail (kode unik tersamar), nonaktifkan, hapus data salah impor, impor Excel |
+| Siswa / Guru | daftar (status "Sudah/Belum memilih" + kolom waktu memilih), cari, filter, detail (kode unik tersamar), **tambah & ubah satu per satu** (aturan sama dengan impor), nonaktifkan, hapus data salah impor, impor Excel |
 | Jadwal pemilihan | nama, tahun, mulai, selesai; tutup sekarang; buka sekarang |
 | Unlock | cari pemilih, buka hak suara dengan alasan |
 | Audit log | riwayat tindakan admin (hanya-baca) |
 
 Setiap halaman diawali breadcrumb (Beranda > ... > halaman ini); keterangan
-halaman muncul saat ikon "i" di samping judul ditekan. Di HP waktu
-"diperbarui" + tombol **Perbarui** live count menempel di bawah layar.
+halaman muncul saat ikon "i" di samping judul ditekan. Indikator live count
+berikon siaran bertuliskan **Live** saat pemilihan berlangsung; di HP ikon,
+status, waktu "diperbarui", dan tombol **Perbarui** menjadi satu bar di bawah
+layar.
 
 Admin **tidak dapat memilih** atas nama pemilih dan tidak dapat mengubah
 pilihan siapa pun. Setelah pemilihan selesai, tindakan yang dapat mengubah
-hasil dikunci: ubah status/hapus pemilih, impor, tambah/hapus pasangan, nomor
+hasil dikunci: tambah/ubah/ubah status/hapus pemilih, impor, tambah/hapus pasangan, nomor
 urut & status aktif pasangan. Membuka kembali pemilihan yang sudah selesai
 lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
 
@@ -601,13 +603,22 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 
 - Angka dari satu definisi (bagian 2): sudah + belum memilih = total pemilih
   aktif (siswa, guru, gabungan); suara siswa + suara guru = total suara.
-- Rekap: jenis pemilih, jenis kelamin (khusus siswa), jenjang 7/8/9 (juga
-  angka Romawi), kelas, per pasangan (jumlah & persen dari suara sah).
+- Rekap: jenis pemilih, jenis kelamin (khusus siswa), kelas 7/8/9 (dibaca dari
+  awal nama rombel, juga angka Romawi), rombel (7A, 8B, ...), per pasangan
+  (jumlah & persen dari suara sah).
+- Halaman analitik (Stage 11) memakai deretan pil; tiap bagian punya URL
+  sendiri (`/admin/analitik/rombel`, ...) dan dimuat lewat fetch tanpa memuat
+  ulang halaman (Back/Forward tetap berfungsi, tanpa JavaScript = pindah
+  halaman biasa).
 - Live count di dasbor diperbarui tiap 10 detik saat berlangsung (60 detik
   sebelum mulai), berhenti saat selesai atau tab tidak aktif; tombol
   **Perbarui** memaksa ambil data.
-- Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status, 25 per
-  halaman.
+- Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status; tabel
+  siswa dan guru terpisah, masing-masing 25 per halaman. Kolom perangkat
+  dibaca server saat mencoblos dengan pustaka `matomo/device-detector`
+  (model HP, versi OS, browser dalam aplikasi, Chromebook). Model HP & versi
+  OS asli (mis. Windows 11) dari Client Hints hanya dikirim browser lewat
+  HTTPS/localhost; lewat `http://IP-LAN` Chrome Android cukup "HP / Android".
 - **Beranda publik** (`GET hitung-suara`): hanya persentase suara sah per
   pasangan dan partisipasi (sudah memilih / seluruh pemilih aktif) dari angka
   yang sama, diperbarui tiap 30 detik (cache 5 detik), berhenti saat tab tidak
@@ -698,8 +709,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 10): **348 test, 3.030 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 11): **372 test, 3.268 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -720,6 +731,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
 | `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
 | `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
+| `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel |
 
 ## 21. Beranda imersif & aset visual
 
@@ -800,5 +812,7 @@ Perolehan suara publik dapat dimatikan: `homepage.publicLiveCount = false`
 ## Lisensi
 
 Framework CodeIgniter: MIT (`LICENSE`).
+Deteksi perangkat `matomo/device-detector` (Stage 11, lewat Composer):
+LGPL-3.0-or-later, dipakai sebagai pustaka tanpa diubah.
 Font Plus Jakarta Sans, Newsreader, dan JetBrains Mono: SIL Open Font License
 (`public/assets/fonts/`).

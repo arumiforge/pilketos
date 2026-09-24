@@ -47,26 +47,21 @@ final class TeacherImporter extends VoterImporter
         ];
     }
 
-    protected function validateRow(array $cells): array
+    protected function checkFields(array $cells): array
     {
-        $values   = [];
-        $errors   = [];
-        $warnings = [];
-
-        foreach ([
+        $checks = [
             'nip'      => $this->identifier($cells['nip'], 'NIP', 0, self::NIP_MAX_LENGTH),
             'name'     => $this->name($cells['nama']),
             'kodeunik' => $this->kodeunik($cells['kodeunik']),
-        ] as $field => [$value, $fieldErrors, $fieldWarnings]) {
-            $values[$field] = $value;
-            array_push($errors, ...$fieldErrors);
-            array_push($warnings, ...$fieldWarnings);
+        ];
+
+        [$nip, $nipErrors, $nipWarnings] = $checks['nip'];
+
+        if ($nip !== null && strlen($nip) !== self::NIP_PNS_LENGTH) {
+            $nipWarnings[] = sprintf('NIP terdiri dari %d digit (NIP PNS 18 digit). Pastikan nomor ini yang dipakai guru untuk login.', strlen($nip));
+            $checks['nip'] = [$nip, $nipErrors, $nipWarnings];
         }
 
-        if ($values['nip'] !== null && strlen($values['nip']) !== self::NIP_PNS_LENGTH) {
-            $warnings[] = sprintf('NIP terdiri dari %d digit (NIP PNS 18 digit). Pastikan nomor ini yang dipakai guru untuk login.', strlen($values['nip']));
-        }
-
-        return ['values' => $values, 'errors' => $errors, 'warnings' => $warnings];
+        return $checks;
     }
 }

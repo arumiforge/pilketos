@@ -72,27 +72,16 @@ final class StudentImporter extends VoterImporter
         ];
     }
 
-    protected function validateRow(array $cells): array
+    protected function checkFields(array $cells): array
     {
-        $values   = [];
-        $errors   = [];
-        $warnings = [];
-
-        $collect = static function (string $field, array $checked) use (&$values, &$errors, &$warnings): void {
-            [$value, $fieldErrors, $fieldWarnings] = $checked;
-            $values[$field] = $value;
-            array_push($errors, ...$fieldErrors);
-            array_push($warnings, ...$fieldWarnings);
-        };
-
-        $collect('nisn', $this->identifier($cells['nisn'], 'NISN', self::NISN_LENGTH, self::NISN_LENGTH));
-        $collect('name', $this->name($cells['nama']));
-        $collect('jenis_kelamin', $this->gender($cells['jeniskelamin']));
-        $collect('kelas', $this->kelas($cells['kelas']));
-        $collect('nomor_absen', $this->absen($cells['nomorabsen']));
-        $collect('kodeunik', $this->kodeunik($cells['kodeunik']));
-
-        return ['values' => $values, 'errors' => $errors, 'warnings' => $warnings];
+        return [
+            'nisn'          => $this->identifier($cells['nisn'], 'NISN', self::NISN_LENGTH, self::NISN_LENGTH),
+            'name'          => $this->name($cells['nama']),
+            'jenis_kelamin' => $this->gender($cells['jeniskelamin']),
+            'kelas'         => $this->kelas($cells['kelas']),
+            'nomor_absen'   => $this->absen($cells['nomorabsen']),
+            'kodeunik'      => $this->kodeunik($cells['kodeunik']),
+        ];
     }
 
     /**

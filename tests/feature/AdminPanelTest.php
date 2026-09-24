@@ -270,16 +270,30 @@ final class AdminPanelTest extends CIUnitTestCase
     {
         $this->seedVotes();
 
-        $result = $this->asAdmin()->get('admin/analitik');
+        // Stage 11: satu bagian per halaman (pill section header); setiap
+        // bagian punya URL sendiri, tabel rekap tetap diperbarui live count.
+        $panes = [
+            'admin/analitik'               => [null, ['Keseluruhan', 'Siswa dan guru digabung']],
+            'admin/analitik/jenis-pemilih' => ['type', ['Jenis pemilih', 'Siswa', 'Guru']],
+            'admin/analitik/jenis-kelamin' => ['gender', ['Jenis kelamin siswa', 'Laki-laki', 'Perempuan']],
+            'admin/analitik/kelas'         => ['grade', ['Rekap kelas', 'Kelas 7']],
+            'admin/analitik/rombel'        => ['class', ['Rekap rombel', '7A']],
+        ];
 
-        $result->assertStatus(200);
-        foreach (['Keseluruhan', 'Jenis pemilih', 'Jenis kelamin siswa', 'Jenjang', 'Kelas', 'Laki-laki', 'Perempuan', 'Siswa', 'Guru'] as $text) {
-            $result->assertSee($text);
+        foreach ($panes as $path => [$key, $texts]) {
+            $result = $this->asAdmin()->get($path);
+
+            $result->assertStatus(200);
+            foreach ($texts as $text) {
+                $result->assertSee($text);
+            }
+            if ($key !== null) {
+                $result->assertSee('data-live-table="' . $key . '"');
+                $result->assertSee('class="stackbar__seg"');
+            }
         }
-        foreach (['type', 'gender', 'grade', 'class'] as $key) {
-            $result->assertSee('data-live-table="' . $key . '"');
-        }
-        $result->assertSee('class="stackbar__seg"');
+
+        $this->asAdmin()->get('admin/analitik')->assertSee('data-live-results');
     }
 
     public function testDetailVotesListsCountedVotesWithDeviceAndBrowser(): void
@@ -290,11 +304,12 @@ final class AdminPanelTest extends CIUnitTestCase
         $result = $this->asAdmin()->get('admin/analitik/suara');
 
         $result->assertStatus(200);
-        $result->assertSee('<strong>5</strong> baris suara');
+        $body = (string) $result->response()->getBody();
+        $this->assertStringContainsString('<strong>5</strong> baris suara: 4 siswa &middot; 1 guru.', $body);
         $result->assertSee('Ahmad Fauzan');
         $result->assertSee('Sudarmanto, S.Pd.');
-        $result->assertSee('HP / Android / Samsung');
-        $result->assertSee('Samsung Internet 25');
+        // device_info "HP / Android / Samsung": model di baris pertama, sisanya + browser di bawahnya.
+        $this->assertStringContainsString('<span class="device-cell__main">Samsung</span><span class="cell-sub">HP · Android · Samsung Internet 25</span>', $body);
         $result->assertSee('0000000001');
         $result->assertDontSee('Dinda Permatasari'); // hanya riwayat UNLOCKED
 
@@ -319,7 +334,7 @@ final class AdminPanelTest extends CIUnitTestCase
         for ($id = 1; $id <= 4; $id++) {
             $this->vote('teacher', $id, 1, 'LOCKED', sprintf('2026-09-01 09:%02d:00', $id));
         }
-        for ($id = 1; $id <= 11; $id++) {
+        for ($id = 1; $id <= 16; $id++) {
             $this->db->table('students')->insert([
                 'nisn' => sprintf('11%08d', $id), 'name' => 'Siswa Ekstra ' . $id, 'jenis_kelamin' => 'L',
                 'kelas' => '9B', 'kodeunik' => '01012011', 'status_aktif' => 1,
@@ -327,14 +342,18 @@ final class AdminPanelTest extends CIUnitTestCase
             $this->vote('student', (int) $this->db->insertID(), 2, 'LOCKED', sprintf('2026-09-01 10:%02d:00', $id));
         }
 
+        // Stage 11: siswa (27 baris) & guru (4 baris) dipaginasi terpisah.
         $page1 = $this->asAdmin()->get('admin/analitik/suara');
-        $page1->assertSee('<strong>26</strong> baris suara');
+        $this->assertStringContainsString('<strong>31</strong> baris suara: 27 siswa &middot; 4 guru.', (string) $page1->response()->getBody());
         $page1->assertSee('Halaman 1 dari 2');
-        $page1->assertSee('Siswa Ekstra 11');   // terbaru lebih dulu
+        $page1->assertSee('Siswa Ekstra 16');   // terbaru lebih dulu
+        $page1->assertSee('page_siswa=2');
+        $page1->assertDontSee('page_guru=');
 
-        $page2 = $this->asAdmin()->get('admin/analitik/suara?page=2');
+        $page2 = $this->asAdmin()->get('admin/analitik/suara?page_siswa=2');
         $page2->assertSee('Halaman 2 dari 2');
         $page2->assertSee('Ahmad Fauzan');
+        $page2->assertSee('Sudarmanto, S.Pd.'); // tabel guru tetap di halaman 1-nya
     }
 
     public function testVoterNamesAreEscapedInAdminPages(): void

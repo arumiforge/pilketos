@@ -350,7 +350,7 @@ final class VotingTest extends CIUnitTestCase
         $this->assertSame('2026-10-01 09:15:30', $rows[0]['voted_at']);
         $this->assertSame('1', (string) $rows[0]['active_lock']);
         $this->assertNull($rows[0]['unlocked_at']);
-        $this->assertSame('HP / Android / Samsung', $rows[0]['device_info']);
+        $this->assertSame('HP / Android 13 / Samsung Galaxy A14', $rows[0]['device_info']);
         $this->assertSame('Samsung Internet 25', $rows[0]['browser_info']);
 
         $this->assertCount(0, $this->lockedVotes('student_votes', 'student_id', 5));

@@ -388,18 +388,22 @@
     });
   }
 
-  /* -- filter: pilihan dropdown langsung diterapkan ------------------------ */
+  /* -- filter: pilihan dropdown langsung diterapkan ------------------------
+     Stage 11: didelegasikan ke document agar form yang dimuat ulang lewat
+     fetch (detail suara di analitik) tetap langsung diterapkan. requestSubmit
+     memicu event submit, jadi admin-analytics.js bisa mengambil alih. -- */
   function initAutosubmit() {
-    document.querySelectorAll('form[data-autosubmit]').forEach(function (form) {
-      form.querySelectorAll('select').forEach(function (select) {
-        select.addEventListener('change', function () {
-          if (typeof form.requestSubmit === 'function') {
-            form.requestSubmit();
-          } else {
-            form.submit();
-          }
-        });
-      });
+    document.addEventListener('change', function (event) {
+      var select = event.target;
+      var form = select && select.tagName === 'SELECT' ? select.closest('form[data-autosubmit]') : null;
+      if (!form) {
+        return;
+      }
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
     });
   }
 

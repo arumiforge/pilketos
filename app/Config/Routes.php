@@ -71,6 +71,8 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->get('hitung-suara', 'Admin\LiveCountController::index');
     $routes->get('analitik', 'Admin\AnalyticsController::index');
     $routes->get('analitik/suara', 'Admin\AnalyticsController::votes');
+    // Stage 11: bagian analitik (pill section header), dimuat juga lewat fetch
+    $routes->get('analitik/(:segment)', 'Admin\AnalyticsController::index/$1');
 
     // Hasil akhir + confetti (Stage 4): aktif hanya saat pemilihan FINISHED
     $routes->get('hasil', 'Admin\ResultController::index');
@@ -84,7 +86,7 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->post('paslon/(:num)', 'Admin\CandidateController::update/$1');
     $routes->post('paslon/(:num)/hapus', 'Admin\CandidateController::delete/$1');
 
-    // Siswa + impor Excel
+    // Siswa: daftar, tambah/ubah (Stage 11), impor Excel
     $routes->get('siswa', 'Admin\StudentController::index');
     $routes->get('siswa/impor', 'Admin\StudentImportController::index');
     $routes->post('siswa/impor', 'Admin\StudentImportController::upload');
@@ -92,11 +94,16 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->get('siswa/impor/cek/(:segment)', 'Admin\StudentImportController::preview/$1');
     $routes->post('siswa/impor/simpan', 'Admin\StudentImportController::commit');
     $routes->get('siswa/impor/selesai', 'Admin\StudentImportController::result');
+    // Stage 11: tambah & ubah satu per satu langsung dari panel admin
+    $routes->get('siswa/tambah', 'Admin\StudentController::new');
+    $routes->post('siswa', 'Admin\StudentController::create');
+    $routes->get('siswa/(:num)/ubah', 'Admin\StudentController::edit/$1');
+    $routes->post('siswa/(:num)', 'Admin\StudentController::update/$1');
     $routes->get('siswa/(:num)', 'Admin\StudentController::show/$1');
     $routes->post('siswa/(:num)/status', 'Admin\StudentController::status/$1');
     $routes->post('siswa/(:num)/hapus', 'Admin\StudentController::delete/$1');
 
-    // Guru + impor Excel
+    // Guru: daftar, tambah/ubah (Stage 11), impor Excel
     $routes->get('guru', 'Admin\TeacherController::index');
     $routes->get('guru/impor', 'Admin\TeacherImportController::index');
     $routes->post('guru/impor', 'Admin\TeacherImportController::upload');
@@ -104,6 +111,11 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->get('guru/impor/cek/(:segment)', 'Admin\TeacherImportController::preview/$1');
     $routes->post('guru/impor/simpan', 'Admin\TeacherImportController::commit');
     $routes->get('guru/impor/selesai', 'Admin\TeacherImportController::result');
+    // Stage 11: tambah & ubah satu per satu langsung dari panel admin
+    $routes->get('guru/tambah', 'Admin\TeacherController::new');
+    $routes->post('guru', 'Admin\TeacherController::create');
+    $routes->get('guru/(:num)/ubah', 'Admin\TeacherController::edit/$1');
+    $routes->post('guru/(:num)', 'Admin\TeacherController::update/$1');
     $routes->get('guru/(:num)', 'Admin\TeacherController::show/$1');
     $routes->post('guru/(:num)/status', 'Admin\TeacherController::status/$1');
     $routes->post('guru/(:num)/hapus', 'Admin\TeacherController::delete/$1');

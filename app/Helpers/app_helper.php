@@ -144,6 +144,45 @@ if (! function_exists('persen')) {
     }
 }
 
+if (! function_exists('device_summary')) {
+    /**
+     * Ringkasan perangkat untuk tabel admin (Stage 11) dari device_info
+     * "Kategori / OS / Merek Model" (DeviceInfo) + browser_info.
+     *
+     * main: model HP bila ada (paling khas), selain itu kategori + OS;
+     * sub : sisa keterangan + browser, contoh "HP · Android 14 · Chrome 140".
+     * kind: phone|tablet|monitor|null untuk ikon.
+     *
+     * @return array{main: string, sub: string, kind: string|null}
+     */
+    function device_summary(?string $device, ?string $browser): array
+    {
+        $device  = trim((string) $device);
+        $browser = trim((string) $browser);
+        $parts   = $device === '' ? [] : array_values(array_filter(array_map('trim', explode(' / ', $device)), static fn (string $p): bool => $p !== ''));
+        $kind    = match ($parts[0] ?? '') {
+            'HP'       => 'phone',
+            'Tablet'   => 'tablet',
+            'Komputer' => 'monitor',
+            default    => null,
+        };
+
+        if (count($parts) >= 3) {
+            $main = implode(' / ', array_slice($parts, 2));
+            $sub  = [$parts[0], $parts[1]];
+        } else {
+            $main = $parts === [] ? '-' : implode(' · ', $parts);
+            $sub  = [];
+        }
+
+        if ($browser !== '') {
+            $sub[] = $browser;
+        }
+
+        return ['main' => $main, 'sub' => implode(' · ', $sub), 'kind' => $kind];
+    }
+}
+
 if (! function_exists('icon')) {
     /**
      * Ikon SVG inline (garis 1.75px, currentColor) agar gaya ikon konsisten
@@ -194,6 +233,11 @@ if (! function_exists('icon')) {
             'arrow-up-right' => '<path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/>',
             'arrow-up'       => '<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>',
             'chevron-down'   => '<path d="m6 9.5 6 6 6-6"/>',
+            // Stage 11: indikator live count (siaran) & jenis perangkat
+            'live'    => '<circle class="icon__core" cx="12" cy="12" r="2" fill="currentColor"/><path class="icon__wave icon__wave--in" d="M8.6 8.6a4.8 4.8 0 0 0 0 6.8"/><path class="icon__wave icon__wave--in" d="M15.4 8.6a4.8 4.8 0 0 1 0 6.8"/><path class="icon__wave icon__wave--out" d="M5.6 5.6a9 9 0 0 0 0 12.8"/><path class="icon__wave icon__wave--out" d="M18.4 5.6a9 9 0 0 1 0 12.8"/>',
+            'phone'   => '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/>',
+            'tablet'  => '<rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M11 17.5h2"/>',
+            'monitor' => '<rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M9 20h6"/><path d="M12 16.5V20"/>',
         ];
 
         if (! isset($paths[$name])) {

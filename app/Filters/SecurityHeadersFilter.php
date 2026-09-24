@@ -2,6 +2,7 @@
 
 namespace App\Filters;
 
+use App\Libraries\DeviceInfo;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -18,7 +19,11 @@ use CodeIgniter\HTTP\ResponseInterface;
  * - Cache-Control no-store untuk setiap respons yang belum mengaturnya
  *   (komputer lab dipakai bergantian: halaman pilihan siswa sebelumnya tidak
  *   boleh muncul dari cache/tombol Back setelah keluar);
- * - X-Powered-By (versi PHP) dihapus agar versi server tidak diumumkan.
+ * - X-Powered-By (versi PHP) dihapus agar versi server tidak diumumkan;
+ * - Accept-CH (Stage 11): browser Chromium diminta mengirim model HP & versi
+ *   OS asli (Client Hints) pada request berikutnya, dibaca DeviceInfo saat
+ *   suara disimpan (kolom perangkat detail suara). Hanya berlaku lewat HTTPS
+ *   atau localhost; browser lain mengabaikannya.
  */
 class SecurityHeadersFilter implements FilterInterface
 {
@@ -34,6 +39,7 @@ class SecurityHeadersFilter implements FilterInterface
         $response->setHeader('Permissions-Policy', self::PERMISSIONS_POLICY);
         $response->setHeader('Cross-Origin-Opener-Policy', 'same-origin');
         $response->setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+        $response->setHeader('Accept-CH', DeviceInfo::ACCEPT_CH);
 
         if (! $response->hasHeader('Cache-Control')) {
             $response->setHeader('Cache-Control', 'no-store, max-age=0');
