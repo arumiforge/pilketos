@@ -170,9 +170,21 @@ berjalan bila `CI_ENVIRONMENT = production`):
 
 | Peran | Login | Kode unik / sandi |
 |---|---|---|
-| Siswa | NISN `0000000001` di `/student/login` | `05062013` |
-| Guru | NIP `000000000000000004` di `/teacher/login` | `01061992` |
-| Admin | username `admin` di `/admin/login` | `admin123` |
+| Siswa | NISN `0000000001` di `/siswa/masuk` | `05062013` |
+| Guru | NIP `000000000000000004` di `/guru/masuk` | `01061992` |
+| Admin | username `admin` di `/admin/masuk` | `admin123` |
+
+Alamat halaman (Stage 7: bahasa Indonesia santai; alamat bahasa Inggris lama
+seperti `/student/login` sudah tidak ada dan menjawab 404):
+
+| Untuk | Alamat |
+|---|---|
+| Siswa | `/siswa/masuk`, `/siswa` (dasbor), `/siswa/coblos` (bilik suara), `/siswa/pilihanku` |
+| Guru | `/guru/masuk`, `/guru`, `/guru/coblos`, `/guru/pilihanku` |
+| Admin | `/admin/masuk`, `/admin` (dasbor), `/admin/analitik`, `/admin/analitik/suara`, `/admin/hasil`, `/admin/paslon`, `/admin/siswa`, `/admin/guru`, `/admin/siswa/impor`, `/admin/guru/impor`, `/admin/jadwal`, `/admin/buka-kunci`, `/admin/riwayat` |
+| JSON (dipakai halaman) | `/jam-server` (countdown), `/hitung-suara` (beranda), `/admin/hitung-suara` (dasbor admin) |
+
+Peta lengkap lama -> baru: `STAGE7-NOTES.md`.
 
 Instalasi server hari pemilihan: bagian 7.
 
@@ -190,7 +202,7 @@ Salin dari `.env.example`:
 | `session.cookieName`, `session.expiration` | `osis_session`, `7200` | sesi 2 jam; pemilih keluar otomatis setelah 15 menit tanpa aktivitas |
 | `cookie.secure` | `false` / `true` | set `true` bila situs dibuka lewat HTTPS |
 | `app.CSPEnabled` | (bawaan `true`) | Content-Security-Policy; boleh `false` sementara hanya untuk diagnosis |
-| `homepage.publicLiveCount` | (bawaan `true`) | `false` = beranda tanpa angka perolehan suara, `GET live-count` 404 (bagian 21) |
+| `homepage.publicLiveCount` | (bawaan `true`) | `false` = beranda tanpa angka perolehan suara, `GET hitung-suara` 404 (bagian 21) |
 | `homepage.livePollSeconds`, `homepage.liveCacheSeconds` | `30`, `5` | irama pembaruan perolehan suara di beranda (min 10; 0 = mati) dan cache angka publik |
 | `homepage.logoOnDark`, `logoOnLight`, `schoolEmblem`, `heroDesktop`, `heroMobile`, `heroForeground`, `introDesktop`, `introMobile`, `entryStudent`, `entryTeacher` | path di `public/` | mengganti lockup, memasang lambang resmi sekolah, latar hero & layar pembuka, lapisan depan, ilustrasi pintu masuk (bagian 21) |
 | `homepage.identityAccent` | (bawaan `'#A8628F'`, parijoto) | warna bilah muat layar pembuka; otomatis netral bila mirip warna pasangan mana pun; `null` = selalu netral |
@@ -456,7 +468,7 @@ Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
 
 ## 8. Admin
 
-Login: `/admin/login` (username + kata sandi, dibatasi 5 percobaan gagal per
+Login: `/admin/masuk` (username + kata sandi, dibatasi 5 percobaan gagal per
 akun lalu 1 per menit). Menu panel:
 
 | Menu | Fungsi |
@@ -479,7 +491,7 @@ lewat Jadwal wajib dicentang konfirmasinya dan tercatat di audit log.
 ## 9. Siswa
 
 1. Buka alamat aplikasi, gulir/geser ke bagian **Masuk sebagai**, pilih
-   **SISWA** (atau buka `/student/login`): NISN (10 digit, nol di depan tetap)
+   **SISWA** (atau buka `/siswa/masuk`): NISN (10 digit, nol di depan tetap)
    + kode unik (tanggal lahir `DDMMYYYY`; `05-06-2013` juga diterima).
 2. Dasbor menampilkan identitas, status hak suara, dan jadwal.
 3. **Lihat kandidat & coblos** (hanya saat pemilihan berlangsung).
@@ -491,7 +503,7 @@ Sesi pemilih berakhir otomatis setelah 15 menit tanpa aktivitas.
 ## 10. Guru
 
 Sama dengan siswa: pilih **GURU** di bagian **Masuk sebagai** (atau buka
-`/teacher/login`) dengan NIP + kode unik. Guru
+`/guru/masuk`) dengan NIP + kode unik. Guru
 adalah pemilih biasa: tidak memiliki akses admin maupun analitik. Suara guru
 dan siswa disimpan di tabel terpisah dan dihitung bersama pada hasil.
 
@@ -515,8 +527,8 @@ Setelah pemilihan selesai hanya teks & gambar yang dapat dirapikan.
 
 Siswa > Impor atau Guru > Impor:
 
-1. **Unduh template** (`student-import-template.xlsx`: `no, NISN, nama,
-   jenis_kelamin, kelas, nomor_absen, kodeunik`; `teacher-import-template.xlsx`:
+1. **Unduh template** (`templat-impor-siswa.xlsx`: `no, NISN, nama,
+   jenis_kelamin, kelas, nomor_absen, kodeunik`; `templat-impor-guru.xlsx`:
    `no, NIP, nama, kodeunik`). Kolom identitas & kode unik bertipe Teks.
 2. Isi, simpan sebagai `.xlsx`, **unggah** (maks 5 MB, 3.000 baris).
 3. **Pratinjau & validasi**: baris baru / diperbarui / tidak berubah /
@@ -534,10 +546,17 @@ Siswa > Impor atau Guru > Impor:
 
 - Hanya saat status **Sedang Berlangsung** (dicek ulang server saat simpan);
   tepat pada `end_at` sudah ditolak.
-- Halaman kandidat: tiap pasangan punya warna, pola, layout, dan gambar sendiri;
-  visi menyala mengikuti scroll, misi dapat dibuka-tutup.
-- Surat suara: tekan-tahan paku, geser ke kotak pasangan, lepas untuk
-  mencoblos, lalu **Konfirmasi pilihan**. Paku 3D (WebGL, dimuat malas) otomatis
+- Bilik suara (`/siswa/coblos`, `/guru/coblos`, Stage 7): pembuka ringkas,
+  lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
+  tema, kutipan visi, jumlah misi; digeser di HP). **Baca visi & misi** menuju
+  bab pasangan, **Pilih 0X** langsung ke kotak pasangan itu di surat suara
+  (kotak disorot dan tombol Coblos-nya difokuskan).
+- Bab pasangan: tiap pasangan punya warna, pola, layout, dan gambar sendiri;
+  visi menyala mengikuti scroll, misi dapat dibuka-tutup; di akhir bab
+  **Pilih pasangan 0X**.
+- Surat suara: tekan **Coblos** di kotak pasangan, atau tekan-tahan paku,
+  geser ke kotak pasangan, lepas untuk mencoblos; lalu **Konfirmasi pilihan**.
+  Di HP ketiga kotak + paku muat satu layar. Paku 3D (WebGL, dimuat malas) otomatis
   diganti paku 2D di perangkat lemah, tanpa WebGL, atau saat reduced motion;
   tombol "Coblos Pasangan 0X" untuk keyboard/pembaca layar; tanpa JavaScript
   memakai halaman konfirmasi biasa.
@@ -567,7 +586,7 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
   **Perbarui** memaksa ambil data.
 - Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status, 25 per
   halaman.
-- **Beranda publik** (`GET live-count`): hanya persentase suara sah per
+- **Beranda publik** (`GET hitung-suara`): hanya persentase suara sah per
   pasangan dan partisipasi (sudah memilih / seluruh pemilih aktif) dari angka
   yang sama, diperbarui tiap 30 detik (cache 5 detik), berhenti saat tab tidak
   aktif atau pemilihan selesai. Rincian di atas tetap hanya untuk admin.
@@ -576,7 +595,7 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 
 ## 16. Hasil akhir
 
-Admin > **Hasil akhir** (`/admin/results`):
+Admin > **Hasil akhir** (`/admin/hasil`):
 
 - **Terkunci** (tanpa angka) sebelum waktu selesai; aktif otomatis sejak
   jam server >= `end_at` (atau setelah **Tutup pemilihan sekarang**).
@@ -656,8 +675,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 6): **316 test, 2.525 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14. Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 7): **323 test, 2.656 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 6: 316 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -674,6 +693,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` + `STAGE4-NOTES.md` | Stage 4: audit keamanan, integritas suara, hasil akhir & confetti, deployment, matriks route & hak akses, test akhir |
 | `05-HOMEPAGE-REDESIGN.md` + `STAGE5-NOTES.md` | Stage 5: redesign beranda (scene layar penuh, pintu masuk Siswa/Guru, live count publik, layar pembuka, panel status terminal, navigasi logo & footer) |
 | `06`–`10-*-PILKETOS.md` + `STAGE6-NOTES.md` | Stage 6: identitas visual SMP 1 DAWE (arah visual "lereng Muria", font Plus Jakarta Sans, spesifikasi & prompt aset, sistem gerak, layar pembuka selalu tampil) |
+| `STAGE7-NOTES.md` | Stage 7: URL bahasa Indonesia santai, nama templat impor, redesain bilik suara siswa & guru |
 
 ## 21. Beranda imersif & aset visual
 
@@ -686,7 +706,7 @@ interaksi. Palet netral "Pagi Muria" + warna aksen masing-masing pasangan.
 | Scene | Isi |
 |---|---|
 | 01 Lereng | latar lereng Muria + atap sekolah, garis kontur, lapisan depan opsional; teks singkat "PILKETOS 2026 / SMP 1 DAWE", tombol **Masuk untuk memilih** dan **Lihat perolehan suara**; titik "embun" di sekitar pointer. Tanpa warna/nomor/foto pasangan |
-| 02 Masuk | "Masuk sebagai": portal **SISWA** (`/student/login`) dan **GURU** (`/teacher/login`) bergambar |
+| 02 Masuk | "Masuk sebagai": portal **SISWA** (`/siswa/masuk`) dan **GURU** (`/guru/masuk`) bergambar |
 | 03 Perolehan suara | foto pasangan, persentase tepat di bawah foto, "Suara masuk" (partisipasi), "Diperbarui [tanggal] [jam]", footer |
 
 - Berpindah scene: roda mouse/trackpad (satu gestur = satu scene), geser
