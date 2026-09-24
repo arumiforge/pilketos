@@ -277,7 +277,7 @@
       tr.appendChild(th);
     });
     if (table.hasAttribute('data-live-bars')) {
-      tr.appendChild(headCell('Komposisi', 'dist'));
+      tr.appendChild(headCell('Grafik', 'dist'));
     }
     var thead = make('thead');
     thead.appendChild(tr);

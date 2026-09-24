@@ -24,7 +24,6 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Jadwal pemilihan']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Jadwal pemilihan</h1>
         <?= view('admin/partials/head_hint') ?>
@@ -135,4 +134,8 @@ $invalid = static fn (string $key): string => isset($errors[$key]) ? ' aria-inva
     <?php endif; ?>
   </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Jadwal pemilihan']]]) ?>
 <?= $this->endSection() ?>

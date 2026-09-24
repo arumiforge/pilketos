@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="<?= asset_url('assets/css/results.css') ?>">
 <?= $this->endSection() ?>
 
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Hasil akhir']]]) ?>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?php
 /**
@@ -28,7 +32,6 @@ $accents = array_values(array_unique(array_merge(
 <div class="admin-page final-page" id="hasil-akhir" data-final-stage>
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Hasil akhir']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Hasil akhir</h1>
         <?php if (! $result['available']): ?><?= view('admin/partials/head_hint') ?><?php endif; ?>

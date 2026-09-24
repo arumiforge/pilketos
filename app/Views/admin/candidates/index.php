@@ -4,6 +4,8 @@
 <?php
 /**
  * Daftar pasangan calon + kelengkapan tema.
+ * Stage 12: tanpa eyebrow "Pasangan 01 · tema" (tema & status Nonaktif
+ * pindah ke meta), kelengkapan asset berupa timeline.
  *
  * @var list<array{raw: array, theme: array, votes: int, vote_rows: int, assets: array<string, string>}> $rows
  * @var int $activeCount
@@ -15,7 +17,6 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Pasangan calon</h1>
         <?= view('admin/partials/head_hint') ?>
@@ -52,30 +53,30 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
         <div class="cand-card__no" aria-hidden="true"><?= esc($t['label']) ?></div>
 
         <div class="cand-card__body">
-          <p class="cand-card__eyebrow">
-            Pasangan <?= esc($t['label']) ?> &middot; <?= esc($t['theme_name']) ?>
-            <?php if (! $active): ?><span class="pill pill--muted">Nonaktif</span><?php endif; ?>
-          </p>
           <h2 class="cand-card__names">
+            <span class="visually-hidden">Pasangan <?= esc($t['label']) ?>: </span>
             <span><?= esc($t['ketua']) ?></span>
             <span class="cand-card__wakil">&amp; <?= esc($t['wakil']) ?></span>
           </h2>
 
           <dl class="cand-card__meta">
+            <div><dt>Tema</dt><dd><?= esc($t['theme_name']) ?></dd></div>
             <div><dt>Aksen</dt><dd><span class="swatch" aria-hidden="true"></span><span class="mono"><?= esc($t['accent']) ?></span></dd></div>
             <div><dt>Layout</dt><dd><?= esc($layoutNames[$t['layout']]) ?><?= $row['raw']['theme_layout'] === null ? ' (otomatis)' : '' ?></dd></div>
             <div><dt>Suara sah</dt><dd><?= angka($row['votes']) ?></dd></div>
             <div><dt>Asset</dt><dd><?= $filled ?> / <?= count(CandidateAssets::SLOTS) ?></dd></div>
+            <?php if (! $active): ?><div><dt>Status</dt><dd><span class="pill pill--muted">Nonaktif</span></dd></div><?php endif; ?>
           </dl>
 
-          <ul class="asset-dots" aria-label="Kelengkapan asset">
+          <ol class="asset-dots" aria-label="Kelengkapan asset">
             <?php foreach (CandidateAssets::SLOTS as $slot => $config): ?>
-              <li class="asset-dots__item<?= isset($row['assets'][$slot]) ? ' is-filled' : '' ?>">
-                <?= isset($row['assets'][$slot]) ? icon('check') : '<span class="asset-dots__empty" aria-hidden="true"></span>' ?>
-                <span><?= esc($config['label']) ?><span class="visually-hidden"><?= isset($row['assets'][$slot]) ? ': sudah diunggah' : ': belum ada' ?></span></span>
+              <?php $has = isset($row['assets'][$slot]); ?>
+              <li class="asset-dots__item<?= $has ? ' is-filled' : '' ?>">
+                <span class="asset-dots__node" aria-hidden="true"><?= $has ? icon('check') : '' ?></span>
+                <span class="asset-dots__label"><?= esc($config['label']) ?><span class="visually-hidden"><?= $has ? ': sudah diunggah' : ': belum ada' ?></span></span>
               </li>
             <?php endforeach; ?>
-          </ul>
+          </ol>
         </div>
 
         <div class="cand-card__actions">
@@ -98,4 +99,8 @@ $layoutNames = ['split' => 'Split', 'poster' => 'Poster', 'column' => 'Kolom'];
     <?php endforeach; ?>
   </ol>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon']]]) ?>
 <?= $this->endSection() ?>

@@ -26,7 +26,7 @@ $notes = [
         . angka($counted ?? 0) . '). Perangkat dan browser dibaca server dari User-Agent (dan Client Hints bila ada) saat mencoblos.',
 ];
 ?>
-<div class="pane" data-pane="<?= esc($pane, 'attr') ?>" data-pane-title="<?= esc($title . ' — Admin Pemilihan OSIS SMP 1 DAWE', 'attr') ?>" data-pane-heading="<?= esc($title, 'attr') ?>">
+<div class="pane" data-pane="<?= esc($pane, 'attr') ?>" data-pane-title="<?= esc($title . ' — Admin Pemilihan OSIS SMP 1 DAWE', 'attr') ?>">
   <section class="chapter-x" aria-labelledby="pane-title">
     <header class="chapter-x__head">
       <h2 class="chapter-x__title" id="pane-title" tabindex="-1"><?= esc($headings[$pane]) ?></h2>

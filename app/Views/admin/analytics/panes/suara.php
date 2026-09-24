@@ -53,10 +53,10 @@ $sharedCells = static function (array $row) use ($accent): string {
     return $html . '<td>' . $status . '</td>';
 };
 ?>
-<form class="filters" method="get" action="<?= site_url('admin/analitik/suara') ?>" role="search" data-autosubmit data-pane-form>
+<form class="filters" method="get" action="<?= site_url('admin/analitik/suara') ?>" role="search" data-autosubmit data-pane-form data-live-search>
   <div class="field filters__search">
     <label for="f-q">Cari nama / NISN / NIP</label>
-    <input type="search" id="f-q" name="q" value="<?= esc($filters['q'], 'attr') ?>" maxlength="100" autocomplete="off">
+    <span class="search-field"><?= icon('search', 'search-field__icon') ?><input type="search" id="f-q" name="q" value="<?= esc($filters['q'], 'attr') ?>" maxlength="100" autocomplete="off"></span>
   </div>
   <div class="field">
     <label for="f-type">Jenis pemilih</label>
@@ -100,64 +100,66 @@ $sharedCells = static function (array $row) use ($accent): string {
       <option value="all"<?= $filters['status'] === 'all' ? ' selected' : '' ?>>Semua baris</option>
     </select>
   </div>
-  <div class="filters__actions">
+  <div class="filters__actions" data-live-region="actions">
     <button type="submit" class="btn btn--sm"><?= icon('search') ?> Terapkan</button>
     <?php if ($filtered): ?><a class="btn btn--sm btn--outline" href="<?= site_url('admin/analitik/suara') ?>">Reset</a><?php endif; ?>
   </div>
 </form>
 
-<p class="result-count" role="status"><strong><?= angka($total) ?></strong> baris suara<?= $filtered ? ' sesuai filter' : '' ?><?php if (count($blocks) === 2 && ! $studentOnly): ?>: <?= angka($groups['student']['total']) ?> siswa &middot; <?= angka($groups['teacher']['total']) ?> guru<?php endif; ?>.</p>
+<div data-live-region="results">
+  <p class="result-count" role="status"><strong><?= angka($total) ?></strong> baris suara<?= $filtered ? ' sesuai filter' : '' ?><?php if (count($blocks) === 2 && ! $studentOnly): ?>: <?= angka($groups['student']['total']) ?> siswa &middot; <?= angka($groups['teacher']['total']) ?> guru<?php endif; ?>.</p>
 
-<?php foreach ($blocks as $type => [$label, $idLabel, $group]): ?>
-  <?php $g = $groups[$type]; $isStudent = $type === 'student'; ?>
-  <section class="vote-block" aria-labelledby="votes-<?= esc($group, 'attr') ?>">
-    <header class="vote-block__head">
-      <h3 class="vote-block__title" id="votes-<?= esc($group, 'attr') ?>"><?= esc($label) ?></h3>
-      <span class="vote-block__count"><?= angka($g['total']) ?> baris</span>
-    </header>
+  <?php foreach ($blocks as $type => [$label, $idLabel, $group]): ?>
+    <?php $g = $groups[$type]; $isStudent = $type === 'student'; ?>
+    <section class="vote-block" aria-labelledby="votes-<?= esc($group, 'attr') ?>">
+      <header class="vote-block__head">
+        <h3 class="vote-block__title" id="votes-<?= esc($group, 'attr') ?>"><?= esc($label) ?></h3>
+        <span class="vote-block__count"><?= angka($g['total']) ?> baris</span>
+      </header>
 
-    <?php if (! $isStudent && $studentOnly): ?>
-      <p class="empty">Filter rombel/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.</p>
-    <?php elseif ($g['rows'] === []): ?>
-      <p class="empty"><?= $filtered ? 'Tidak ada suara ' . strtolower($label) . ' yang cocok dengan filter.' : 'Belum ada suara ' . strtolower($label) . ' masuk.' ?></p>
-    <?php else: ?>
-      <div class="table-scroll" role="region" aria-label="Tabel detail suara <?= esc(strtolower($label), 'attr') ?>" tabindex="0">
-        <table class="data-table data-table--votes data-table--votes-<?= esc($group, 'attr') ?>">
-          <thead>
-            <tr>
-              <th scope="col" class="num">No</th>
-              <th scope="col"><?= esc($label) ?> &middot; <?= esc($idLabel) ?></th>
-              <?php if ($isStudent): ?>
-                <th scope="col">Rombel</th>
-                <th scope="col" class="num">Absen</th>
-                <th scope="col">JK</th>
-              <?php endif; ?>
-              <th scope="col">Pilihan</th>
-              <th scope="col">Waktu</th>
-              <th scope="col">Perangkat &middot; browser</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($g['rows'] as $i => $row): ?>
+      <?php if (! $isStudent && $studentOnly): ?>
+        <p class="empty">Filter rombel/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.</p>
+      <?php elseif ($g['rows'] === []): ?>
+        <p class="empty"><?= $filtered ? 'Tidak ada suara ' . strtolower($label) . ' yang cocok dengan filter.' : 'Belum ada suara ' . strtolower($label) . ' masuk.' ?></p>
+      <?php else: ?>
+        <div class="table-scroll" role="region" aria-label="Tabel detail suara <?= esc(strtolower($label), 'attr') ?>" tabindex="0">
+          <table class="data-table data-table--votes data-table--votes-<?= esc($group, 'attr') ?>">
+            <thead>
               <tr>
-                <td class="num"><?= $g['offset'] + $i + 1 ?></td>
-                <th scope="row">
-                  <a href="<?= site_url(($isStudent ? 'admin/siswa/' : 'admin/guru/') . $row['voter_id']) ?>"><?= esc($row['name']) ?></a>
-                  <span class="cell-sub mono"><?= esc($row['identifier']) ?></span>
-                </th>
+                <th scope="col" class="num">No</th>
+                <th scope="col"><?= esc($label) ?> &middot; <?= esc($idLabel) ?></th>
                 <?php if ($isStudent): ?>
-                  <td><?= esc($row['kelas'] ?? '-') ?></td>
-                  <td class="num"><?= esc($row['nomor_absen'] ?? '-') ?></td>
-                  <td><?= esc($row['jenis_kelamin'] ?? '-') ?></td>
+                  <th scope="col">Rombel</th>
+                  <th scope="col" class="num">Absen</th>
+                  <th scope="col">JK</th>
                 <?php endif; ?>
-                <?= $sharedCells($row) ?>
+                <th scope="col">Pilihan</th>
+                <th scope="col">Waktu</th>
+                <th scope="col">Perangkat &middot; browser</th>
+                <th scope="col">Status</th>
               </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-      <?= $g['pager'] ?>
-    <?php endif; ?>
-  </section>
-<?php endforeach; ?>
+            </thead>
+            <tbody>
+              <?php foreach ($g['rows'] as $i => $row): ?>
+                <tr>
+                  <td class="num"><?= $g['offset'] + $i + 1 ?></td>
+                  <th scope="row">
+                    <a href="<?= site_url(($isStudent ? 'admin/siswa/' : 'admin/guru/') . $row['voter_id']) ?>"><?= esc($row['name']) ?></a>
+                    <span class="cell-sub mono"><?= esc($row['identifier']) ?></span>
+                  </th>
+                  <?php if ($isStudent): ?>
+                    <td><?= esc($row['kelas'] ?? '-') ?></td>
+                    <td class="num"><?= esc($row['nomor_absen'] ?? '-') ?></td>
+                    <td><?= esc($row['jenis_kelamin'] ?? '-') ?></td>
+                  <?php endif; ?>
+                  <?= $sharedCells($row) ?>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?= $g['pager'] ?>
+      <?php endif; ?>
+    </section>
+  <?php endforeach; ?>
+</div>

@@ -13,6 +13,9 @@
  * - "Perbarui" di bar live memuat ulang detail suara (bagian lain sudah
  *   diperbarui admin-live.js);
  * - gagal/timeout/sesi habis -> pindah halaman biasa (server yang memutuskan).
+ * Stage 12: selama bagian diambil tampil kerangka "memuat" ([data-pane-loader])
+ * setelah jeda singkat, bukan lagi garis progres di bawah pil (yang berkedip
+ * untuk respon cepat). Topbar kini berisi breadcrumb, jadi tidak diubah.
  * Isi dari server sudah di-escape oleh view; skrip tidak membangun HTML dari
  * data mentah.
  */
@@ -29,12 +32,17 @@
   var track = nav.querySelector('.pills__track');
   var glider = nav.querySelector('[data-pane-glider]');
   var announcer = document.querySelector('[data-pane-announce]');
-  var topTitle = document.querySelector('.admin-top__title');
+  var loader = document.querySelector('[data-pane-loader]');
+  var loaderLabel = loader ? loader.querySelector('[data-pane-loader-label]') : null;
   var reduced = window.App && window.App.reducedMotion ? window.App.reducedMotion() : false;
   var links = Array.prototype.slice.call(nav.querySelectorAll('[data-pane-link]'));
   var paths = {};
   var controller = null;
   var requestId = 0;
+  var LOADER_DELAY = 120; // respon lebih cepat dari ini: tanpa kerangka
+  var LOADER_MIN = 320;   // kerangka yang sudah tampil tidak langsung hilang
+  var loaderTimer = null;
+  var loaderShownAt = 0;
 
   links.forEach(function (link) {
     paths[normalize(link.href)] = link.getAttribute('data-pane-link');
@@ -127,6 +135,38 @@
     });
   }
 
+  /* -- kerangka "memuat" ------------------------------------------------------ */
+  function showLoader(slug) {
+    if (!loader) {
+      return;
+    }
+    window.clearTimeout(loaderTimer);
+    loaderTimer = window.setTimeout(function () {
+      var link = activeLink(slug);
+      if (loaderLabel) {
+        loaderLabel.textContent = link ? 'Memuat ' + link.textContent.trim() + '\u2026' : 'Memuat bagian\u2026';
+      }
+      loader.hidden = false;
+      host.classList.add('is-hidden');
+      loaderShownAt = Date.now();
+    }, LOADER_DELAY);
+  }
+
+  function hideLoader() {
+    window.clearTimeout(loaderTimer);
+    loaderTimer = null;
+    loaderShownAt = 0;
+    host.classList.remove('is-hidden');
+    if (loader) {
+      loader.hidden = true;
+    }
+  }
+
+  // Sisa waktu tampil kerangka (0 bila kerangka belum sempat tampil).
+  function loaderRemaining() {
+    return loaderShownAt ? Math.max(0, LOADER_MIN - (Date.now() - loaderShownAt)) : 0;
+  }
+
   /* -- memuat bagian --------------------------------------------------------- */
   function hardNavigate(url) {
     window.location.assign(url);
@@ -155,9 +195,6 @@
     var title = pane.getAttribute('data-pane-title');
     if (title) {
       document.title = title;
-    }
-    if (topTitle && pane.getAttribute('data-pane-heading')) {
-      topTitle.textContent = pane.getAttribute('data-pane-heading');
     }
 
     if (options.push) {
@@ -213,7 +250,7 @@
 
     host.classList.add('is-loading');
     host.setAttribute('aria-busy', 'true');
-    nav.classList.add('is-loading');
+    showLoader(slug);
     if (options.optimistic !== false) {
       markActive(slug, true);
     }
@@ -254,7 +291,13 @@
         hardNavigate(url);
         return;
       }
-      swap(pane, url, pane.getAttribute('data-pane') || slug, options);
+      return new Promise(function (resolve) {
+        window.setTimeout(resolve, loaderRemaining());
+      }).then(function () {
+        if (id === requestId) {
+          swap(pane, url, pane.getAttribute('data-pane') || slug, options);
+        }
+      });
     }).catch(function (error) {
       // Dibatalkan karena pill lain dipilih: abaikan. Timeout/jaringan: halaman biasa.
       if (id !== requestId || (error && error.name === 'AbortError' && !timedOut)) {
@@ -266,7 +309,7 @@
       if (id === requestId) {
         host.classList.remove('is-loading');
         host.removeAttribute('aria-busy');
-        nav.classList.remove('is-loading');
+        hideLoader();
       }
     });
   }

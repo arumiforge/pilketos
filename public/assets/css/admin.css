@@ -278,14 +278,11 @@
   .js .admin-top__menu { display: inline-flex; }
 }
 
+/* Stage 12: judul topbar diganti breadcrumb (ikon + teks), mulai 720 px.
+   Di HP breadcrumb ikon saja tampil di atas judul (.admin-crumbs). */
 .admin-top__title {
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  font-size: 0.875rem;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .admin-top__status {
@@ -294,28 +291,29 @@
   text-decoration: none;
 }
 
-/* HP sempit: judul sudah tampil besar di kepala halaman; di topbar hanya
-   tersisa beberapa huruf ("Uba..."), jadi disembunyikan. */
-@media (max-width: 519px) {
+.admin-crumbs { display: none; }
+
+@media (max-width: 719px) {
   .admin-top__title { display: none; }
+  .admin-crumbs { display: flex; justify-content: center; margin-bottom: var(--space-4); }
 }
 
-/* -- kepala halaman ------------------------------------------------------ */
+/* -- kepala halaman (Stage 12: rata tengah, tanpa garis bawah) ------------ */
 .admin-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4) var(--space-6);
-  padding-bottom: var(--space-5);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
   margin-bottom: var(--space-6);
-  border-bottom: 2px solid var(--ink);
+  text-align: center;
 }
 
-.admin-head__text { flex: 1 1 420px; min-width: 0; }
+.admin-head__text { width: 100%; min-width: 0; }
 
-/* -- breadcrumb stepper (Stage 9, admin/partials/crumbs.php): titik kecil di
-   rel tipis, langkah terakhir = halaman ini (titik tinta bercincin) -- */
+/* -- breadcrumb stepper (Stage 9, admin/partials/crumbs.php). Stage 12: ikon
+   menggantikan titik; langkah terakhir = halaman ini (ikon tinta) -- */
+.crumbs { min-width: 0; }
+
 .crumbs__list {
   display: flex;
   align-items: center;
@@ -335,7 +333,7 @@
 .crumbs__item + .crumbs__item::before {
   content: '';
   flex: 0 0 auto;
-  width: 28px;
+  width: 24px;
   height: 1px;
   margin-inline: var(--space-2);
   background: var(--line-strong);
@@ -345,7 +343,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 28px;
+  min-height: 32px;
   padding-inline: 2px;
   border-radius: var(--radius);
   font-size: 0.6875rem;
@@ -357,33 +355,58 @@
   transition: color 0.15s var(--ease);
 }
 
-.crumbs__dot {
+.crumbs__icon {
   flex: 0 0 auto;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--gray-300);
-  transition: background-color 0.15s var(--ease), transform 0.15s var(--ease);
+  width: 16px;
+  height: 16px;
 }
 
 a.crumbs__step:hover,
-a.crumbs__step:focus-visible { color: var(--ink); }
-
-a.crumbs__step:hover .crumbs__dot,
-a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: scale(1.25); }
-
+a.crumbs__step:focus-visible,
 .crumbs__item.is-current .crumbs__step { color: var(--ink); }
 
-.crumbs__item.is-current .crumbs__dot {
-  margin-inline: 3px;
+/* HP: ikon saja, tiap langkah = lingkaran di rel tipis; teks tetap dibaca
+   pembaca layar (.crumbs__label disembunyikan secara visual) */
+.admin-crumbs .crumbs__list { padding: 5px; }
+
+.admin-crumbs .crumbs__item + .crumbs__item::before { width: 16px; margin-inline: 6px; }
+
+.admin-crumbs .crumbs__step {
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+
+.admin-crumbs a.crumbs__step:hover,
+.admin-crumbs a.crumbs__step:focus-visible { border-color: var(--ink); }
+
+.admin-crumbs .crumbs__item.is-current .crumbs__step {
+  border-color: var(--ink);
   background: var(--ink);
+  color: var(--paper);
   box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--ink);
+}
+
+.admin-crumbs .crumbs__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* -- judul + tombol keterangan (Stage 9): keterangan (lede) tersembunyi
    sampai ikon "i" ditekan; tanpa JavaScript tetap tampil -- */
-/* judul inline agar ikon "i" selalu menempel di ujung baris terakhir judul */
-.admin-head__heading { margin-top: var(--space-2); }
+/* judul inline agar ikon "i" selalu menempel di ujung baris terakhir judul;
+   baris judul panjang diseimbangkan (rata tengah tanpa satu kata tersisa) */
+.admin-head__heading { text-wrap: balance; }
 
 .admin-head__title {
   display: inline;
@@ -422,14 +445,14 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
 }
 
 .admin-head__lede {
-  margin-top: var(--space-3);
+  margin: var(--space-3) auto 0;
   max-width: 72ch;
   color: var(--gray-700);
 }
 
 .js .admin-head__lede[data-lede] {
-  padding: var(--space-2) var(--space-3);
-  border-left: 2px solid var(--ink);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
   background: var(--paper-dim);
   font-size: 0.9375rem;
 }
@@ -445,6 +468,7 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
 .admin-head__actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-2);
 }
 
@@ -1017,35 +1041,87 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
 
 .pills.is-enhanced .pills__item[aria-current="page"] { background: transparent; }
 
-/* garis muat di tepi bawah header saat bagian sedang diambil */
-.pills.is-loading::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: var(--admin-pad);
-  z-index: 1;
-  width: 30%;
-  height: 2px;
-  background: var(--ink);
-  animation: pane-progress 1s var(--ease) infinite;
-}
-
-@keyframes pane-progress {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(calc(100vw - 2 * var(--admin-pad))); }
-}
-
 @media (min-width: 1024px) {
-  .pills { top: 60px; }
+  .pills { top: 60px; text-align: center; }
   .pills__list > li { flex: 0 0 auto; }
   .pills__track { display: inline-block; max-width: 100%; vertical-align: top; }
 }
 
-.pane-host { min-height: 50vh; transition: opacity 0.2s var(--ease); }
+/* Stage 12: saat bagian diambil, isi lama memudar dan kerangka "memuat"
+   (admin/analytics/index, admin-analytics.js) tampil di atasnya, menggantikan
+   garis progres hitam di bawah pil. Kerangka baru tampil setelah jeda singkat
+   (respon cepat tanpa kedip) dan menempel di bawah pil saat halaman digulir. */
+.pane-stage { position: relative; }
 
-.pane-host.is-loading {
-  opacity: 0.45;
-  pointer-events: none;
+.pane-host { min-height: 50vh; transition: opacity 0.15s var(--ease); }
+
+.pane-host.is-loading { pointer-events: none; }
+.pane-host.is-hidden { opacity: 0; }
+
+.pane-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.pane-loader[hidden] { display: none; }
+
+.pane-loader__inner {
+  position: sticky;
+  top: 140px;
+  display: grid;
+  gap: var(--space-3);
+  animation: pane-loader-in 0.2s var(--ease);
+}
+
+.pane-loader__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.pane-loader__spinner {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--gray-300);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.pane-loader__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin-block: var(--space-2);
+}
+
+.skel {
+  display: block;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--gray-200) 0%, var(--paper-dim) 45%, var(--gray-200) 90%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.3s linear infinite;
+}
+
+.skel--title { width: min(22rem, 70%); height: 2rem; margin-top: var(--space-2); }
+.skel--line { width: min(40rem, 100%); height: 0.875rem; }
+.skel--short { width: min(26rem, 75%); }
+.skel--card { height: 96px; }
+.skel--row { height: 2.5rem; }
+
+@keyframes skel-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+@keyframes pane-loader-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .pane.is-entering { animation: pane-in 0.35s var(--ease); }
@@ -1059,8 +1135,10 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   .pills__glider,
   .pills__item,
   .pane-host { transition: none; }
-  .pane.is-entering { animation: none; }
-  .pills.is-loading::before { animation: none; width: 100%; opacity: 0.4; }
+  .pane.is-entering,
+  .pane-loader__inner,
+  .skel { animation: none; }
+  .pane-loader__spinner { animation-duration: 2.4s; }
 }
 
 /* bab analitik: tanpa penomoran (Stage 11), judul + catatan */
@@ -1542,6 +1620,56 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
 
 .filters__search { grid-column: 1 / -1; }
 
+/* -- kolom pencarian live (Stage 12, admin.js initLiveSearch): ikon kaca
+   pembesar di kiri berubah menjadi spinner selama hasil diambil; hasil lama
+   sedikit memudar sampai diganti -- */
+.search-field {
+  position: relative;
+  display: block;
+}
+
+.search-field input,
+.field .search-field input { width: 100%; padding-left: 2.6rem; }
+
+.search-field__icon {
+  position: absolute;
+  top: 50%;
+  left: 0.85rem;
+  width: 18px;
+  height: 18px;
+  color: var(--gray-500);
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 0.15s var(--ease);
+}
+
+.search-field::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border: 2px solid var(--gray-300);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s var(--ease);
+}
+
+.is-searching .search-field__icon { opacity: 0; }
+.is-searching .search-field::after { opacity: 1; animation: spin 0.8s linear infinite; }
+
+[data-live-region] { transition: opacity 0.2s var(--ease); }
+[data-live-region].is-stale { opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-live-region] { transition: none; }
+  .is-searching .search-field::after { animation-duration: 2.4s; }
+}
+
 @media (min-width: 900px) {
   .filters__search { grid-column: span 2; }
 }
@@ -1564,13 +1692,30 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   color: var(--gray-700);
 }
 
+/* Stage 12: angka hasil berupa chip tinta */
+.result-count strong {
+  display: inline-block;
+  min-width: 2em;
+  margin-right: 2px;
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* Stage 12: bar hasil (jumlah + tombol kode unik) lebih lega dari tabel */
 .list-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-5) 0 var(--space-5);
 }
+
+.list-bar .result-count { margin: 0; }
 
 .empty {
   max-width: none;
@@ -1645,33 +1790,84 @@ a.crumbs__step:focus-visible .crumbs__dot { background: var(--ink); transform: s
   color: var(--paper);
 }
 
-/* -- tahapan ------------------------------------------------------------- */
+/* -- tahapan (Stage 12: timeline) -----------------------------------------
+   Simpul bulat bernomor di atas rel; selesai = simpul tinta bercentang,
+   aktif = simpul tinta bercincin, berikutnya = simpul bergaris. Label di
+   bawah simpul, rata tengah (juga di HP). */
 /* ol./ul. di depan kelas daftar: menyamai spesifisitas reset
    "ul[class], ol[class] { margin: 0 }" di app.css agar margin berlaku */
 ol.steps {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   margin-bottom: var(--space-6);
-  border-top: 1px solid var(--line);
 }
 
 .steps__item {
-  flex: 1 1 130px;
-  margin-top: -2px;
-  padding: var(--space-2) var(--space-3) var(--space-2) 0;
-  border-top: 3px solid transparent;
+  --node: 34px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-1);
   font-size: 0.8125rem;
+  line-height: 1.3;
+  text-align: center;
   color: var(--gray-500);
 }
 
-.steps__item span {
-  margin-right: var(--space-1);
-  font-family: var(--font-display);
-  font-weight: 600;
+/* rel dari simpul sebelumnya ke simpul ini */
+.steps__item + .steps__item::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--node) / 2 - 1px);
+  right: calc(50% + var(--node) / 2 + 6px);
+  left: calc(-50% + var(--node) / 2 + 6px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line);
 }
 
-.steps__item.is-done { border-top-color: var(--gray-300); color: var(--gray-700); }
-.steps__item.is-current { border-top-color: var(--ink); color: var(--ink); font-weight: 600; }
+.steps__item.is-done + .steps__item::before,
+.steps__item.is-current + .steps__item.is-current::before { background: var(--ink); }
+
+.steps__node {
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+}
+
+.steps__node .icon { width: 16px; height: 16px; stroke-width: 2.5; }
+
+.steps__item.is-done { color: var(--gray-700); }
+
+.steps__item.is-done .steps__node {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.steps__item.is-current { color: var(--ink); font-weight: 600; }
+
+.steps__item.is-current .steps__node {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--ink);
+}
+
+@media (max-width: 519px) {
+  .steps__item { --node: 30px; font-size: 0.75rem; }
+}
 
 .tabs {
   display: flex;
@@ -1706,15 +1902,25 @@ ol.steps {
   font-variant-numeric: tabular-nums;
 }
 
-/* -- kartu pasangan (daftar kandidat) ------------------------------------ */
-.cand-list { border-top: 2px solid var(--ink); }
+/* -- kartu pasangan (daftar kandidat) ------------------------------------
+   Stage 12: tanpa garis atas daftar & garis bawah kartu; kartu dipisah jarak
+   dan permukaan lembut. */
+ol.cand-list {
+  display: grid;
+  gap: var(--space-4);
+}
 
 .cand-card {
   display: grid;
   grid-template-columns: 84px minmax(0, 1fr);
   gap: var(--space-4) var(--space-5);
-  padding-block: var(--space-5);
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--paper-dim);
+}
+
+@media (max-width: 519px) {
+  .cand-card { grid-template-columns: 64px minmax(0, 1fr); padding: var(--space-4); }
 }
 
 @media (min-width: 960px) {
@@ -1737,22 +1943,9 @@ ol.steps {
 
 .cand-card--inactive .cand-card__no { opacity: 0.4; }
 
-.cand-card__eyebrow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gray-700);
-}
+.cand-card__body { min-width: 0; container-type: inline-size; }
 
-.cand-card__names {
-  margin-top: var(--space-1);
-  font-size: clamp(1.4rem, 3vw, 1.9rem);
-}
+.cand-card__names { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 
 .cand-card__wakil {
   font-weight: 400;
@@ -1788,30 +1981,81 @@ ol.steps {
   background: var(--accent);
 }
 
-ul.asset-dots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-  margin-top: var(--space-3);
+/* kelengkapan asset = timeline (Stage 12): simpul tinta bercentang bila
+   terunggah, simpul putus-putus bila kosong; rel tinta di antara dua simpul
+   terisi. Vertikal bila kartu sempit, horizontal bila cukup lebar. */
+ol.asset-dots {
+  display: grid;
+  margin-top: var(--space-4);
   font-size: 0.75rem;
   color: var(--gray-500);
 }
 
 .asset-dots__item {
-  display: inline-flex;
+  --node: 22px;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  min-height: calc(var(--node) + 10px);
 }
 
-.asset-dots__item.is-filled { color: var(--ink); }
-.asset-dots__item .icon { width: 0.95rem; height: 0.95rem; }
+.asset-dots__item.is-filled { color: var(--ink); font-weight: 600; }
 
-.asset-dots__empty {
-  display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  border: 1px solid currentColor;
+/* rel: dari simpul sebelumnya ke simpul ini */
+.asset-dots__item + .asset-dots__item::before {
+  content: '';
+  position: absolute;
+  bottom: calc(50% + var(--node) / 2);
+  left: calc(var(--node) / 2 - 1px);
+  width: 2px;
+  height: calc(100% - var(--node));
+  background: var(--line-strong);
+}
+
+.asset-dots__item.is-filled + .asset-dots__item.is-filled::before { background: var(--ink); }
+
+.asset-dots__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border: 1.5px dashed var(--line-strong);
   border-radius: 50%;
+  background: var(--paper);
+  color: var(--paper);
+}
+
+.asset-dots__item.is-filled .asset-dots__node {
+  border: 0;
+  background: var(--ink);
+}
+
+.asset-dots__node .icon { width: 13px; height: 13px; stroke-width: 2.5; }
+
+@container (min-width: 560px) {
+  ol.asset-dots { grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; }
+
+  .asset-dots__item {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    text-align: center;
+  }
+
+  .asset-dots__item + .asset-dots__item::before {
+    top: calc(var(--node) / 2 - 1px);
+    right: calc(50% + var(--node) / 2);
+    bottom: auto;
+    left: calc(-50% + var(--node) / 2);
+    width: auto;
+    height: 2px;
+  }
+
+  .asset-dots__label { padding-inline: 2px; line-height: 1.3; }
 }
 
 .cand-card__actions {
@@ -2457,10 +2701,12 @@ ul.check-list {
   gap: var(--space-2);
 }
 
+.search-hero__row .search-field { flex: 1 1 260px; }
+
 .search-hero__row input {
-  flex: 1 1 260px;
+  width: 100%;
   min-height: 54px;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-4) 0 2.9rem;
   border: 2px solid var(--ink);
   border-radius: var(--radius);
   background: var(--paper);
@@ -2640,6 +2886,7 @@ ul.check-list {
 @media print {
   .admin-side,
   .admin-top,
+  .admin-crumbs,
   .admin-scrim,
   .live,
   .filters,

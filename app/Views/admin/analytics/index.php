@@ -9,6 +9,8 @@
  * suara) yang dirender penuh server, jadi tanpa JavaScript tetap berpindah
  * halaman. admin-analytics.js memuat isi bagian lewat fetch (header
  * X-Analytics-Pane) lalu mengganti isi [data-pane-host] di tempat.
+ * Stage 12: selama bagian diambil tampil kerangka [data-pane-loader] (bukan
+ * lagi garis progres hitam di bawah pil).
  *
  * @var array|null            $election
  * @var string                $pane  Bagian aktif (AnalyticsController::PANES)
@@ -19,7 +21,6 @@
 
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Analitik']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Analitik</h1>
         <?= view('admin/partials/head_hint') ?>
@@ -42,11 +43,34 @@
     </div>
   </nav>
 
-  <div class="pane-host" data-pane-host>
-    <?= $this->include('admin/analytics/pane') ?>
+  <div class="pane-stage">
+    <div class="pane-host" data-pane-host>
+      <?= $this->include('admin/analytics/pane') ?>
+    </div>
+    <div class="pane-loader" data-pane-loader hidden aria-hidden="true">
+      <div class="pane-loader__inner">
+        <p class="pane-loader__head"><span class="pane-loader__spinner"></span><span data-pane-loader-label>Memuat bagian</span></p>
+        <span class="skel skel--title"></span>
+        <span class="skel skel--line"></span>
+        <span class="skel skel--line skel--short"></span>
+        <div class="pane-loader__cards">
+          <span class="skel skel--card"></span>
+          <span class="skel skel--card"></span>
+          <span class="skel skel--card"></span>
+        </div>
+        <span class="skel skel--row"></span>
+        <span class="skel skel--row"></span>
+        <span class="skel skel--row"></span>
+        <span class="skel skel--row"></span>
+      </div>
+    </div>
   </div>
   <p class="visually-hidden" role="status" aria-live="polite" data-pane-announce></p>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Analitik']]]) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

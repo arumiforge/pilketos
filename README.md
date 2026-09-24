@@ -483,8 +483,12 @@ brand "SMP 1 DAWE / Panel Admin"; **Home** membuka situs pemilih di tab baru):
 | Unlock | cari pemilih, buka hak suara dengan alasan |
 | Audit log | riwayat tindakan admin (hanya-baca) |
 
-Setiap halaman diawali breadcrumb (Beranda > ... > halaman ini); keterangan
-halaman muncul saat ikon "i" di samping judul ditekan. Indikator live count
+Setiap halaman punya breadcrumb berikon (Beranda > ... > halaman ini): di
+desktop berada di topbar (ikon + teks), di HP berupa ikon saja di atas judul
+yang rata tengah (Stage 12). Keterangan halaman muncul saat ikon "i" di
+samping judul ditekan. Semua kolom pencarian admin (siswa, guru, detail
+suara, unlock, audit log) mencari langsung saat mengetik tanpa memuat ulang
+halaman. Indikator live count
 berikon siaran bertuliskan **Live** saat pemilihan berlangsung; di HP ikon,
 status, waktu "diperbarui", dan tombol **Perbarui** menjadi satu bar di bawah
 layar.
@@ -615,7 +619,7 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 - Halaman analitik (Stage 11) memakai deretan pil; tiap bagian punya URL
   sendiri (`/admin/analitik/rombel`, ...) dan dimuat lewat fetch tanpa memuat
   ulang halaman (Back/Forward tetap berfungsi, tanpa JavaScript = pindah
-  halaman biasa).
+  halaman biasa). Selama bagian diambil tampil kerangka "memuat" (Stage 12).
 - Live count di dasbor diperbarui tiap 10 detik saat berlangsung (60 detik
   sebelum mulai), berhenti saat selesai atau tab tidak aktif; tombol
   **Perbarui** memaksa ambil data.
@@ -715,8 +719,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 11): **374 test, 3.300 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 12): **383 test, 3.422 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 11: 374 test, Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -738,6 +742,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
 | `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
 | `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel, istilah "rombel" seragam (label, impor, pesan, audit) |
+| `STAGE12-NOTES.md` | Stage 12: kerangka "memuat" analitik (pengganti garis progres), breadcrumb berikon di topbar / ikon saja di HP, kepala halaman rata tengah tanpa garis, "Selengkapnya" & kolom "Grafik", kartu paslon + timeline asset, timeline tahapan unlock, live search di semua pencarian admin |
 
 ## 21. Beranda imersif & aset visual
 

@@ -4,7 +4,7 @@
  * file sebelum unggah, pratinjau warna aksen, filter otomatis, dan tombol
  * tampilkan kode unik. Stage 4: tombol layar penuh & cetak di hasil akhir.
  * Stage 9: keterangan halaman di balik ikon "i", Escape menutup tooltip
- * catatan panel.
+ * catatan panel. Stage 12: live search di semua kolom pencarian admin.
  * Semua progressive enhancement: tanpa JavaScript seluruh fitur tetap
  * berjalan lewat form biasa dan validasi server.
  *
@@ -367,15 +367,17 @@
     }
   }
 
-  /* -- tampilkan / samarkan kode unik -------------------------------------- */
-  function initSecrets() {
-    document.querySelectorAll('[data-secret-toggle]').forEach(function (button) {
+  /* -- tampilkan / samarkan kode unik --------------------------------------
+     Stage 12: dipanggil ulang untuk hasil live search (root = wilayah baru). */
+  function initSecrets(root) {
+    (root || document).querySelectorAll('[data-secret-toggle]').forEach(function (button) {
       var target = document.getElementById(button.getAttribute('aria-controls'));
       var label = button.querySelector('[data-secret-toggle-label]');
 
-      if (!target || !label) {
+      if (!target || !label || button.dataset.secretReady === '1') {
         return;
       }
+      button.dataset.secretReady = '1';
 
       var showText = label.textContent;
       button.hidden = false;
@@ -405,6 +407,191 @@
         form.submit();
       }
     });
+  }
+
+  /* -- live search (Stage 12) ----------------------------------------------
+     form[data-live-search]: mengetik di kolom pencarian (jeda 300 ms, kosong
+     atau minimal 2 huruf) mengambil halaman yang sama lewat fetch lalu
+     mengganti setiap [data-live-region] dengan pasangannya dari balasan;
+     form & fokus kursor tidak disentuh, URL diganti (replaceState). Form
+     biasa (bukan bagian analitik) juga menerapkan Enter & pilihan dropdown
+     dengan cara yang sama. Detail suara (form[data-pane-form]) meminta
+     fragmen bagian (X-Analytics-Pane); dropdown-nya tetap lewat
+     admin-analytics.js. Gagal / sesi habis -> pindah halaman biasa.
+     Isi dari server sudah di-escape oleh view. -- */
+  function initLiveSearch() {
+    if (!window.fetch || !window.DOMParser || !window.URLSearchParams) {
+      return;
+    }
+
+    var DELAY = 300;
+    var timer = null;
+    var controller = null;
+    var requestId = 0;
+    var status = null;
+
+    function announce(text) {
+      if (!status) {
+        status = document.createElement('p');
+        status.className = 'visually-hidden';
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        document.body.appendChild(status);
+      }
+      status.textContent = '';
+      window.setTimeout(function () {
+        status.textContent = text;
+      }, 50);
+    }
+
+    function buildUrl(form) {
+      var url = actionUrl(form);
+      var params = new URLSearchParams();
+      new FormData(form).forEach(function (value, key) {
+        if (typeof value === 'string' && value.trim() !== '') {
+          params.append(key, value.trim());
+        }
+      });
+      url.search = params.toString();
+      return url;
+    }
+
+    // form.action tidak dipakai: form audit punya kolom bernama "action".
+    function actionUrl(form) {
+      return new URL(form.getAttribute('action') || window.location.href, window.location.href);
+    }
+
+    // Hanya form ke asal yang sama (baseURL beda host = form biasa).
+    function enhanced(form) {
+      try {
+        return actionUrl(form).origin === window.location.origin;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function regions() {
+      return Array.prototype.slice.call(document.querySelectorAll('[data-live-region]'));
+    }
+
+    function setBusy(form, busy) {
+      form.classList.toggle('is-searching', busy);
+      regions().forEach(function (region) {
+        region.classList.toggle('is-stale', busy);
+        if (busy) {
+          region.setAttribute('aria-busy', 'true');
+        } else {
+          region.removeAttribute('aria-busy');
+        }
+      });
+    }
+
+    function search(form) {
+      window.clearTimeout(timer);
+      var url = buildUrl(form);
+      // URL halaman selalu mengikuti hasil yang tampil (replaceState).
+      if (url.href === window.location.href) {
+        return;
+      }
+
+      if (controller) {
+        controller.abort();
+      }
+      controller = window.AbortController ? new AbortController() : null;
+      var id = ++requestId;
+      var timedOut = false;
+      var abortTimer = window.setTimeout(function () {
+        timedOut = true;
+        if (controller) {
+          controller.abort();
+        }
+      }, 12000);
+
+      var headers = { Accept: 'text/html', 'X-Requested-With': 'XMLHttpRequest' };
+      if (form.hasAttribute('data-pane-form')) {
+        headers['X-Analytics-Pane'] = '1';
+      }
+      setBusy(form, true);
+
+      window.fetch(url.href, {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: headers,
+        signal: controller ? controller.signal : undefined
+      }).then(function (response) {
+        if (id !== requestId) {
+          return null;
+        }
+        if (!response.ok || response.redirected) {
+          window.location.assign(response.redirected ? response.url : url.href);
+          return null;
+        }
+        return response.text();
+      }).then(function (html) {
+        // Form sudah diganti (mis. bagian analitik lain dimuat): hasil dibuang.
+        if (html === null || html === undefined || id !== requestId || !document.contains(form)) {
+          return;
+        }
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var current = regions();
+        var fresh = current.map(function (region) {
+          return doc.querySelector('[data-live-region="' + region.getAttribute('data-live-region') + '"]');
+        });
+        if (current.length === 0 || fresh.indexOf(null) !== -1) {
+          window.location.assign(url.href);
+          return;
+        }
+        current.forEach(function (region, i) {
+          var node = document.importNode(fresh[i], true);
+          region.parentNode.replaceChild(node, region);
+          initSecrets(node);
+        });
+        window.history.replaceState(window.history.state, '', url.href);
+        var count = document.querySelector('[data-live-region] .result-count');
+        if (count) {
+          announce(count.textContent.replace(/\s+/g, ' ').trim());
+        }
+      }).catch(function (error) {
+        if (id !== requestId || (error && error.name === 'AbortError' && !timedOut)) {
+          return;
+        }
+        window.location.assign(url.href);
+      }).then(function () {
+        window.clearTimeout(abortTimer);
+        if (id === requestId) {
+          setBusy(form, false);
+        }
+      });
+    }
+
+    document.addEventListener('input', function (event) {
+      var input = event.target;
+      var form = input && input.type === 'search' ? input.closest('form[data-live-search]') : null;
+      if (!form || !enhanced(form)) {
+        return;
+      }
+      window.clearTimeout(timer);
+      var length = input.value.trim().length;
+      if (length === 1) {
+        return;
+      }
+      timer = window.setTimeout(function () {
+        search(form);
+      }, DELAY);
+    });
+
+    // Fase capture + stopImmediatePropagation: berjalan sebelum penjaga
+    // submit ganda di app.js (form tetap dipakai, jadi tidak boleh dikunci).
+    document.addEventListener('submit', function (event) {
+      var form = event.target;
+      if (!form.matches || !form.matches('form[data-live-search]') || form.hasAttribute('data-pane-form') || !enhanced(form)) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      search(form);
+    }, true);
   }
 
   /* -- hasil akhir: layar penuh (proyektor) & cetak (Stage 4) -------------- */
@@ -505,6 +692,7 @@
     initAccent();
     initSecrets();
     initAutosubmit();
+    initLiveSearch();
     initPresentation();
   });
 })();

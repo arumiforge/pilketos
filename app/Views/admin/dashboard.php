@@ -26,7 +26,6 @@ $heading  = match ($status) {
 
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => []]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title"><?= $election ? esc($election['nama']) : 'Belum ada jadwal pemilihan' ?></h1>
         <?php if ($election): ?><?= view('admin/partials/head_hint') ?><?php endif; ?>
@@ -75,7 +74,7 @@ $heading  = match ($status) {
     <section class="panel" aria-labelledby="results-title">
       <header class="panel__head">
         <h2 class="panel__title" id="results-title" data-live-results-title><?= esc($heading) ?></h2>
-        <a class="panel__link" href="<?= site_url('admin/analitik') ?>">Analitik lengkap <?= icon('arrow-right') ?></a>
+        <a class="panel__link" href="<?= site_url('admin/analitik') ?>">Selengkapnya<span class="visually-hidden">: analitik</span> <?= icon('arrow-right') ?></a>
       </header>
       <?= view('admin/partials/candidate_results', ['candidates' => $snapshot['candidates'], 'total' => $summary['all']['voted']]) ?>
     </section>
@@ -123,7 +122,7 @@ $heading  = match ($status) {
   <section class="panel" aria-labelledby="class-title">
     <header class="panel__head">
       <h2 class="panel__title" id="class-title">Rekap rombel</h2>
-      <a class="panel__link" href="<?= site_url('admin/analitik/suara') ?>">Detail suara <?= icon('arrow-right') ?></a>
+      <a class="panel__link" href="<?= site_url('admin/analitik/suara') ?>">Selengkapnya<span class="visually-hidden">: detail suara</span> <?= icon('arrow-right') ?></a>
     </header>
     <?= view('admin/partials/recap_table', [
         'groups'     => $snapshot['groups']['class'],
@@ -135,6 +134,10 @@ $heading  = match ($status) {
     ]) ?>
   </section>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => []]) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

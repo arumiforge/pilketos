@@ -36,9 +36,6 @@ $active = (string) ($values['status_aktif'] ?? '1') !== '0';
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => $isNew
-          ? [[$type->label(), $type->adminPath()], ['Tambah']]
-          : [[$type->label(), $type->adminPath()], ['Detail', $type->adminPath((string) $voter['id'])], ['Ubah']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title"><?= $isNew ? 'Tambah ' . esc($noun) : esc($voter['name']) ?></h1>
       </div>
@@ -140,4 +137,10 @@ $active = (string) ($values['status_aktif'] ?? '1') !== '0';
     </div>
   </form>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => $isNew
+    ? [[$type->label(), $type->adminPath()], ['Tambah']]
+    : [[$type->label(), $type->adminPath()], ['Detail', $type->adminPath((string) $voter['id'])], ['Ubah']]]) ?>
 <?= $this->endSection() ?>
