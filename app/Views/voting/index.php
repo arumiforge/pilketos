@@ -18,6 +18,10 @@
  * diperbarui candidates.js/ballot.js); countdown dalam panel terminal lebar
  * penuh. Di HP tiap bagian setinggi satu layar.
  *
+ * Stage 9: panel terminal tanpa teks bilah judul & baris perintah (hanya
+ * tiga titik jendela); pembuka + "Sekilas paslon" dibungkus .booth-open
+ * sehingga di HP keduanya berbagi satu layar.
+ *
  * @var \App\Services\VoterType $type
  * @var array                   $voter
  * @var array|null              $election
@@ -32,6 +36,7 @@ $journey = [
 ];
 ?>
 
+<div class="booth-open">
 <section class="booth-intro" aria-labelledby="booth-title">
   <div class="container booth-intro__inner">
     <h1 class="booth-intro__title" id="booth-title">Kenali, lalu <span class="booth-intro__verb">coblos</span>.</h1>
@@ -57,12 +62,8 @@ $journey = [
       <div class="booth-intro__status">
         <?php if ($election && in_array($status, ['UPCOMING', 'ONGOING'], true)): ?>
           <div class="term">
-            <p class="term__bar" aria-hidden="true">
-              <span class="term__dots"><span></span><span></span><span></span></span>
-              <span>jam-server &middot; pilketos</span>
-            </p>
+            <span class="term__dots" aria-hidden="true"><span></span><span></span><span></span></span>
             <div class="term__body">
-              <p class="term__cmd" aria-hidden="true"><span class="term__prompt">pilketos:~$</span> sisa-waktu --<?= $status === 'ONGOING' ? 'tutup' : 'buka' ?></p>
               <?= view('partials/countdown', ['election' => $election, 'variant' => 'terminal']) ?>
               <p class="term__meta" aria-hidden="true">
                 <?= $status === 'ONGOING' ? 'selesai' : 'mulai' ?> <?= esc(format_waktu($status === 'ONGOING' ? $election['end_at'] : $election['start_at'])) ?>
@@ -92,7 +93,10 @@ $journey = [
 
 <?php if ($candidates !== []): ?>
   <?= view('voting/partials/lineup', ['candidates' => $candidates, 'canVote' => $canVote]) ?>
+<?php endif; ?>
+</div>
 
+<?php if ($candidates !== []): ?>
   <nav class="chapter-nav" aria-label="Lompat ke pasangan calon" data-chapter-nav>
     <div class="container chapter-nav__row">
       <?php foreach ($candidates as $c): ?>

@@ -162,18 +162,21 @@ final class BoothRefinementTest extends CIUnitTestCase
         }
 
         $page->assertSee('<div class="term">');
-        $page->assertSee('sisa-waktu --tutup');
+        // Stage 9: tanpa bilah judul & baris perintah (StageNineRefinementTest).
+        $page->assertDontSee('sisa-waktu --tutup');
         $page->assertSee('countdown countdown--terminal countdown--ongoing');
         $page->assertSee('Ditutup dalam');
         $this->assertLessThan(strpos($html, 'class="lineup"'), strpos($html, 'class="term"'));
 
         $css = $this->asset('assets/css/voting.css');
         $this->assertMatchesRegularExpression('/\.booth-intro \{[^}]*text-align: center;/', $css);
-        // HP: tiap bagian bilik suara setinggi satu layar.
+        // HP: tiap bagian bilik suara setinggi satu layar (Stage 9: pembuka +
+        // Sekilas paslon berbagi layar pertama lewat .booth-open).
         $this->assertMatchesRegularExpression(
-            '/@media \(max-width: 719px\) \{\s*\.booth-intro \{[^}]*min-height: calc\(100svh - 65px\);[^}]*\}\s*\.lineup,\s*\.chapter,\s*\.ballot \{[^}]*min-height: 100svh;/',
+            '/@media \(max-width: 719px\) \{\s*\.booth-open \{[^}]*min-height: calc\(100svh - 65px\);/',
             $css,
         );
+        $this->assertMatchesRegularExpression('/\.chapter,\s*\.ballot \{[^}]*min-height: 100svh;/', $css);
         // Desktop: bagian lebih lebar dari kontainer bawaan (1080px).
         $this->assertStringContainsString(".booth-intro,\n.lineup,\n.chapter-nav,\n.chapter,\n.ballot { --container-w: 1360px; }", $css);
 

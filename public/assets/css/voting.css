@@ -6,6 +6,8 @@
    Stage 8: pembuka rata tengah + journey timeline + panel terminal, tiap
    bagian satu layar di HP, bagian lebih lebar di desktop, kertas bolong
    besar, modal konfirmasi rata tengah dengan latar diburamkan.
+   Stage 9: terminal tanpa teks judul/perintah, angka satu baris di HP,
+   pembuka + Sekilas paslon (.booth-open) satu layar di HP.
    Dimuat hanya di halaman voting (voting/index, confirm, my_vote).
 
    Aturan: tanpa gradient, tanpa emoji. Warna hanya dari token netral app.css
@@ -222,8 +224,11 @@ a.journey__item:focus-visible { outline-offset: 6px; }
   70%, 100% { opacity: 0; transform: scale(1.22); }
 }
 
-/* -- panel terminal: countdown "Ditutup dalam" rata tengah, lebar penuh -- */
+/* -- panel terminal: countdown "Ditutup dalam" rata tengah, lebar penuh.
+   Stage 9: tanpa bilah judul & baris perintah; tiga titik jendela melayang
+   di pojok kiri atas (tidak menambah tinggi panel) -- */
 .term {
+  position: relative;
   width: 100%;
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -233,23 +238,12 @@ a.journey__item:focus-visible { outline-offset: 6px; }
   text-align: center;
 }
 
-.term__bar {
-  position: relative;
-  max-width: none;
-  padding: 9px 44px;
-  border-bottom: 1px solid var(--ink-line);
-  font-size: 0.6875rem;
-  letter-spacing: 0.04em;
-  color: var(--ink-muted);
-}
-
 .term__dots {
   position: absolute;
-  top: 50%;
+  top: 12px;
   left: 14px;
   display: flex;
   gap: 6px;
-  transform: translateY(-50%);
 }
 
 .term__dots span {
@@ -262,23 +256,17 @@ a.journey__item:focus-visible { outline-offset: 6px; }
 .term__body {
   display: grid;
   justify-items: center;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4) var(--space-4);
 }
-
-.term__cmd,
-.term__meta {
-  max-width: none;
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-}
-
-.term__prompt { color: var(--paper); }
 
 .term__meta {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  max-width: none;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
 }
 
 .term__cursor {
@@ -293,11 +281,12 @@ a.journey__item:focus-visible { outline-offset: 6px; }
   50% { opacity: 0; }
 }
 
+/* HP: angka cukup satu baris (03 hari 12:45:30 muat di layar 320 px) */
 .term .countdown--terminal {
-  --term-size: clamp(2.25rem, 12vw, 3.75rem);
+  --term-size: clamp(1.5rem, 8vw, 2.25rem);
   display: grid;
   justify-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   width: 100%;
 }
 
@@ -310,14 +299,15 @@ a.journey__item:focus-visible { outline-offset: 6px; }
 }
 
 .term .countdown__units {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .term .countdown__progress {
   width: 100%;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   background: var(--ink-line);
 }
 
@@ -328,7 +318,9 @@ a.journey__item:focus-visible { outline-offset: 6px; }
 @media (min-width: 720px) {
   .booth-intro { padding-block: var(--space-8); }
   .booth-intro__panel { margin-top: var(--space-7); }
-  .term__body { padding: var(--space-6); }
+  .term__body { gap: var(--space-3); padding: var(--space-6); }
+  .term .countdown--terminal { --term-size: clamp(2.5rem, 6vw, 3.75rem); gap: var(--space-2); }
+  .term .countdown__progress { margin-top: var(--space-3); }
 }
 
 /* desktop: timeline & terminal berdampingan di bawah judul */
@@ -344,18 +336,44 @@ a.journey__item:focus-visible { outline-offset: 6px; }
   .booth-intro .journey { max-width: 420px; margin-inline: auto 0; }
 }
 
-/* HP: tiap bagian bilik suara setinggi satu layar (pembuka dikurangi
-   tinggi navigasi situs agar pas di layar pertama) */
+/* HP: tiap bagian bilik suara setinggi satu layar. Stage 9: pembuka +
+   "Sekilas paslon" (.booth-open) berbagi layar pertama (dikurangi tinggi
+   navigasi situs); keduanya dipadatkan, sisa ruang untuk kartu paslon. */
 @media (max-width: 719px) {
-  .booth-intro {
+  .booth-open {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     min-height: calc(100vh - 65px);
     min-height: calc(100svh - 65px);
   }
 
-  .lineup,
+  .booth-intro { padding-block: var(--space-3); }
+  .booth-intro__title { font-size: clamp(1.75rem, 8.6vw, 2.5rem); }
+  .booth-intro__panel { gap: var(--space-3); margin-top: var(--space-3); }
+  .booth-intro .journey { max-width: none; }
+
+  .journey__step { --node: 32px; padding-bottom: 10px; }
+  .journey__step:not(:last-child)::before,
+  .journey__step:not(:last-child)::after { top: calc(var(--node) + 4px); bottom: 4px; }
+  .journey__item { gap: var(--space-3); }
+  .journey__node { font-size: 0.95rem; }
+  .journey__step.is-current .journey__node::after { inset: -5px; }
+  .journey__check { width: 16px; height: 16px; }
+  .journey__text { gap: 0; padding-top: 4px; }
+  .journey__title { font-size: 0.9375rem; }
+  .journey__desc { font-size: 0.8125rem; line-height: 1.35; }
+
+  .term__body { gap: 6px; padding: 14px var(--space-3) var(--space-3); }
+  .term .countdown__progress { margin-top: 6px; }
+
+  .booth-open > .lineup {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: var(--space-3);
+  }
+
   .chapter,
   .ballot {
     display: flex;
@@ -398,6 +416,20 @@ a.journey__item:focus-visible { outline-offset: 6px; }
   max-width: 46ch;
   font-size: 0.875rem;
   color: var(--gray-700);
+}
+
+/* desktop (Stage 9): petunjuk satu baris sejajar judul, tidak turun ke bawah */
+@media (min-width: 960px) {
+  .lineup__head { flex-wrap: nowrap; }
+  .lineup__title { flex: 0 0 auto; }
+
+  .lineup__hint {
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 /* HP: kartu digeser, kartu berikutnya mengintip; tanpa JS tetap bisa digeser.
@@ -555,6 +587,21 @@ a.journey__item:focus-visible { outline-offset: 6px; }
 
   .pair-card { padding: var(--space-5); }
   .pair-card__no { font-size: 4rem; }
+}
+
+/* HP (Stage 9): kartu dipadatkan agar muat bersama pembuka di layar pertama */
+@media (max-width: 719px) {
+  .lineup__title { font-size: 1.375rem; }
+  .lineup__hint { font-size: 0.8125rem; }
+  .lineup__hint { line-height: 1.4; }
+  .lineup .lineup__list { margin-top: 10px; }
+  .pair-card { gap: 6px; padding: var(--space-3) 14px; }
+  .pair-card__band { grid-template-columns: auto minmax(0, 96px); }
+  .pair-card__no { font-size: 2.5rem; }
+  .pair-card__names { margin-top: 0; font-size: 0.9375rem; }
+  .pair-card__visi { -webkit-line-clamp: 2; line-clamp: 2; font-size: 1rem; }
+  .pair-card__read,
+  .pair-card__pick { min-height: 44px; }
 }
 
 /* -- navigasi bab (sticky) -- */
