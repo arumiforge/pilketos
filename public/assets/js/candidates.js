@@ -10,7 +10,10 @@
  * - [data-parallax]     : lapisan panggung bergerak beda kecepatan (hanya bab
  *                         yang terlihat, satu rAF per frame);
  * - [data-tilt]         : kedalaman ringan mengikuti mouse (bukan layar sentuh);
- * - [data-chapter-nav]  : penanda bab aktif (aria-current).
+ * - [data-chapter-nav]  : penanda bab aktif (aria-current);
+ * - [data-journey]      : langkah memilih di pembuka (Stage 8): langkah aktif
+ *                         maju saat surat suara tercapai, dan mengikuti event
+ *                         "osis:journey" dari ballot.js (konfirmasi dibuka/batal).
  */
 (function () {
   'use strict';
@@ -251,6 +254,54 @@
     });
   }
 
+  /* ---------- journey timeline: langkah memilih (Stage 8) ---------- */
+
+  function initJourney(journey) {
+    if (!journey) {
+      return;
+    }
+
+    var steps = journey.querySelectorAll('[data-journey-step]');
+    var current = 0;
+
+    function setStep(index) {
+      current = Math.max(0, Math.min(steps.length - 1, index));
+      for (var i = 0; i < steps.length; i++) {
+        steps[i].classList.toggle('is-done', i < current);
+        steps[i].classList.toggle('is-current', i === current);
+        if (i === current) {
+          steps[i].setAttribute('aria-current', 'step');
+        } else {
+          steps[i].removeAttribute('aria-current');
+        }
+      }
+    }
+
+    // Surat suara tercapai: "Kenali paslon" selesai, "Coblos satu" aktif.
+    var ballot = document.getElementById('surat-suara');
+    if (ballot && hasIO) {
+      var observer = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            if (current < 1) {
+              setStep(1);
+            }
+            observer.disconnect();
+            return;
+          }
+        }
+      }, { rootMargin: '0px 0px -40% 0px' });
+      observer.observe(ballot);
+    }
+
+    // ballot.js: kertas tercoblos -> "Konfirmasi & kunci"; batal -> kembali.
+    document.addEventListener('osis:journey', function (event) {
+      if (event.detail && typeof event.detail.step === 'number') {
+        setStep(event.detail.step);
+      }
+    });
+  }
+
   function init() {
     var chapters = Array.prototype.slice.call(document.querySelectorAll('[data-chapter]'));
     var misiPanels = document.querySelectorAll('[data-misi]');
@@ -260,6 +311,7 @@
     }
 
     initChapterNav(document.querySelector('[data-chapter-nav]'));
+    initJourney(document.querySelector('[data-journey]'));
 
     if (reduced || !hasIO || chapters.length === 0) {
       return;

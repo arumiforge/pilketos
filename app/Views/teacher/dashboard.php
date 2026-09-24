@@ -4,11 +4,10 @@
 
 <section class="dash-head">
   <div class="container">
-    <p class="eyebrow">Dasbor Guru</p>
     <h1 class="dash-head__name"><?= esc($teacher['name']) ?></h1>
     <dl class="dash-meta">
       <div>
-        <dt>NIP</dt>
+        <dt class="visually-hidden">NIP</dt>
         <dd><?= esc($teacher['nip']) ?></dd>
       </div>
     </dl>
@@ -28,12 +27,11 @@
     <aside class="dash-aside" aria-labelledby="schedule-title">
       <h2 class="dash-aside__title" id="schedule-title">Jadwal pemilihan</h2>
       <?= $this->include('partials/election_status') ?>
-      <?php if (in_array($election['status'] ?? null, ['UPCOMING', 'ONGOING'], true)): ?>
-        <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
-      <?php endif; ?>
     </aside>
   </div>
 </section>
+
+<?= view('partials/float_clock', ['election' => $election]) ?>
 
 <?= $this->endSection() ?>
 

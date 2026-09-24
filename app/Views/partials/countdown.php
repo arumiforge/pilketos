@@ -1,7 +1,8 @@
 <?php
 /**
- * Countdown pemilihan: varian "compact" (dasbor, halaman voting, hasil akhir)
- * dan "dock" (panel status bergaya terminal di beranda, redesign beranda).
+ * Countdown pemilihan: varian "compact" (admin), "dock" (panel status
+ * bergaya terminal di beranda, redesign beranda) dan "terminal" (Stage 8:
+ * panel terminal bilik suara & jam melayang dasbor, format 03:12:45).
  *
  * Angka awal dihitung server saat render (tetap benar tanpa JavaScript);
  * countdown.js melanjutkan hitungan dari selisih jam SERVER (data-now) memakai
@@ -9,7 +10,7 @@
  * hanya visual: buka/tutup voting tetap diputuskan server.
  *
  * @var array|null $election Hasil ElectionModel::getCurrentElection()
- * @var string     $variant  'compact' | 'dock'
+ * @var string     $variant  'compact' | 'dock' | 'terminal'
  */
 $variant = $variant ?? 'compact';
 $clock   = election_clock($election ?? null);
@@ -27,8 +28,9 @@ $units  = [
     'seconds' => ['Detik', $remain % 60],
 ];
 
-// Panel terminal: "hari" hanya tampil bila sisa waktu >= 1 hari (03:12:45).
-if ($variant === 'dock' && $remain < 86400) {
+// Gaya terminal: "hari" hanya tampil bila sisa waktu >= 1 hari (03:12:45).
+$terminal = in_array($variant, ['dock', 'terminal'], true);
+if ($terminal && $remain < 86400) {
     unset($units['days']);
 }
 $label = match ($status) {
@@ -71,7 +73,7 @@ $srText = match ($status) {
 
   <p class="visually-hidden" data-countdown-sr><?= esc($srText) ?></p>
 
-  <?php if ($variant === 'dock' && $election): ?>
+  <?php if ($terminal && $election): ?>
     <span class="countdown__progress" aria-hidden="true">
       <span class="countdown__progress-fill" data-timeline-fill style="--progress: <?= esc(number_format($progress, 4, '.', ''), 'attr') ?>;"></span>
     </span>

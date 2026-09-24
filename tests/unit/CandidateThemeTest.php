@@ -103,6 +103,10 @@ final class CandidateThemeTest extends CIUnitTestCase
         $theme = CandidateTheme::present($this->candidate(['theme_name' => '', 'misi' => null, 'nama_wakil' => '']));
 
         $this->assertSame('Pasangan 02', $theme['theme_name']);
+        // Stage 8: nama tema bawaan tidak ditulis ulang di samping "Pasangan 02".
+        $this->assertFalse($theme['theme_distinct']);
+        $this->assertFalse(CandidateTheme::present($this->candidate(['theme_name' => ' pasangan 02 ']))['theme_distinct']);
+        $this->assertTrue(CandidateTheme::present($this->candidate())['theme_distinct']);
         $this->assertSame([], $theme['misi']);
         $this->assertSame('?', $theme['wakil_initials']);
     }

@@ -13,44 +13,79 @@
  * surat suara + paku. Pemilih yang sudah mantap cukup satu ketukan dari
  * kartu ke kotak surat suara (#coblos-0X).
  *
+ * Stage 8: pembuka rata tengah tanpa sapaan; langkah memilih menjadi
+ * journey timeline vertikal (langkah 1-2 tautan ke bagiannya, langkah aktif
+ * diperbarui candidates.js/ballot.js); countdown dalam panel terminal lebar
+ * penuh. Di HP tiap bagian setinggi satu layar.
+ *
  * @var \App\Services\VoterType $type
  * @var array                   $voter
  * @var array|null              $election
  * @var bool                    $canVote
  * @var list<array>             $candidates Hasil CandidateTheme::presentAll()
  */
-$status = $election['status'] ?? null;
+$status  = $election['status'] ?? null;
+$journey = [
+    ['Kenali paslon', 'Bandingkan visi & misi ketiga pasangan.', $candidates !== [] ? '#sekilas' : null],
+    ['Coblos satu', $canVote ? 'Tekan Coblos, atau seret paku ke kotak pilihanmu.' : 'Lihat surat suara dan kotak tiap pasangan.', '#surat-suara'],
+    ['Konfirmasi & kunci', 'Periksa sekali lagi. Setelah dikunci, pilihan tidak dapat diubah.', null],
+];
 ?>
 
 <section class="booth-intro" aria-labelledby="booth-title">
-  <div class="container booth-intro__grid">
-    <div class="booth-intro__main">
-      <p class="eyebrow">Halo, <?= esc($voter['name']) ?> &middot; Bilik suara <?= esc(strtolower($type->label())) ?></p>
-      <h1 class="booth-intro__title" id="booth-title">Kenali, lalu <span class="booth-intro__verb">coblos</span>.</h1>
-      <ol class="booth-steps" aria-label="Langkah memilih">
-        <li><span class="booth-steps__no" aria-hidden="true">1</span> Kenali paslon</li>
-        <li><span class="booth-steps__no" aria-hidden="true">2</span> Coblos satu</li>
-        <li><span class="booth-steps__no" aria-hidden="true">3</span> Konfirmasi &amp; kunci</li>
+  <div class="container booth-intro__inner">
+    <h1 class="booth-intro__title" id="booth-title">Kenali, lalu <span class="booth-intro__verb">coblos</span>.</h1>
+
+    <div class="booth-intro__panel">
+      <ol class="journey" aria-label="Langkah memilih" data-journey>
+        <?php foreach ($journey as $i => [$stepTitle, $stepText, $stepHref]): ?>
+          <li class="journey__step<?= $i === 0 ? ' is-current' : '' ?>" style="--i: <?= $i ?>;" data-journey-step<?= $i === 0 ? ' aria-current="step"' : '' ?>>
+            <<?= $stepHref !== null ? 'a href="' . esc($stepHref, 'attr') . '"' : 'div' ?> class="journey__item">
+              <span class="journey__node" aria-hidden="true">
+                <span class="journey__no"><?= $i + 1 ?></span>
+                <?= icon('check', 'journey__check') ?>
+              </span>
+              <span class="journey__text">
+                <span class="journey__title"><?= esc($stepTitle) ?><?= $stepHref !== null ? ' ' . icon('arrow-down') : '' ?></span>
+                <span class="journey__desc"><?= esc($stepText) ?></span>
+              </span>
+            </<?= $stepHref !== null ? 'a' : 'div' ?>>
+          </li>
+        <?php endforeach; ?>
       </ol>
-    </div>
-    <div class="booth-intro__status">
-      <?php if ($election && in_array($status, ['UPCOMING', 'ONGOING'], true)): ?>
-        <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
-      <?php endif; ?>
-      <?php if (! $canVote): ?>
-        <p class="notice" role="status">
-          <?= icon($status === 'FINISHED' ? 'lock' : 'clock') ?>
-          <span>
-            <?php if ($status === 'UPCOMING'): ?>
-              Pencoblosan belum dibuka. Halaman ini hanya untuk mengenal pasangan calon.
-            <?php elseif ($status === 'FINISHED'): ?>
-              Pemilihan telah ditutup. Pencoblosan tidak tersedia.
-            <?php else: ?>
-              Jadwal pemilihan belum tersedia.
-            <?php endif; ?>
-          </span>
-        </p>
-      <?php endif; ?>
+
+      <div class="booth-intro__status">
+        <?php if ($election && in_array($status, ['UPCOMING', 'ONGOING'], true)): ?>
+          <div class="term">
+            <p class="term__bar" aria-hidden="true">
+              <span class="term__dots"><span></span><span></span><span></span></span>
+              <span>jam-server &middot; pilketos</span>
+            </p>
+            <div class="term__body">
+              <p class="term__cmd" aria-hidden="true"><span class="term__prompt">pilketos:~$</span> sisa-waktu --<?= $status === 'ONGOING' ? 'tutup' : 'buka' ?></p>
+              <?= view('partials/countdown', ['election' => $election, 'variant' => 'terminal']) ?>
+              <p class="term__meta" aria-hidden="true">
+                <?= $status === 'ONGOING' ? 'selesai' : 'mulai' ?> <?= esc(format_waktu($status === 'ONGOING' ? $election['end_at'] : $election['start_at'])) ?>
+                <span class="term__cursor"></span>
+              </p>
+            </div>
+          </div>
+        <?php endif; ?>
+        <?php if (! $canVote): ?>
+          <p class="notice" role="status">
+            <?= icon($status === 'FINISHED' ? 'lock' : 'clock') ?>
+            <span>
+              <?php if ($status === 'UPCOMING'): ?>
+                Pencoblosan belum dibuka. Halaman ini hanya untuk mengenal pasangan calon.
+              <?php elseif ($status === 'FINISHED'): ?>
+                Pemilihan telah ditutup. Pencoblosan tidak tersedia.
+              <?php else: ?>
+                Jadwal pemilihan belum tersedia.
+              <?php endif; ?>
+            </span>
+          </p>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </section>

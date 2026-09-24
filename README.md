@@ -546,8 +546,13 @@ Siswa > Impor atau Guru > Impor:
 
 - Hanya saat status **Sedang Berlangsung** (dicek ulang server saat simpan);
   tepat pada `end_at` sudah ditolak.
-- Bilik suara (`/siswa/coblos`, `/guru/coblos`, Stage 7): pembuka ringkas,
-  lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
+- Dasbor pemilih (Stage 8): nama rata tengah, di bawahnya NISN / kelas /
+  nomor absen (guru: NIP) miring tanpa label; sisa waktu "Ditutup dalam"
+  melayang di bawah layar. Di HP tombol Dasbor & Keluar cukup ikon.
+- Bilik suara (`/siswa/coblos`, `/guru/coblos`, Stage 7-8): pembuka rata
+  tengah "Kenali, lalu coblos." dengan journey timeline tiga langkah (Kenali
+  paslon, Coblos satu, Konfirmasi & kunci) dan countdown bergaya terminal;
+  di HP tiap bagian setinggi satu layar. Lalu **Sekilas paslon** (tiga kartu untuk membandingkan: nomor, foto, nama,
   tema, kutipan visi, jumlah misi; digeser di HP). **Baca visi & misi** menuju
   bab pasangan, **Pilih 0X** langsung ke kotak pasangan itu di surat suara
   (kotak disorot dan tombol Coblos-nya difokuskan).
@@ -556,8 +561,10 @@ Siswa > Impor atau Guru > Impor:
   **Pilih pasangan 0X**.
 - Surat suara: tekan **Coblos** di kotak pasangan, atau tekan-tahan paku,
   geser ke kotak pasangan, lepas untuk mencoblos; lalu **Konfirmasi pilihan**.
-  Di HP ketiga kotak + paku muat satu layar. Paku 3D (WebGL, dimuat malas) otomatis
-  diganti paku 2D di perangkat lemah, tanpa WebGL, atau saat reduced motion;
+  Di HP ketiga kotak + paku muat satu layar. Setelah dicoblos, kertas bolong
+  terlihat 3 detik sebelum modal konfirmasi (latar diburamkan) muncul. Paku
+  3D (WebGL, dimuat malas) selalu nyala tanpa tombol pengalih; paku 2D hanya
+  cadangan bila WebGL tidak tersedia/gagal atau frame terlalu lambat;
   tombol "Coblos Pasangan 0X" untuk keyboard/pembaca layar; tanpa JavaScript
   memakai halaman konfirmasi biasa.
 - Disimpan dalam transaction (`FOR UPDATE` baris pemilih + unique key), status
@@ -675,8 +682,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 7): **323 test, 2.656 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 6: 316 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 8): **331 test, 2.741 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 7: 323 test, Stage 6: 316 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -694,6 +701,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `05-HOMEPAGE-REDESIGN.md` + `STAGE5-NOTES.md` | Stage 5: redesign beranda (scene layar penuh, pintu masuk Siswa/Guru, live count publik, layar pembuka, panel status terminal, navigasi logo & footer) |
 | `06`–`10-*-PILKETOS.md` + `STAGE6-NOTES.md` | Stage 6: identitas visual SMP 1 DAWE (arah visual "lereng Muria", font Plus Jakarta Sans, spesifikasi & prompt aset, sistem gerak, layar pembuka selalu tampil) |
 | `STAGE7-NOTES.md` | Stage 7: URL bahasa Indonesia santai, nama templat impor, redesain bilik suara siswa & guru |
+| `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
 
 ## 21. Beranda imersif & aset visual
 

@@ -73,6 +73,10 @@ final class CandidateTheme
             'background'     => self::url($candidate['theme_background'] ?? null),
         ];
 
+        // Stage 8: nama tema kosong jatuh ke "Pasangan 0X"; tampilan pemilih
+        // tidak menulisnya dua kali di samping label "Pasangan 0X".
+        $theme['theme_distinct'] = strcasecmp($theme['theme_name'], 'Pasangan ' . $theme['label']) !== 0;
+
         foreach (self::ASSET_KEYS as $key) {
             $theme[$key] = self::url($assets[$key] ?? null);
         }

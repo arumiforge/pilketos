@@ -176,7 +176,8 @@ final class VotingTest extends CIUnitTestCase
         $html   = (string) $result->response()->getBody();
 
         $result->assertSee('Sekilas paslon');
-        $result->assertSee('Halo, Ahmad Fauzan');
+        // Stage 8: pembuka tanpa sapaan "Halo, {nama} · Bilik suara siswa".
+        $result->assertDontSee('Halo, Ahmad Fauzan');
         foreach (['01', '02', '03'] as $label) {
             $result->assertSee('href="#pasangan-' . $label . '"');
             $result->assertSee('id="coblos-' . $label . '"');
@@ -290,7 +291,8 @@ final class VotingTest extends CIUnitTestCase
         $result->assertSee('data-nail2d');
         $result->assertSee('data-nail3d');
         $result->assertSee('data-nail-grip');
-        $result->assertSee('data-fx-toggle');
+        // Stage 8: efek 3D selalu nyala, tombol pengalih "Efek 3D" dihapus.
+        $result->assertDontSee('data-fx-toggle');
         $result->assertSee('id="vote-confirm"');
     }
 
