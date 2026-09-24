@@ -125,18 +125,19 @@ final class AnalyticsService
     /**
      * Normalisasi filter detail suara dari query string. Nilai yang tidak
      * dikenal diabaikan (bukan error) sehingga URL rusak tetap aman.
+     * Stage 11: rombel (7A) dari ?rombel=; ?kelas= lama tetap diterima.
      *
      * @param list<int>    $candidateIds
      * @param list<string> $classes
      *
-     * @return array{q: string, type: string, kelas: string, gender: string, candidate: int, status: string}
+     * @return array{q: string, type: string, rombel: string, gender: string, candidate: int, status: string}
      */
     public static function detailFilters(array $input, array $candidateIds, array $classes): array
     {
         $text = static fn (mixed $v): string => is_string($v) ? trim($v) : '';
 
         $type      = $text($input['type'] ?? '');
-        $kelas     = Grade::normalizeKelas($text($input['kelas'] ?? ''));
+        $rombel    = Grade::normalizeKelas($text($input['rombel'] ?? $input['kelas'] ?? ''));
         $gender    = strtoupper($text($input['gender'] ?? ''));
         $candidate = $text($input['candidate'] ?? '');
         $status    = $text($input['status'] ?? '');
@@ -144,7 +145,7 @@ final class AnalyticsService
         return [
             'q'         => mb_substr($text($input['q'] ?? ''), 0, 100),
             'type'      => in_array($type, ['student', 'teacher'], true) ? $type : '',
-            'kelas'     => in_array($kelas, $classes, true) ? $kelas : '',
+            'rombel'    => in_array($rombel, $classes, true) ? $rombel : '',
             'gender'    => in_array($gender, ['L', 'P'], true) ? $gender : '',
             'candidate' => ctype_digit($candidate) && in_array((int) $candidate, $candidateIds, true) ? (int) $candidate : 0,
             'status'    => in_array($status, self::DETAIL_STATUSES, true) ? $status : self::LOCKED,
@@ -156,8 +157,8 @@ final class AnalyticsService
      *
      * Status LOCKED (bawaan) = suara sah yang dihitung, sehingga jumlah baris
      * sama dengan total suara di dasbor. UNLOCKED = riwayat yang dibuka admin.
-     * Filter kelas/jenis kelamin hanya berlaku untuk siswa (guru tidak punya
-     * kelas/jenis kelamin), jadi guru otomatis tidak ikut.
+     * Filter rombel/jenis kelamin hanya berlaku untuk siswa (guru tidak punya
+     * rombel/jenis kelamin), jadi guru otomatis tidak ikut.
      *
      * @return array{rows: list<array<string, mixed>>, total: int}
      */
@@ -305,8 +306,8 @@ final class AnalyticsService
             ->join('candidates c', 'c.id = v.candidate_id')
             ->where('v.election_id', $electionId);
 
-        if ($f['kelas'] !== '') {
-            $builder->where('p.kelas', $f['kelas']);
+        if ($f['rombel'] !== '') {
+            $builder->where('p.kelas', $f['rombel']);
         }
 
         if ($f['gender'] !== '') {
@@ -318,7 +319,7 @@ final class AnalyticsService
 
     private function teacherVotePart(int $electionId, array $f): ?BaseBuilder
     {
-        if ($f['type'] === 'student' || $f['kelas'] !== '' || $f['gender'] !== '') {
+        if ($f['type'] === 'student' || $f['rombel'] !== '' || $f['gender'] !== '') {
             return null;
         }
 

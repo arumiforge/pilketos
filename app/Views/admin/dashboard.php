@@ -131,7 +131,7 @@ $heading  = match ($status) {
         'key'        => 'class',
         'label'      => 'Rombel',
         'caption'    => 'Rekap suara siswa per rombel',
-        'link'       => site_url('admin/siswa') . '?status=aktif&kelas=',
+        'link'       => site_url('admin/siswa') . '?status=aktif&rombel=',
     ]) ?>
   </section>
 </div>

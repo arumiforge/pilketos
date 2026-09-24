@@ -24,7 +24,7 @@ use App\Services\VoterType;
 $isStudent = $type === VoterType::Student;
 $idLabel   = $type->identifierLabel();
 $idColumn  = $type->identifierColumn();
-$filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] !== '' || $filters['vote'] !== '' || $filters['status'] !== 'aktif';
+$filtered  = $filters['q'] !== '' || $filters['rombel'] !== '' || $filters['jk'] !== '' || $filters['vote'] !== '' || $filters['status'] !== 'aktif';
 ?>
 <div class="admin-page">
   <header class="admin-head">
@@ -55,11 +55,11 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
     </div>
     <?php if ($isStudent): ?>
       <div class="field">
-        <label for="f-kelas">Kelas</label>
-        <select id="f-kelas" name="kelas">
+        <label for="f-rombel">Rombel</label>
+        <select id="f-rombel" name="rombel">
           <option value="">Semua</option>
           <?php foreach ($classes as $kelas): ?>
-            <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['kelas'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
+            <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['rombel'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -117,7 +117,7 @@ $filtered  = $filters['q'] !== '' || $filters['kelas'] !== '' || $filters['jk'] 
             <th scope="col">Nama</th>
             <?php if ($isStudent): ?>
               <th scope="col">JK</th>
-              <th scope="col">Kelas</th>
+              <th scope="col">Rombel</th>
               <th scope="col" class="num">Absen</th>
             <?php endif; ?>
             <th scope="col">Kode unik</th>

@@ -8,11 +8,13 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Import siswa: no, NISN, nama, jenis_kelamin, kelas, nomor_absen, kodeunik.
+ * Import siswa: no, NISN, nama, jenis_kelamin, rombel, nomor_absen, kodeunik.
+ * Stage 11: kolom "kelas" menjadi "rombel" (7A, 8B); header "kelas" pada file
+ * lama tetap diterima (headerAliases). Kolom database tetap students.kelas.
  *
  * - NISN tepat 10 digit (teks); angka tanpa nol depan dipulihkan + peringatan;
  * - jenis_kelamin L/P (juga "Laki-laki"/"Perempuan"), tidak ditebak dari nama;
- * - kelas dibakukan (huruf besar) dan wajib berjenjang 7, 8, atau 9;
+ * - rombel dibakukan (huruf besar) dan wajib diawali kelas 7, 8, atau 9;
  * - nomor_absen boleh kosong, 1-999;
  * - kodeunik tanggal lahir DDMMYYYY.
  */
@@ -42,10 +44,15 @@ final class StudentImporter extends VoterImporter
             'NISN'          => ['field' => 'nisn', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 16, 'example' => '0012345678', 'required' => true],
             'nama'          => ['field' => 'name', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 32, 'example' => 'Ahmad Fauzan', 'required' => true],
             'jenis_kelamin' => ['field' => 'jenis_kelamin', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 14, 'example' => 'L', 'required' => true],
-            'kelas'         => ['field' => 'kelas', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 10, 'example' => '7A', 'required' => true],
+            'rombel'        => ['field' => 'kelas', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 10, 'example' => '7A', 'required' => true],
             'nomor_absen'   => ['field' => 'nomor_absen', 'format' => NumberFormat::FORMAT_NUMBER, 'width' => 13, 'example' => '1', 'required' => true],
             'kodeunik'      => ['field' => 'kodeunik', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 14, 'example' => '01032013', 'required' => true],
         ];
+    }
+
+    protected function headerAliases(): array
+    {
+        return ['kelas' => 'rombel'];
     }
 
     protected function addTemplateValidations(Worksheet $sheet): void
@@ -64,7 +71,7 @@ final class StudentImporter extends VoterImporter
             '1. Isi data mulai baris 2 pada sheet pertama ("Data Siswa"). Jangan mengubah, menghapus, atau memindahkan baris judul.',
             '2. NISN wajib 10 digit dan diketik sebagai teks agar angka 0 di depan tidak hilang (kolom sudah berformat Teks).',
             '3. jenis_kelamin: L atau P. Jangan dikosongkan; sistem tidak menebak jenis kelamin dari nama.',
-            '4. kelas diawali jenjang 7, 8, atau 9, contoh 7A, 8B, 9C, VII-A.',
+            '4. rombel diawali kelas 7, 8, atau 9, contoh 7A, 8B, 9C, VII-A.',
             '5. nomor_absen boleh dikosongkan; bila diisi berupa angka 1-999.',
             '6. kodeunik = tanggal lahir DDMMYYYY sebagai teks, contoh 01032013 untuk 1 Maret 2013.',
             '7. NISN yang sudah ada akan DIPERBARUI (bukan dibuat ganda). Siswa yang tidak ada di file tidak dihapus.',
@@ -78,14 +85,14 @@ final class StudentImporter extends VoterImporter
             'nisn'          => $this->identifier($cells['nisn'], 'NISN', self::NISN_LENGTH, self::NISN_LENGTH),
             'name'          => $this->name($cells['nama']),
             'jenis_kelamin' => $this->gender($cells['jeniskelamin']),
-            'kelas'         => $this->kelas($cells['kelas']),
+            'kelas'         => $this->kelas($cells['rombel']),
             'nomor_absen'   => $this->absen($cells['nomorabsen']),
             'kodeunik'      => $this->kodeunik($cells['kodeunik']),
         ];
     }
 
     /**
-     * Nomor absen ganda dalam satu kelas: kemungkinan salah ketik, tetap boleh diimpor.
+     * Nomor absen ganda dalam satu rombel: kemungkinan salah ketik, tetap boleh diimpor.
      */
     protected function markFileWarnings(array &$rows): void
     {
@@ -109,7 +116,7 @@ final class StudentImporter extends VoterImporter
 
             foreach ($indexes as $i) {
                 $rows[$i]['warnings'][] = sprintf(
-                    'Nomor absen %s di kelas %s dipakai lebih dari satu siswa (baris %s).',
+                    'Nomor absen %s di rombel %s dipakai lebih dari satu siswa (baris %s).',
                     $rows[$i]['values']['nomor_absen'],
                     $rows[$i]['values']['kelas'],
                     $lines,
@@ -144,19 +151,19 @@ final class StudentImporter extends VoterImporter
         $kelas = Grade::normalizeKelas($cell->text);
 
         if ($kelas === '') {
-            return [null, ['Kelas wajib diisi.'], []];
+            return [null, ['Rombel wajib diisi.'], []];
         }
 
         if (mb_strlen($kelas) > 20) {
-            return [null, ['Kelas maksimal 20 karakter.'], []];
+            return [null, ['Rombel maksimal 20 karakter.'], []];
         }
 
         if (preg_match('/^[A-Z0-9][A-Z0-9 .\/-]*$/', $kelas) !== 1) {
-            return [null, ['Kelas hanya boleh berisi huruf, angka, spasi, titik, strip, atau garis miring.'], []];
+            return [null, ['Rombel hanya boleh berisi huruf, angka, spasi, titik, strip, atau garis miring.'], []];
         }
 
         if (Grade::fromKelas($kelas) === null) {
-            return [null, ['Kelas harus diawali jenjang 7, 8, atau 9 (contoh 7A, 8B, IX-C); terbaca "' . $kelas . '".'], []];
+            return [null, ['Rombel harus diawali kelas 7, 8, atau 9 (contoh 7A, 8B, IX-C); terbaca "' . $kelas . '".'], []];
         }
 
         return [$kelas, [], []];

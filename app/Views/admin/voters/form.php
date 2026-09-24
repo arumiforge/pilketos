@@ -10,7 +10,7 @@
  * @var array|null              $voter  Baris pemilih (null = baru)
  * @var array                   $values Nilai form (baris / input lama)
  * @var array<string, string>   $errors Pesan error per kolom
- * @var list<string>            $classes Kelas yang sudah ada (saran isian)
+ * @var list<string>            $classes Rombel yang sudah ada (saran isian)
  * @var array|null              $election
  */
 use App\Services\VoterType;
@@ -51,7 +51,7 @@ $active = (string) ($values['status_aktif'] ?? '1') !== '0';
   </header>
 
   <?php if (($election['status'] ?? null) === 'ONGOING'): ?>
-    <p class="notice"><?= icon('alert') ?><span>Pemilihan sedang berlangsung. Perubahan langsung berlaku: <?= $isStudent ? 'kelas menentukan rekap kelas & rombel, ' : '' ?><?= esc($idLabel) ?> dan kode unik dipakai untuk login.</span></p>
+    <p class="notice"><?= icon('alert') ?><span>Pemilihan sedang berlangsung. Perubahan langsung berlaku: <?= $isStudent ? 'rombel menentukan rekap kelas & rombel, ' : '' ?><?= esc($idLabel) ?> dan kode unik dipakai untuk login.</span></p>
   <?php endif; ?>
 
   <form class="form-x" action="<?= $action ?>" method="post" novalidate>
@@ -87,14 +87,14 @@ $active = (string) ($values['status_aktif'] ?? '1') !== '0';
           </fieldset>
           <div class="form-grid form-grid--pair">
             <div class="field">
-              <label for="kelas">Kelas (rombel)</label>
+              <label for="kelas">Rombel</label>
               <input type="text" id="kelas" name="kelas" value="<?= $value('kelas') ?>" maxlength="20" list="kelas-list" autocomplete="off" required<?= $described('kelas', 'hint-kelas') ?>>
               <datalist id="kelas-list">
                 <?php foreach ($classes as $kelas): ?>
                   <option value="<?= esc($kelas, 'attr') ?>"></option>
                 <?php endforeach; ?>
               </datalist>
-              <p class="field-hint" id="hint-kelas">Diawali 7, 8, atau 9, contoh 7A atau VIII-B.</p>
+              <p class="field-hint" id="hint-kelas">Diawali kelas 7, 8, atau 9, contoh 7A atau VIII-B.</p>
               <?= $error('kelas') ?>
             </div>
             <div class="field">

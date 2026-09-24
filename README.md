@@ -539,12 +539,14 @@ Setelah pemilihan selesai hanya teks & gambar yang dapat dirapikan.
 Siswa > Impor atau Guru > Impor:
 
 1. **Unduh template** (`templat-impor-siswa.xlsx`: `no, NISN, nama,
-   jenis_kelamin, kelas, nomor_absen, kodeunik`; `templat-impor-guru.xlsx`:
+   jenis_kelamin, rombel, nomor_absen, kodeunik`; `templat-impor-guru.xlsx`:
    `no, NIP, nama, kodeunik`). Kolom identitas & kode unik bertipe Teks.
+   Stage 11: kolom `kelas` menjadi `rombel` (7A, 8B); file lama berkolom
+   `kelas` tetap diterima.
 2. Isi, simpan sebagai `.xlsx`, **unggah** (maks 5 MB, 3.000 baris).
 3. **Pratinjau & validasi**: baris baru / diperbarui / tidak berubah /
-   bermasalah dengan alasannya. NISN harus 10 digit; jenis kelamin L/P; kelas
-   berjenjang 7/8/9; kode unik tanggal valid; NISN/NIP ganda dalam file ditolak;
+   bermasalah dengan alasannya. NISN harus 10 digit; jenis kelamin L/P; rombel
+   diawali kelas 7/8/9; kode unik tanggal valid; NISN/NIP ganda dalam file ditolak;
    nol depan yang hilang dipulihkan dengan peringatan; NIP yang sudah dibulatkan
    Excel ditolak.
 4. **Impor**: satu transaction; NISN/NIP yang sudah ada diperbarui (tidak
@@ -557,7 +559,7 @@ Siswa > Impor atau Guru > Impor:
 
 - Hanya saat status **Sedang Berlangsung** (dicek ulang server saat simpan);
   tepat pada `end_at` sudah ditolak.
-- Dasbor pemilih (Stage 8): nama rata tengah, di bawahnya NISN / kelas /
+- Dasbor pemilih (Stage 8): nama rata tengah, di bawahnya NISN / rombel /
   nomor absen (guru: NIP) miring tanpa label; sisa waktu "Ditutup dalam"
   melayang di bawah layar. Di HP tombol Dasbor & Keluar cukup ikon; Stage 10:
   kartu hak suara rata tengah dan sisa waktu menjadi strip selebar layar
@@ -606,6 +608,10 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 - Rekap: jenis pemilih, jenis kelamin (khusus siswa), kelas 7/8/9 (dibaca dari
   awal nama rombel, juga angka Romawi), rombel (7A, 8B, ...), per pasangan
   (jumlah & persen dari suara sah).
+- Istilah (Stage 11, seragam di semua halaman, impor, pesan, dan audit):
+  **rombel** = rombongan belajar (7A, 8B, VIII-C); **kelas** = tingkat 7, 8,
+  9. Filter memakai `?rombel=` (`?kelas=` lama tetap diterima). Kolom
+  database tetap `students.kelas`.
 - Halaman analitik (Stage 11) memakai deretan pil; tiap bagian punya URL
   sendiri (`/admin/analitik/rombel`, ...) dan dimuat lewat fetch tanpa memuat
   ulang halaman (Back/Forward tetap berfungsi, tanpa JavaScript = pindah
@@ -613,7 +619,7 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 - Live count di dasbor diperbarui tiap 10 detik saat berlangsung (60 detik
   sebelum mulai), berhenti saat selesai atau tab tidak aktif; tombol
   **Perbarui** memaksa ambil data.
-- Detail suara: cari, filter jenis/kelas/jenis kelamin/pasangan/status; tabel
+- Detail suara: cari, filter jenis/rombel/jenis kelamin/pasangan/status; tabel
   siswa dan guru terpisah, masing-masing 25 per halaman. Kolom perangkat
   dibaca server saat mencoblos dengan pustaka `matomo/device-detector`
   (model HP, versi OS, browser dalam aplikasi, Chromebook). Model HP & versi
@@ -709,7 +715,7 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 11): **372 test, 3.268 assertion, lulus** pada PHP
+Hasil terakhir (Stage 11): **374 test, 3.300 assertion, lulus** pada PHP
 8.4.19 dengan MariaDB 10.11.14 (Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
@@ -731,7 +737,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
 | `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
 | `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
-| `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel |
+| `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel, istilah "rombel" seragam (label, impor, pesan, audit) |
 
 ## 21. Beranda imersif & aset visual
 

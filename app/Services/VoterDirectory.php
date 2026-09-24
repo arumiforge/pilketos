@@ -30,22 +30,23 @@ final class VoterDirectory
 
     /**
      * Filter daftar dari query string; nilai asing diabaikan.
+     * Stage 11: rombel (7A) dari ?rombel=; ?kelas= lama tetap diterima.
      *
      * @param list<string> $classes
      *
-     * @return array{q: string, kelas: string, jk: string, vote: string, status: string}
+     * @return array{q: string, rombel: string, jk: string, vote: string, status: string}
      */
     public static function filters(VoterType $type, array $input, array $classes): array
     {
         $text   = static fn (mixed $v): string => is_string($v) ? trim($v) : '';
-        $kelas  = Grade::normalizeKelas($text($input['kelas'] ?? ''));
+        $rombel = Grade::normalizeKelas($text($input['rombel'] ?? $input['kelas'] ?? ''));
         $jk     = strtoupper($text($input['jk'] ?? ''));
         $vote   = $text($input['vote'] ?? '');
         $status = $text($input['status'] ?? '');
 
         return [
             'q'      => mb_substr($text($input['q'] ?? ''), 0, 100),
-            'kelas'  => $type === VoterType::Student && in_array($kelas, $classes, true) ? $kelas : '',
+            'rombel' => $type === VoterType::Student && in_array($rombel, $classes, true) ? $rombel : '',
             'jk'     => $type === VoterType::Student && in_array($jk, ['L', 'P'], true) ? $jk : '',
             'vote'   => in_array($vote, self::VOTE_FILTERS, true) ? $vote : '',
             'status' => in_array($status, self::STATUS_FILTERS, true) ? $status : 'aktif',
@@ -203,8 +204,8 @@ final class VoterDirectory
         }
 
         if ($type === VoterType::Student) {
-            if ($f['kelas'] !== '') {
-                $builder->where('p.kelas', $f['kelas']);
+            if ($f['rombel'] !== '') {
+                $builder->where('p.kelas', $f['rombel']);
             }
 
             if ($f['jk'] !== '') {

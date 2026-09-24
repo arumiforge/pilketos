@@ -84,7 +84,7 @@ final class VoterImportTest extends CIUnitTestCase
 
         $this->assertSame('templat-impor-siswa.xlsx', $importer->templateFilename());
         $this->assertSame(
-            [['no', 'NISN', 'nama', 'jenis_kelamin', 'kelas', 'nomor_absen', 'kodeunik']],
+            [['no', 'NISN', 'nama', 'jenis_kelamin', 'rombel', 'nomor_absen', 'kodeunik']],
             $sheet->rangeToArray('A1:G1'),
         );
         // Kolom NISN & kodeunik berformat Teks (style kolom, berlaku untuk sel
@@ -201,8 +201,8 @@ final class VoterImportTest extends CIUnitTestCase
             3  => 'NISN hanya boleh berisi angka',
             4  => 'Nama wajib diisi',
             5  => 'Jenis kelamin harus L atau P',
-            6  => 'Kelas wajib diisi',
-            7  => 'Kelas harus diawali jenjang 7, 8, atau 9',
+            6  => 'Rombel wajib diisi',
+            7  => 'Rombel harus diawali kelas 7, 8, atau 9',
             8  => 'Kode unik harus tanggal lahir DDMMYYYY',
             9  => 'Nomor absen harus angka bulat',
             10 => 'Kode unik harus tanggal lahir DDMMYYYY',
@@ -250,7 +250,7 @@ final class VoterImportTest extends CIUnitTestCase
 
         $this->assertSame(2, $result['summary']['importable']);
         $this->assertSame(2, $result['summary']['warnings']);
-        $this->assertStringContainsString('Nomor absen 5 di kelas 7A', $this->row($result, 3)['warnings'][0]);
+        $this->assertStringContainsString('Nomor absen 5 di rombel 7A', $this->row($result, 3)['warnings'][0]);
     }
 
     public function testHeaderValidation(): void

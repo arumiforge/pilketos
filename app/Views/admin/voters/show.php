@@ -48,7 +48,7 @@ $active    = (int) $voter['status_aktif'] === 1;
         <div class="kv-list__row"><dt>Nama</dt><dd><?= esc($voter['name']) ?></dd></div>
         <?php if ($isStudent): ?>
           <div class="kv-list__row"><dt>Jenis kelamin</dt><dd><?= $voter['jenis_kelamin'] === 'L' ? 'Laki-laki (L)' : 'Perempuan (P)' ?></dd></div>
-          <div class="kv-list__row"><dt>Kelas</dt><dd><?= esc($voter['kelas']) ?></dd></div>
+          <div class="kv-list__row"><dt>Rombel</dt><dd><?= esc($voter['kelas']) ?></dd></div>
           <div class="kv-list__row"><dt>Nomor absen</dt><dd><?= esc($voter['nomor_absen'] ?? '-') ?></dd></div>
         <?php endif; ?>
         <div class="kv-list__row">

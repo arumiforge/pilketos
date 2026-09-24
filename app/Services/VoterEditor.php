@@ -14,9 +14,9 @@ use Config\Database;
  * Tambah & ubah satu siswa/guru langsung dari panel admin (Stage 11).
  *
  * Aturan isian sama persis dengan impor Excel (VoterImporter::validateForm):
- * NISN 10 digit / NIP angka, kelas berjenjang 7-9, kode unik = tanggal lahir
+ * NISN 10 digit / NIP angka, rombel diawali kelas 7-9, kode unik = tanggal lahir
  * DDMMYYYY. Identitas (NISN/NIP) tidak boleh dipakai pemilih lain; nomor
- * absen ganda dalam satu kelas hanya peringatan (sama dengan impor).
+ * absen ganda dalam satu rombel hanya peringatan (sama dengan impor).
  *
  * Status akun hanya diatur saat menambah (bawaan aktif); setelah itu lewat
  * tombol Aktifkan/Nonaktifkan di halaman detail (dengan konfirmasi).
@@ -32,7 +32,7 @@ final class VoterEditor
         'nip'           => 'NIP',
         'name'          => 'nama',
         'jenis_kelamin' => 'jenis kelamin',
-        'kelas'         => 'kelas',
+        'kelas'         => 'rombel',
         'nomor_absen'   => 'nomor absen',
         'kodeunik'      => 'kode unik',
     ];
@@ -96,7 +96,7 @@ final class VoterEditor
                 $type->identifierLabel(),
                 $values[$idColumn],
                 $owner['name'],
-                $type === VoterType::Student ? ' (kelas ' . $owner['kelas'] . ')' : '',
+                $type === VoterType::Student ? ' (rombel ' . $owner['kelas'] . ')' : '',
                 $type->identifierLabel(),
             );
         }
@@ -158,7 +158,7 @@ final class VoterEditor
     }
 
     /**
-     * Perubahan untuk audit, contoh "kelas 7A -> 7B", "kode unik".
+     * Perubahan untuk audit, contoh "rombel 7A -> 7B", "kode unik".
      *
      * @return list<string>
      */
@@ -210,7 +210,7 @@ final class VoterEditor
         $names = array_column($builder->get()->getResultArray(), 'name');
 
         return $names === [] ? [] : [sprintf(
-            'Nomor absen %d di kelas %s juga dipakai %s. Tetap disimpan; periksa kembali bila salah ketik.',
+            'Nomor absen %d di rombel %s juga dipakai %s. Tetap disimpan; periksa kembali bila salah ketik.',
             $absen,
             $kelas,
             implode(', ', $names),

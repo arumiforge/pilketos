@@ -14,8 +14,8 @@
 use CodeIgniter\I18n\Time;
 
 $accent   = array_column($candidates, null, 'id');
-$filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['kelas'] !== '' || $filters['gender'] !== '' || $filters['candidate'] > 0 || $filters['status'] !== 'LOCKED';
-$studentOnly = $filters['kelas'] !== '' || $filters['gender'] !== '';
+$filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['rombel'] !== '' || $filters['gender'] !== '' || $filters['candidate'] > 0 || $filters['status'] !== 'LOCKED';
+$studentOnly = $filters['rombel'] !== '' || $filters['gender'] !== '';
 
 $blocks = [];
 if ($filters['type'] !== 'teacher') {
@@ -67,11 +67,11 @@ $sharedCells = static function (array $row) use ($accent): string {
     </select>
   </div>
   <div class="field">
-    <label for="f-kelas">Kelas</label>
-    <select id="f-kelas" name="kelas">
+    <label for="f-rombel">Rombel</label>
+    <select id="f-rombel" name="rombel">
       <option value="">Semua</option>
       <?php foreach ($classes as $kelas): ?>
-        <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['kelas'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
+        <option value="<?= esc($kelas, 'attr') ?>"<?= $filters['rombel'] === $kelas ? ' selected' : '' ?>><?= esc($kelas) ?></option>
       <?php endforeach; ?>
     </select>
   </div>
@@ -117,7 +117,7 @@ $sharedCells = static function (array $row) use ($accent): string {
     </header>
 
     <?php if (! $isStudent && $studentOnly): ?>
-      <p class="empty">Filter kelas/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.</p>
+      <p class="empty">Filter rombel/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.</p>
     <?php elseif ($g['rows'] === []): ?>
       <p class="empty"><?= $filtered ? 'Tidak ada suara ' . strtolower($label) . ' yang cocok dengan filter.' : 'Belum ada suara ' . strtolower($label) . ' masuk.' ?></p>
     <?php else: ?>
@@ -128,7 +128,7 @@ $sharedCells = static function (array $row) use ($accent): string {
               <th scope="col" class="num">No</th>
               <th scope="col"><?= esc($label) ?> &middot; <?= esc($idLabel) ?></th>
               <?php if ($isStudent): ?>
-                <th scope="col">Kelas</th>
+                <th scope="col">Rombel</th>
                 <th scope="col" class="num">Absen</th>
                 <th scope="col">JK</th>
               <?php endif; ?>

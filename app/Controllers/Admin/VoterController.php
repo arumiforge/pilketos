@@ -19,7 +19,7 @@ use CodeIgniter\I18n\Time;
  *
  * Stage 4: setelah pemilihan selesai, ubah status & hapus pemilih ditolak
  * (AdminController::resultsLocked()) agar hasil akhir tidak berubah. Stage 11:
- * begitu juga tambah & ubah data (jumlah pemilih, kelas, dsb. bagian hasil).
+ * begitu juga tambah & ubah data (jumlah pemilih, rombel, dsb. bagian hasil).
  */
 abstract class VoterController extends AdminController
 {
@@ -243,7 +243,7 @@ abstract class VoterController extends AdminController
         $label  = sprintf('%s %s (%s %s)', $type->label(), $values['name'], $type->identifierLabel(), $values[$type->identifierColumn()]);
 
         if ($existing === null) {
-            $this->audit($type->auditAction('create'), $label . ' ditambahkan lewat form' . ($type === VoterType::Student ? ', kelas ' . $values['kelas'] : '') . '.');
+            $this->audit($type->auditAction('create'), $label . ' ditambahkan lewat form' . ($type === VoterType::Student ? ', rombel ' . $values['kelas'] : '') . '.');
             $message = $label . ' ditambahkan.';
         } elseif ($result['changes'] === []) {
             $message = 'Tidak ada perubahan pada data ' . $values['name'] . '.';

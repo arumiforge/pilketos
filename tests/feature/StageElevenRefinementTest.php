@@ -163,14 +163,14 @@ final class StageElevenRefinementTest extends CIUnitTestCase
         $teacher = substr($html, strpos($html, 'data-table--votes-guru'));
         $teacher = substr($teacher, 0, strpos($teacher, '</table>'));
 
-        foreach (['Siswa &middot; NISN', '>Kelas<', '>Absen<', '>JK<', 'Ahmad Fauzan', 'Bunga Larasati'] as $text) {
+        foreach (['Siswa &middot; NISN', '>Rombel<', '>Absen<', '>JK<', 'Ahmad Fauzan', 'Bunga Larasati'] as $text) {
             $this->assertStringContainsString($text, $student, $text);
         }
         $this->assertStringNotContainsString('Sudarmanto', $student);
 
         $this->assertStringContainsString('Guru &middot; NIP', $teacher);
         $this->assertStringContainsString('Sudarmanto, S.Pd.', $teacher);
-        foreach (['>Kelas<', '>Absen<', '>JK<', 'Ahmad Fauzan'] as $text) {
+        foreach (['>Rombel<', '>Absen<', '>JK<', 'Ahmad Fauzan'] as $text) {
             $this->assertStringNotContainsString($text, $teacher, $text);
         }
 
@@ -178,9 +178,9 @@ final class StageElevenRefinementTest extends CIUnitTestCase
         $this->assertStringContainsString('<span class="device-cell__main">Samsung Galaxy A54 5G</span><span class="cell-sub">HP · Android 14 · Chrome 140</span>', $student);
         $this->assertStringContainsString('icon--phone', $student);
 
-        // Filter kelas: blok guru menjelaskan kenapa kosong.
-        $filtered = $this->body($this->asAdmin()->get('admin/analitik/suara?kelas=7A'));
-        $this->assertStringContainsString('Filter kelas/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.', $filtered);
+        // Filter rombel: blok guru menjelaskan kenapa kosong.
+        $filtered = $this->body($this->asAdmin()->get('admin/analitik/suara?rombel=7A'));
+        $this->assertStringContainsString('Filter rombel/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.', $filtered);
         $this->assertStringNotContainsString('data-table--votes-guru', $filtered);
 
         // Jenis pemilih = guru: tabel siswa tidak dirender, total hanya guru.
@@ -326,7 +326,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
 
         $audit = $this->lastAudit();
         $this->assertSame(AuditLogModel::STUDENT_CREATE, $audit['action']);
-        $this->assertStringContainsString('Siswa Nadia Putri (NISN 0099887766) ditambahkan lewat form, kelas 7A.', $audit['description']);
+        $this->assertStringContainsString('Siswa Nadia Putri (NISN 0099887766) ditambahkan lewat form, rombel 7A.', $audit['description']);
         $this->assertStringNotContainsString('01032013', $audit['description']);
         $this->assertSame('Tambah data siswa', AuditLogModel::label(AuditLogModel::STUDENT_CREATE));
     }
@@ -345,7 +345,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
             'nisn'          => 'NISN harus 10 digit (terbaca 5 digit).',
             'name'          => 'Nama wajib diisi.',
             'jenis_kelamin' => 'Jenis kelamin wajib diisi (L atau P).',
-            'kelas'         => 'Kelas harus diawali jenjang 7, 8, atau 9 (contoh 7A, 8B, IX-C); terbaca "10A".',
+            'kelas'         => 'Rombel harus diawali kelas 7, 8, atau 9 (contoh 7A, 8B, IX-C); terbaca "10A".',
             'nomor_absen'   => 'Nomor absen harus angka bulat 1-999 atau dikosongkan.',
             'kodeunik'      => 'Kode unik harus tanggal lahir DDMMYYYY yang valid, contoh 01032013.',
         ], $errors);
@@ -365,7 +365,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
             'nisn' => '0000000001', 'name' => 'Kembar', 'jenis_kelamin' => 'L', 'kelas' => '7A', 'nomor_absen' => '', 'kodeunik' => '01012013',
         ]);
         $dup->assertRedirectTo(site_url('admin/siswa/tambah'));
-        $this->assertSame(['nisn' => 'NISN 0000000001 sudah dipakai Ahmad Fauzan (kelas 7A). Satu NISN hanya untuk satu pemilih.'], session()->getFlashdata('errors'));
+        $this->assertSame(['nisn' => 'NISN 0000000001 sudah dipakai Ahmad Fauzan (rombel 7A). Satu NISN hanya untuk satu pemilih.'], session()->getFlashdata('errors'));
         $this->assertSame($before, $this->db->table('students')->countAllResults());
     }
 
@@ -393,8 +393,8 @@ final class StageElevenRefinementTest extends CIUnitTestCase
 
         $audit = $this->lastAudit();
         $this->assertSame(AuditLogModel::STUDENT_UPDATE, $audit['action']);
-        $this->assertSame('Data siswa Ahmad Fauzan (NISN 0000000001) diubah: nama Ahmad Fauzan -> Ahmad Fauzan Akbar; kelas 7A -> 7B; kode unik.', $audit['description']);
-        $this->assertStringContainsString('Nomor absen 1 di kelas 7B juga dipakai Candra Setiawan', (string) session()->getFlashdata('warning'));
+        $this->assertSame('Data siswa Ahmad Fauzan (NISN 0000000001) diubah: nama Ahmad Fauzan -> Ahmad Fauzan Akbar; rombel 7A -> 7B; kode unik.', $audit['description']);
+        $this->assertStringContainsString('Nomor absen 1 di rombel 7B juga dipakai Candra Setiawan', (string) session()->getFlashdata('warning'));
 
         // Tanpa perubahan: tidak ada audit baru.
         $count = $this->db->table('audit_logs')->countAllResults();
@@ -451,6 +451,72 @@ final class StageElevenRefinementTest extends CIUnitTestCase
         $list = $this->body($this->asAdmin()->get('admin/siswa'));
         $this->assertStringNotContainsString(site_url('admin/siswa/tambah'), $list);
         $this->assertStringNotContainsString('/ubah"', $list);
+    }
+
+    // ------------------------------------------------------------------
+    // rombel (7A, 8B) seragam di semua bagian; "kelas" = 7/8/9
+    // ------------------------------------------------------------------
+
+    public function testRombelLabelIsUsedForClassSectionsEverywhere(): void
+    {
+        $this->scheduleAt('2026-10-01 09:00:00');
+        $this->vote('student', 1, 1);
+
+        $pages = [
+            'admin/siswa'                          => ['<label for="f-rombel">Rombel</label>', 'name="rombel"', '<th scope="col">Rombel</th>'],
+            'admin/siswa/1'                        => ['<dt>Rombel</dt>'],
+            'admin/siswa/tambah'                   => ['<label for="kelas">Rombel</label>', 'Diawali kelas 7, 8, atau 9'],
+            'admin/analitik/suara'                 => ['<label for="f-rombel">Rombel</label>', '<th scope="col">Rombel</th>'],
+            'admin/buka-kunci?q=Ahmad'             => ['<th scope="col">Rombel</th>'],
+            'admin/siswa/impor'                    => ['rombel diawali kelas 7, 8, atau 9'],
+        ];
+
+        foreach ($pages as $path => $needles) {
+            service('renderer')->resetData();
+            $html = $this->body($this->asAdmin()->get($path));
+
+            foreach ($needles as $needle) {
+                $this->assertStringContainsString($needle, $html, $path);
+            }
+            // "Kelas" hanya untuk 7/8/9 (pil analitik, rekap), bukan label rombel.
+            $this->assertDoesNotMatchRegularExpression('/>Kelas<\/(th|label|dt)>|Kelas \(rombel\)/', $html, $path);
+        }
+
+        // Tautan rekap rombel & filter memakai ?rombel=; ?kelas= lama tetap diterima.
+        service('renderer')->resetData();
+        $this->asAdmin()->get('admin')->assertSee('href="' . site_url('admin/siswa') . '?status=aktif&amp;rombel=7A"');
+        foreach (['admin/siswa?rombel=7a', 'admin/siswa?kelas=7A'] as $path) {
+            $html = $this->body($this->asAdmin()->get($path));
+            $this->assertStringContainsString('<option value="7A" selected>7A</option>', $html, $path);
+            $this->assertStringNotContainsString('Candra Setiawan', $html, $path); // 7B
+        }
+
+        // Halaman siswa (dasbor & pilihan saya).
+        $student = ['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true];
+        $this->assertStringContainsString('<dt class="visually-hidden">Rombel</dt>', $this->body($this->withSession($student)->get('siswa')));
+        $this->assertStringContainsString('<dt>Rombel</dt>', $this->body($this->withSession($student)->get('siswa/pilihanku')));
+    }
+
+    public function testStudentImportTemplateUsesRombelColumnAndAcceptsLegacyKelas(): void
+    {
+        $importer = service('voterEditor')->importer(\App\Services\VoterType::Student);
+        $this->assertArrayHasKey('rombel', $importer->columns());
+        $this->assertArrayNotHasKey('kelas', $importer->columns());
+        $this->assertSame('kelas', $importer->columns()['rombel']['field']);
+
+        foreach (['rombel', 'kelas'] as $header) {
+            $path   = \Tests\Support\SpreadsheetFactory::write([
+                ['no', 'NISN', 'nama', 'jenis_kelamin', $header, 'nomor_absen', 'kodeunik'],
+                [1, '0098765432', 'Siswa Rombel', 'L', '8b', 3, '02022012'],
+                [2, '0098765433', 'Siswa Salah', 'P', '10A', 4, '02022012'],
+            ]);
+            $result = $importer->parse($path);
+            @unlink($path);
+
+            $this->assertSame([], $result['errors'], $header);
+            $this->assertSame('8B', $result['rows'][0]['values']['kelas'], $header);
+            $this->assertSame(['Rombel harus diawali kelas 7, 8, atau 9 (contoh 7A, 8B, IX-C); terbaca "10A".'], $result['rows'][1]['errors'], $header);
+        }
     }
 
     // ------------------------------------------------------------------

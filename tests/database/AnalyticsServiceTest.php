@@ -293,7 +293,7 @@ final class AnalyticsServiceTest extends CIUnitTestCase
 
         // Nilai asing diabaikan, bukan error.
         $unknown = $filter(['type' => 'admin', 'candidate' => '99', 'gender' => 'X', 'kelas' => '1Z', 'status' => 'DROP']);
-        $this->assertSame(['q' => '', 'type' => '', 'kelas' => '', 'gender' => '', 'candidate' => 0, 'status' => 'LOCKED'], $unknown);
+        $this->assertSame(['q' => '', 'type' => '', 'rombel' => '', 'gender' => '', 'candidate' => 0, 'status' => 'LOCKED'], $unknown);
 
         $page1 = $service->detailVotes($election, $filter([]), 1, 3);
         $page3 = $service->detailVotes($election, $filter([]), 3, 3);

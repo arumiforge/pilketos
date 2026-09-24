@@ -24,7 +24,9 @@ database; alur penyimpanan suara tetap (hanya isi `device_info` /
   HP seluruh indikator digabung dengan `.live__bar` di bawah layar;
 - **dasbor admin**: countdown di HP bergaya terminal, rata tengah, selebar
   layar tanpa sudut; "Rekap jenjang" menjadi **Rekap kelas** (7/8/9) dan
-  "Rekap kelas" menjadi **Rekap rombel** (7A, 8B, ...).
+  "Rekap kelas" menjadi **Rekap rombel** (7A, 8B, ...);
+- **istilah seragam**: 7A/8B disebut **rombel** di semua bagian (bagian 8),
+  "kelas" hanya untuk tingkat 7/8/9.
 
 "HP" = lebar < 720 px (sama dengan Stage 8-10).
 
@@ -110,7 +112,21 @@ tengah secara vertikal; tautan Ubah & Detail dalam satu sel aksi.
 | countdown | dibungkus `.admin-clock` (+ tiga titik jendela). Partial countdown menerima `trimDays` (hari hilang bila sisa < 1 hari) & `withProgress` (garis progres). Desktop: kotak compact seperti biasa + garis progres tipis. HP: panel terminal latar tinta, huruf mono, label "DITUTUP DALAM" renggang, `06 hari 23:56:58` rata tengah, selebar layar (margin negatif `--admin-pad`), tanpa sudut, garis progres di tepi bawah |
 | rekap | "Rekap kelas" (grade, kolom "Kelas", catatan "kelas 7, 8, 9 dibaca dari awal nama rombel") lalu "Rekap rombel" (class, kolom "Rombel", tautan ke daftar siswa) |
 
-## 8. Test
+## 8. Istilah rombel seragam
+
+"Rombel" (rombongan belajar: 7A, 8B, VIII-C) dipakai di semua bagian;
+"kelas" hanya untuk tingkat 7/8/9 (Rekap kelas, pil Kelas, "Kelas 7").
+Kolom database, nama field form, dan key JSON tetap `kelas` (internal).
+
+| Bagian | Perubahan |
+|---|---|
+| panel admin | daftar siswa (filter & kolom "Rombel"), detail ("Rombel"), form tambah/ubah (label "Rombel", "Diawali kelas 7, 8, atau 9"), detail suara (filter & kolom, catatan "Filter rombel/jenis kelamin …"), unlock (kolom, "· Rombel 7A"), pratinjau impor (kolom & nama perubahan) |
+| halaman siswa | dasbor (label pembaca layar) & pilihan saya ("Rombel") |
+| URL filter | `?rombel=7A` (daftar siswa, detail suara, tautan Rekap rombel); `?kelas=` lama tetap diterima (`VoterDirectory::filters`, `AnalyticsService::detailFilters`, key filter kini `rombel`) |
+| impor Excel | kolom templat `rombel` (field tetap `kelas`); header `kelas` pada file lama diterima lewat `VoterImporter::headerAliases()`; petunjuk "rombel diawali kelas 7, 8, atau 9"; pesan "Rombel wajib diisi.", "Rombel harus diawali kelas 7, 8, atau 9 …", "Nomor absen … di rombel …" |
+| form & audit | "NISN … sudah dipakai … (rombel 7A)", "Nomor absen 1 di rombel 7B …", audit "… ditambahkan lewat form, rombel 7A." / "rombel 7A -> 7B" |
+
+## 9. Test
 
 Baru: `tests/feature/StageElevenRefinementTest.php` (13 test): pil & tanpa
 nomor bab, fragmen bagian (tanpa layout, `Vary`), detail suara dua tabel +
@@ -128,7 +144,13 @@ Galaxy A14"), `AdminPanelTest` (bagian analitik per URL, perangkat dua baris,
 pagination `page_siswa`), `StageNineRefinementTest` (breadcrumb detail suara,
 bar live baru, catatan rekap kelas).
 
-Hasil: **372 test, 3.268 assertion, lulus** (PHP 8.4.19, MariaDB 10.11.14).
+Istilah rombel: `testRombelLabelIsUsedForClassSectionsEverywhere` (label di
+semua halaman admin & siswa, `?rombel=` dan `?kelas=` lama) dan
+`testStudentImportTemplateUsesRombelColumnAndAcceptsLegacyKelas` (header
+`rombel` & `kelas`, pesan validasi). `SpreadsheetFactory::students()` kini
+berkolom `rombel`; beberapa test lama tetap memakai header `kelas`.
+
+Hasil: **374 test, 3.300 assertion, lulus** (PHP 8.4.19, MariaDB 10.11.14).
 
 Uji browser (Playwright/Chromium, data seeder + suara uji):
 

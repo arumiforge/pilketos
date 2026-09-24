@@ -200,7 +200,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $result->assertSee('data-live-table="grade"');
         $result->assertSee('data-live-table="class"');
         $result->assertSee('Kelas 7');
-        $result->assertSee('href="' . site_url('admin/siswa') . '?status=aktif&amp;kelas=7A"');
+        $result->assertSee('href="' . site_url('admin/siswa') . '?status=aktif&amp;rombel=7A"');
         $result->assertSee('Rekap kelas');
     }
 
@@ -321,7 +321,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $teachers->assertSee('<strong>1</strong> baris suara');
         $teachers->assertDontSee('Ahmad Fauzan');
 
-        $filtered = $this->asAdmin()->get('admin/analitik/suara?kelas=7A&gender=P&candidate=2');
+        $filtered = $this->asAdmin()->get('admin/analitik/suara?rombel=7A&gender=P&candidate=2');
         $filtered->assertSee('Bunga Larasati');
         $filtered->assertSee('<strong>1</strong> baris suara');
     }
@@ -502,7 +502,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $notVoted->assertDontSee('Ahmad Fauzan');
         $notVoted->assertDontSee('Larasati Putri'); // nonaktif tidak dihitung
 
-        $class = $this->asAdmin()->get('admin/siswa?kelas=7a&jk=P');
+        $class = $this->asAdmin()->get('admin/siswa?rombel=7a&jk=P');
         $class->assertSee('Bunga Larasati');
         $class->assertSee('<strong>1</strong> siswa sesuai filter');
 
@@ -528,7 +528,7 @@ final class AdminPanelTest extends CIUnitTestCase
         $result->assertSee('Sudarmanto, S.Pd.');
         $result->assertSee('000000000000000001');
         $result->assertDontSee('Ahmad Fauzan');
-        $result->assertDontSee('Kelas</th>');
+        $result->assertDontSee('Rombel</th>');
     }
 
     public function testVoterDetailShowsVoteHistoryAndUnlockAction(): void
