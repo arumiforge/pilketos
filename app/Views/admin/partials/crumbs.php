@@ -12,6 +12,9 @@
  * Salinan yang tidak dipakai disembunyikan (display: none), jadi pembaca
  * layar hanya menemukan satu landmark Breadcrumb.
  *
+ * Stage 13: di Beranda (trail hanya "Beranda") salinan HP tidak ditampilkan
+ * (.crumbs--root): satu ikon tanpa langkah lain tidak memberi arah apa pun.
+ *
  * @var list<array{0: string, 1?: string|null, 2?: string}> $trail [label, path admin|null, ikon] setelah Beranda
  */
 $icons = [
@@ -25,6 +28,7 @@ $icons = [
     'Jadwal pemilihan' => 'calendar',
     'Unlock hak suara' => 'unlock',
     'Audit log'        => 'file',
+    'Akun Admin'       => 'key',
     'Detail'           => 'eye',
     'Pratinjau'        => 'eye',
     'Tambah'           => 'plus',
@@ -36,7 +40,7 @@ $icons = [
 $trail = array_merge([['Beranda', 'admin']], $trail ?? []);
 $last  = count($trail) - 1;
 ?>
-<nav class="crumbs" aria-label="Breadcrumb">
+<nav class="crumbs<?= $last === 0 ? ' crumbs--root' : '' ?>" aria-label="Breadcrumb">
   <ol class="crumbs__list">
     <?php foreach ($trail as $i => $crumb): ?>
       <?php

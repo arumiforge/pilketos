@@ -238,6 +238,10 @@ if (! function_exists('icon')) {
             'phone'   => '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/>',
             'tablet'  => '<rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M11 17.5h2"/>',
             'monitor' => '<rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M9 20h6"/><path d="M12 16.5V20"/>',
+            // Stage 13: menu Halaman Utama, akun admin, lihat kata sandi
+            'home'    => '<path d="M4 10.5 12 4l8 6.5"/><path d="M6 9v10.5h12V9"/><path d="M10 19.5V14h4v5.5"/>',
+            'key'     => '<circle cx="8" cy="15" r="3.5"/><path d="m10.5 12.5 9-9"/><path d="m16 7 2.5 2.5"/><path d="m18.5 4.5 2 2"/>',
+            'eye-off' => '<path d="M4 4l16 16"/><path d="M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4"/><path d="M6.6 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5a9.6 9.6 0 0 0 4.4-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
         ];
 
         if (! isset($paths[$name])) {

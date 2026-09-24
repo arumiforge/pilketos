@@ -5,6 +5,8 @@
  * Dipakai di halaman penuh (admin/analytics/index) dan sebagai jawaban fetch
  * admin-analytics.js (tanpa layout). data-pane-title = judul tab browser.
  * Judul bab tanpa penomoran (dulu "01"-"05").
+ * Stage 13: judul Title Case, catatan bab berbahasa sederhana (tanpa istilah
+ * teknis seperti nama kolom database atau User-Agent).
  *
  * @var string                $pane
  * @var array<string, string> $panes
@@ -12,18 +14,18 @@
  * @var int|null              $counted Total suara sah (hanya bagian "suara")
  */
 $headings = [
-    'jenis-kelamin' => 'Jenis kelamin siswa',
-    'kelas'         => 'Rekap kelas',
-    'rombel'        => 'Rekap rombel',
+    'jenis-kelamin' => 'Jenis Kelamin Siswa',
+    'kelas'         => 'Rekap Kelas',
+    'rombel'        => 'Rekap Rombel',
 ] + $panes;
 $notes = [
-    'keseluruhan'   => 'Siswa dan guru digabung sebagai total partisipasi pemilihan.',
-    'jenis-pemilih' => 'Siswa dan guru memakai tabel identitas dan suara terpisah.',
-    'jenis-kelamin' => 'Dari kolom jenis_kelamin, bukan ditebak dari nama. Guru tidak memiliki data jenis kelamin.',
-    'kelas'         => 'Kelas 7/8/9 dibaca dari awal nama rombel (7A, VIII-B, IX C). Rombel lain masuk "Lainnya".',
-    'rombel'        => 'Pilih nama rombel untuk melihat daftar siswanya beserta status memilih.',
-    'suara'         => 'Bawaan: suara sah (terkunci) dari pemilih aktif, jumlahnya sama dengan total suara di dasbor ('
-        . angka($counted ?? 0) . '). Perangkat dan browser dibaca server dari User-Agent (dan Client Hints bila ada) saat mencoblos.',
+    'keseluruhan'   => 'Gabungan suara siswa dan guru.',
+    'jenis-pemilih' => 'Perbandingan suara siswa dan guru.',
+    'jenis-kelamin' => 'Suara siswa menurut jenis kelamin. Guru tidak termasuk.',
+    'kelas'         => 'Suara siswa menurut kelas 7, 8, dan 9.',
+    'rombel'        => 'Pilih nama rombel untuk melihat siswa yang sudah dan belum memilih.',
+    'suara'         => 'Daftar suara yang masuk beserta waktu dan perangkatnya. Jumlah suara sah sama dengan di Beranda ('
+        . angka($counted ?? 0) . ').',
 ];
 ?>
 <div class="pane" data-pane="<?= esc($pane, 'attr') ?>" data-pane-title="<?= esc($title . ' — Admin Pemilihan OSIS SMP 1 DAWE', 'attr') ?>">

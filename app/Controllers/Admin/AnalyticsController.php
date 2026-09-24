@@ -27,14 +27,16 @@ class AnalyticsController extends AdminController
 
     /**
      * Bagian analitik: slug URL => label pill. "suara" = detail suara.
+     * Stage 13: label "Total", "Pemilih", "Jenis Kelamin", "Detail Suara"
+     * (slug URL tetap).
      */
     public const PANES = [
-        'keseluruhan'   => 'Keseluruhan',
-        'jenis-pemilih' => 'Jenis pemilih',
-        'jenis-kelamin' => 'Jenis kelamin',
+        'keseluruhan'   => 'Total',
+        'jenis-pemilih' => 'Pemilih',
+        'jenis-kelamin' => 'Jenis Kelamin',
         'kelas'         => 'Kelas',
         'rombel'        => 'Rombel',
-        'suara'         => 'Detail suara',
+        'suara'         => 'Detail Suara',
     ];
 
     /**

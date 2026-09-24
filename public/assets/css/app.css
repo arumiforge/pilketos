@@ -444,6 +444,44 @@ summary:focus-visible {
   border-color: var(--danger);
 }
 
+/* Stage 13: isian kata sandi + tombol mata (partials/password_field) */
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input { padding-right: 52px; }
+
+.password-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--gray-700);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.password-field__toggle[hidden] { display: none; }
+
+.password-field__toggle:hover { color: var(--ink); background: var(--gray-100); }
+
+.password-field__toggle .icon { width: 20px; height: 20px; }
+
+.password-field__toggle .password-field__hide,
+.password-field__toggle.is-visible .password-field__show { display: none; }
+
+.password-field__toggle.is-visible .password-field__hide { display: block; }
+
+.password-field input::-ms-reveal { display: none; }
+
 .field-hint {
   font-size: 0.8125rem;
   color: var(--gray-700);

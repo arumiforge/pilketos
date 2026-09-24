@@ -13,7 +13,7 @@ class AuthController extends BaseController
             return redirect()->to('admin');
         }
 
-        return view('admin/login', ['title' => 'Masuk Admin']);
+        return view('admin/login', ['title' => 'Panel Admin']);
     }
 
     public function attemptLogin()
@@ -69,6 +69,7 @@ class AuthController extends BaseController
 
         $this->clearLoginFailures('admin', $data['username']);
         $this->startAuthSession('admin', (int) $admin['id']);
+        session()->set(AdminModel::SESSION_STAMP_KEY, model(AdminModel::class)->sessionStamp((int) $admin['id']));
 
         return redirect()->to('admin');
     }

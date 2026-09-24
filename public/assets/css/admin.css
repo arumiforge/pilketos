@@ -150,7 +150,9 @@
 }
 
 .admin-side__nav {
+  display: flex;
   flex: 1 0 auto;
+  flex-direction: column;
   padding: var(--space-3) var(--space-3) var(--space-5);
 }
 
@@ -191,6 +193,22 @@
   height: 1.15rem;
 }
 
+/* Stage 13: Akun Admin, Halaman Utama & Keluar = kelompok menu terakhir,
+   didorong ke bagian bawah sidebar bila ruangnya cukup */
+.admin-side__list + .admin-side__list--end { margin-top: auto; }
+
+.admin-side__form { margin: 0; }
+
+.admin-side__link--button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  text-align: left;
+  cursor: pointer;
+}
+
 .admin-side__foot {
   padding: var(--space-4) var(--space-5) var(--space-5);
   border-top: 1px solid var(--ink-line);
@@ -208,35 +226,6 @@
   font-size: 0.75rem;
   color: var(--ink-muted);
 }
-
-.admin-side__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.admin-side__actions form { margin: 0; }
-
-.admin-side__site,
-.admin-side__logout {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 44px;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--ink-line);
-  border-radius: var(--radius);
-  background: transparent;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.admin-side__site:hover,
-.admin-side__logout:hover { border-color: var(--paper); }
 
 /* tanpa JavaScript di HP: menu tampil biasa di atas konten */
 @media (max-width: 1023px) {
@@ -295,7 +284,10 @@
 
 @media (max-width: 719px) {
   .admin-top__title { display: none; }
-  .admin-crumbs { display: flex; justify-content: center; margin-bottom: var(--space-4); }
+  .admin-crumbs { display: flex; justify-content: center; }
+  .admin-crumbs .crumbs { margin-bottom: var(--space-4); }
+  /* Stage 13: Beranda tanpa breadcrumb ikon di HP */
+  .admin-crumbs .crumbs--root { display: none; }
 }
 
 /* -- kepala halaman (Stage 12: rata tengah, tanpa garis bawah) ------------ */
@@ -442,6 +434,13 @@ a.crumbs__step:focus-visible,
   border-color: var(--ink);
   background: var(--ink);
   color: var(--paper);
+}
+
+/* Stage 13: HP tanpa tombol keterangan (kepala halaman lebih ringkas);
+   keterangan hanya bisa dibuka di layar lebar */
+@media (max-width: 719px) {
+  .js .admin-head__hint { display: none; }
+  .js .admin-head__lede[data-lede].is-open { display: none; }
 }
 
 .admin-head__lede {
@@ -2797,6 +2796,41 @@ ul.check-list {
   color: var(--ink);
 }
 
+/* -- akun admin (Stage 13) ------------------------------------------------ */
+.account-id {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  text-align: left;
+}
+
+.account-id__seal {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.account-id__seal .icon { width: 22px; height: 22px; }
+
+.account-id__name { font-weight: 700; }
+
+.account-id__user {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+.account-grid { margin-top: var(--space-6); }
+
+.account-grid .stack { max-width: 34rem; }
+
 /* -- footer ---------------------------------------------------------------- */
 .admin-foot {
   margin-top: var(--space-8);
@@ -2812,22 +2846,24 @@ ul.check-list {
   margin-inline: auto;
 }
 
-/* -- keadaan final di dasbor (Stage 4) -------------------------------------- */
+/* -- keadaan final di dasbor (Stage 4) --------------------------------------
+   Stage 13: satu kolom rata tengah (nomor, teks, dan tombol di tengah) di
+   semua lebar layar. -- */
 .final-banner {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   gap: var(--space-4);
-  align-items: center;
   margin-bottom: var(--space-6);
-  padding: var(--space-5);
+  padding: var(--space-6) var(--space-5);
   border: 2px solid var(--ink);
   background: var(--paper);
+  text-align: center;
 }
 
 .final-banner--winner {
-  grid-template-columns: auto minmax(0, 1fr);
   border-color: var(--accent);
-  border-left-width: 10px;
+  border-top-width: 10px;
 }
 
 .final-banner__no {
@@ -2843,9 +2879,12 @@ ul.check-list {
   font-variant-numeric: lining-nums;
 }
 
+.final-banner__body { max-width: 62ch; }
+
 .final-banner__eyebrow {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   font-size: 0.75rem;
   font-weight: 700;
@@ -2859,27 +2898,13 @@ ul.check-list {
   margin-top: var(--space-1);
   font-size: clamp(1.35rem, 2.8vw, 1.9rem);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .final-banner__text {
-  margin-top: var(--space-2);
+  margin: var(--space-2) auto 0;
   font-size: 0.9375rem;
   color: var(--gray-700);
-}
-
-.final-banner__cta {
-  grid-column: 1 / -1;
-  justify-self: start;
-}
-
-@media (min-width: 900px) {
-  .final-banner { grid-template-columns: minmax(0, 1fr) auto; }
-  .final-banner--winner { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .final-banner__cta { grid-column: auto; justify-self: end; }
-}
-
-@media (max-width: 559px) {
-  .final-banner--winner { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* -- cetak rekap ------------------------------------------------------------ */
@@ -2895,6 +2920,7 @@ ul.check-list {
   .admin-head__actions,
   .admin-head__hint,
   .note-tip,
+  .admin-foot,
   .skip-link { display: none !important; }
 
   .js .admin-head__lede[data-lede]:not(.is-open) { display: block; }

@@ -7,6 +7,6 @@
     'groups'     => $snapshot['groups']['gender'],
     'candidates' => $snapshot['candidates'],
     'key'        => 'gender',
-    'label'      => 'Jenis kelamin',
+    'label'      => 'Jenis Kelamin',
     'caption'    => 'Rekap suara siswa per jenis kelamin',
 ]) ?>

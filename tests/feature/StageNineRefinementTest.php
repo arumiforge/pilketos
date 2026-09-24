@@ -228,11 +228,12 @@ final class StageNineRefinementTest extends CIUnitTestCase
         $this->post('siswa/masuk', [csrf_token() => csrf_hash(), 'nisn' => '0000000001', 'kodeunik' => '05062013'])
             ->assertRedirectTo(site_url('siswa'));
 
-        // Admin tetap login satu tahap tanpa eyebrow.
+        // Admin tetap login satu tahap tanpa eyebrow (Stage 13: layar terbelah,
+        // judul "Panel Admin").
         session()->destroy();
         $admin = $this->get('admin/masuk');
         $admin->assertDontSee('<p class="eyebrow">Masuk Admin</p>');
-        $admin->assertSee('<h1 class="card__title">Masuk ke panel admin</h1>');
+        $admin->assertSee('<h1 class="split-login__title">Panel Admin</h1>');
         $admin->assertDontSee('data-auth');
     }
 
@@ -253,7 +254,8 @@ final class StageNineRefinementTest extends CIUnitTestCase
 
         $page->assertSee('<span>Beranda</span>');
         $page->assertSee('<title>Beranda — Admin');
-        $this->assertMatchesRegularExpression('/class="admin-side__site"[^>]*>Home <svg/', $html);
+        // Stage 13: "Home" menjadi menu "Halaman Utama" di kelompok terakhir.
+        $this->assertMatchesRegularExpression('#<ul class="admin-side__list admin-side__list--end">.*<span>Halaman Utama<#s', $html);
         $this->assertSame(3, substr_count($html, '<ul class="admin-side__list">'));
         $this->assertMatchesRegularExpression('/<footer class="admin-foot">\s*<p>&copy; ' . date('Y') . ' SMP 1 DAWE<\/p>\s*<\/footer>/', $html);
 
@@ -286,7 +288,8 @@ final class StageNineRefinementTest extends CIUnitTestCase
             $html = (string) $page->response()->getBody();
 
             $this->assertStringNotContainsString('eyebrow-x', $html, $path);
-            $page->assertSee('<nav class="crumbs" aria-label="Breadcrumb">');
+            // Stage 13: Beranda saja = crumbs--root (salinan HP disembunyikan).
+            $page->assertSee(count($trail) === 1 ? '<nav class="crumbs crumbs--root" aria-label="Breadcrumb">' : '<nav class="crumbs" aria-label="Breadcrumb">');
             // Stage 12: satu salinan di topbar (desktop) + satu di atas judul (HP).
             $this->assertSame(2 * count($trail), substr_count($html, 'class="crumbs__item'), $path);
             $current = end($trail);

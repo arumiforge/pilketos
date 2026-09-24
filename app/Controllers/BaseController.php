@@ -30,7 +30,7 @@ abstract class BaseController extends Controller
      * Seluruh key sesi autentikasi. Dibersihkan setiap login/logout agar
      * tidak ada sisa identitas role lain di sesi yang sama.
      */
-    public const AUTH_SESSION_KEYS = ['user_type', 'admin_id', 'student_id', 'teacher_id', 'isLoggedIn', self::AUTH_SEEN_KEY];
+    public const AUTH_SESSION_KEYS = ['user_type', 'admin_id', 'student_id', 'teacher_id', 'isLoggedIn', self::AUTH_SEEN_KEY, 'admin_stamp'];
 
     /**
      * Batas login GAGAL per akun (NISN/NIP/username). Kode unik berupa tanggal

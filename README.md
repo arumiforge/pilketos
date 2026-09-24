@@ -69,12 +69,12 @@ CodeIgniter 4.7
   Filter role   : studentauth / teacherauth / adminauth (401 JSON untuk AJAX)
   Controller    : Home (beranda + live count publik), Student\*, Teacher\*, VotingController,
                   ElectionController (jam), Admin\* (Dashboard, LiveCount, Analytics, Result,
-                  Candidate, Student, Teacher, Import, Election, Unlock, Audit)
+                  Candidate, Student, Teacher, Import, Election, Unlock, Audit, Account)
   Service       : VoteService (castVote), UnlockService, AnalyticsService (satu definisi
                   angka), PublicLiveCount (proyeksi publik), FinalResult, VoterDirectory,
                   Import\* (PhpSpreadsheet)
   Library       : CandidateTheme, CandidateAssets (encode ulang gambar), DeviceInfo,
-                  Grade, AdminAccount, SystemCheck
+                  Grade, AdminAccount, SystemCheck, ResultPdf (PDF hasil akhir, dompdf)
   Model         : Admin, Student, Teacher, Candidate, Election, StudentVote, TeacherVote,
                   VoteUnlockLog, AuditLog
   v
@@ -112,16 +112,18 @@ app/Config/          Routes.php, Filters.php, ContentSecurityPolicy.php, App.php
 app/Controllers/     Home, VotingController, Student/*, Teacher/*, Admin/*
 app/Database/        Migrations (12 file), Seeds (data contoh development)
 app/Filters/         AuthFilter + per role, PostSizeFilter, SecurityHeadersFilter
-app/Libraries/       CandidateTheme, CandidateAssets, DeviceInfo, Grade, AdminAccount, SystemCheck
+app/Fonts/           Newsreader & Plus Jakarta Sans TTF statis (OFL) khusus PDF hasil akhir
+app/Libraries/       CandidateTheme, CandidateAssets, DeviceInfo, Grade, AdminAccount, SystemCheck, ResultPdf
 app/Models/          9 model tabel
 app/Services/        VoteService, UnlockService, AnalyticsService, PublicLiveCount, FinalResult, Import/*
 app/Views/           layouts, home (+ partials: splash, dock, pair_photo), student, teacher,
                      voting, admin/**, errors
 public/              index.php, .htaccess, assets/{css,js,fonts,img}, uploads/candidates/
-                     (img/brand: lockup acara, img/home: latar hero & layar pembuka, kontur,
-                     perforasi, ilustrasi pintu masuk; img/results: stempel hasil akhir)
+                     (img/brand: lockup acara + logo SMP 1 DAWE, img/home: latar hero & layar
+                     pembuka, kontur, perforasi, ilustrasi pintu masuk; img/auth: foto login
+                     admin; img/results: stempel hasil akhir)
 tests/               unit, database, feature (PHPUnit)
-writable/            cache, logs, session, uploads/imports (pratinjau impor)
+writable/            cache (+ cache/dompdf: metrik font PDF), logs, session, uploads/imports (pratinjau impor)
 ```
 
 Daftar file lengkap ada di `STAGE4-NOTES.md` bagian 12.
@@ -469,24 +471,42 @@ Setelah waktu selesai: buka **Hasil akhir**, lalu backup lagi.
 ## 8. Admin
 
 Login: `/admin/masuk` (username + kata sandi, dibatasi 5 percobaan gagal per
-akun lalu 1 per menit). Menu panel (Stage 9: tanpa nomor & judul kelompok;
-brand "SMP 1 DAWE / Panel Admin"; **Home** membuka situs pemilih di tab baru):
+akun lalu 1 per menit). Stage 13: halaman login layar terbelah (foto surat
+suara di kiri / atas di HP, formulir "Panel Admin" di kanan) dengan tombol
+mata untuk melihat kata sandi. Menu panel (Stage 9: tanpa nomor & judul
+kelompok; brand "SMP 1 DAWE / Panel Admin"; Stage 13: label Title Case,
+kelompok terakhir di bagian bawah sidebar berisi **Akun Admin**,
+**Halaman Utama** (situs pemilih, tab baru), dan **Keluar**):
 
 | Menu | Fungsi |
 |---|---|
 | Beranda | jadwal (mulai & berakhir) + countdown (di HP bergaya terminal selebar layar), ringkasan pemilih, suara per pasangan, rekap kelas (7/8/9) & rombel (7A, 8B, ...), live count; saat selesai tampil keadaan final + tautan hasil akhir |
-| Analitik | deretan pil (Keseluruhan, Jenis pemilih, Jenis kelamin, Kelas, Rombel, Detail suara); isi bagian dimuat tanpa memuat ulang halaman. Detail suara: tabel siswa & guru terpisah (cari, filter, paginasi masing-masing) |
+| Analitik | deretan pil (Total, Pemilih, Jenis Kelamin, Kelas, Rombel, Detail Suara); isi bagian dimuat tanpa memuat ulang halaman. Detail suara: tabel siswa & guru terpisah (cari, filter, paginasi masing-masing) |
 | Hasil akhir | hanya aktif saat pemilihan selesai (bagian 16) |
 | Pasangan calon | tambah/ubah/nonaktifkan/hapus + unggah tema, pratinjau halaman pemilih |
 | Siswa / Guru | daftar (status "Sudah/Belum memilih" + kolom waktu memilih), cari, filter, detail (kode unik tersamar), **tambah & ubah satu per satu** (aturan sama dengan impor), nonaktifkan, hapus data salah impor, impor Excel |
 | Jadwal pemilihan | nama, tahun, mulai, selesai; tutup sekarang; buka sekarang |
 | Unlock | cari pemilih, buka hak suara dengan alasan |
 | Audit log | riwayat tindakan admin (hanya-baca) |
+| Akun Admin | ganti nama pengguna dan kata sandi admin yang sedang masuk (Stage 13, bagian 8.1) |
+
+### 8.1 Akun Admin (Stage 13)
+
+`/admin/akun`: dua formulir, **Ganti Nama Pengguna** dan **Ganti Kata
+Sandi**. Keduanya meminta kata sandi saat ini (salah 5 kali = tunggu, sama
+seperti login). Nama pengguna 3-50 karakter (huruf kecil, angka, titik,
+strip, garis bawah) dan tidak boleh dipakai admin lain; kata sandi baru
+minimal 8 karakter (maksimal 72), berbeda dari yang lama, diulang dua kali.
+Setelah kata sandi diganti, sesi ini tetap masuk sedangkan perangkat lain
+yang masih masuk dengan akun yang sama otomatis keluar. Kedua perubahan
+tercatat di audit log (tanpa kata sandi). `php spark admin:password` tetap
+tersedia bila kata sandi terlupa.
 
 Setiap halaman punya breadcrumb berikon (Beranda > ... > halaman ini): di
 desktop berada di topbar (ikon + teks), di HP berupa ikon saja di atas judul
-yang rata tengah (Stage 12). Keterangan halaman muncul saat ikon "i" di
-samping judul ditekan. Semua kolom pencarian admin (siswa, guru, detail
+yang rata tengah (Stage 12; Stage 13: di Beranda tanpa ikon breadcrumb di
+HP). Keterangan halaman muncul saat ikon "i" di samping judul ditekan (hanya
+di layar lebar; Stage 13: HP tanpa tombol "i"). Semua kolom pencarian admin (siswa, guru, detail
 suara, unlock, audit log) mencari langsung saat mengetik tanpa memuat ulang
 halaman. Indikator live count
 berikon siaran bertuliskan **Live** saat pemilihan berlangsung; di HP ikon,
@@ -609,7 +629,7 @@ Hanya saat pemilihan berlangsung, untuk kasus seperti pemilih salah menekan:
 
 - Angka dari satu definisi (bagian 2): sudah + belum memilih = total pemilih
   aktif (siswa, guru, gabungan); suara siswa + suara guru = total suara.
-- Rekap: jenis pemilih, jenis kelamin (khusus siswa), kelas 7/8/9 (dibaca dari
+- Rekap: pemilih (siswa/guru), jenis kelamin (khusus siswa), kelas 7/8/9 (dibaca dari
   awal nama rombel, juga angka Romawi), rombel (7A, 8B, ...), per pasangan
   (jumlah & persen dari suara sah).
 - Istilah (Stage 11, seragam di semua halaman, impor, pesan, dan audit):
@@ -652,7 +672,19 @@ Admin > **Hasil akhir** (`/admin/hasil`):
   satu pasangan terpilih: sekali per sesi browser, sekitar 5 detik, tidak
   menghalangi klik, tidak tampil bila reduced motion. Tidak pernah tampil di
   dasbor/analitik.
-- Tombol **Layar penuh** (proyektor) dan **Cetak**.
+- Tombol **Layar penuh** (proyektor), **Cetak PDF**, dan **Analitik
+  lengkap** (Stage 13: di HP berupa ikon bulat saja).
+- **Cetak PDF** (Stage 13, `/admin/hasil/cetak`): PDF A4 dibuat server dengan
+  `dompdf/dompdf` lalu dibuka di tab baru (cetak/simpan dari penampil PDF
+  browser). Logo SMP 1 DAWE menggantikan judul halaman, kicker & judul rata
+  tengah, rekap per pemilih/kelas/jenis kelamin di halaman kedua, catatan
+  kaki miring rata tengah + "Halaman X dari Y" di setiap halaman. Catatan
+  "perolehan suara tertinggi sama" tidak dicetak. Font memakai Newsreader &
+  Plus Jakarta Sans (TTF di `app/Fonts`); metrik font disimpan di
+  `writable/cache/dompdf` (dibuat ulang otomatis setelah `cache:clear`).
+- Cetak lewat browser (Ctrl+P) mengikuti tata letak yang sama; catatan kaki
+  & nomor halaman di margin bawah setiap halaman memakai `@page` margin box
+  (Chrome/Edge 131+). Footer panel admin tidak ikut dicetak.
 - Beranda publik saat selesai menampilkan perolehan akhir (persentase;
   status "Sudah Selesai" di panel status) tanpa pemenang dan tanpa confetti;
   pengumuman resmi tetap oleh panitia.
@@ -719,8 +751,8 @@ composer install
 composer test                 (atau vendor\bin\phpunit --no-coverage)
 ```
 
-Hasil terakhir (Stage 12): **383 test, 3.422 assertion, lulus** pada PHP
-8.4.19 dengan MariaDB 10.11.14 (Stage 11: 374 test, Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
+Hasil terakhir (Stage 13): **403 test, 3.725 assertion, lulus** pada PHP
+8.4.19 dengan MariaDB 10.11.14 (Stage 12: 383 test, Stage 11: 374 test, Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
 browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
@@ -743,6 +775,7 @@ browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
 | `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
 | `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel, istilah "rombel" seragam (label, impor, pesan, audit) |
 | `STAGE12-NOTES.md` | Stage 12: kerangka "memuat" analitik (pengganti garis progres), breadcrumb berikon di topbar / ikon saja di HP, kepala halaman rata tengah tanpa garis, "Selengkapnya" & kolom "Grafik", kartu paslon + timeline asset, timeline tahapan unlock, live search di semua pencarian admin |
+| `STAGE13-NOTES.md` | Stage 13: hasil akhir (PDF dompdf, cetak browser dengan logo & catatan kaki per halaman, tombol ikon di HP), sidebar Title Case + Halaman Utama/Keluar di bawah, Akun Admin (ganti nama pengguna & kata sandi), login admin layar terbelah + lihat kata sandi, istilah analitik Total/Pemilih/Jenis Kelamin |
 
 ## 21. Beranda imersif & aset visual
 

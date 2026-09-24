@@ -59,7 +59,7 @@ $sharedCells = static function (array $row) use ($accent): string {
     <span class="search-field"><?= icon('search', 'search-field__icon') ?><input type="search" id="f-q" name="q" value="<?= esc($filters['q'], 'attr') ?>" maxlength="100" autocomplete="off"></span>
   </div>
   <div class="field">
-    <label for="f-type">Jenis pemilih</label>
+    <label for="f-type">Pemilih</label>
     <select id="f-type" name="type">
       <option value="">Semua</option>
       <option value="student"<?= $filters['type'] === 'student' ? ' selected' : '' ?>>Siswa</option>
@@ -76,7 +76,7 @@ $sharedCells = static function (array $row) use ($accent): string {
     </select>
   </div>
   <div class="field">
-    <label for="f-gender">Jenis kelamin</label>
+    <label for="f-gender">Jenis Kelamin</label>
     <select id="f-gender" name="gender">
       <option value="">Semua</option>
       <option value="L"<?= $filters['gender'] === 'L' ? ' selected' : '' ?>>Laki-laki</option>
