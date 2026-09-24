@@ -4,19 +4,18 @@
 
 <section class="dash-head">
   <div class="container">
-    <p class="eyebrow">Dasbor Siswa</p>
     <h1 class="dash-head__name"><?= esc($student['name']) ?></h1>
     <dl class="dash-meta">
       <div>
-        <dt>NISN</dt>
+        <dt class="visually-hidden">NISN</dt>
         <dd><?= esc($student['nisn']) ?></dd>
       </div>
       <div>
-        <dt>Kelas</dt>
+        <dt class="visually-hidden">Kelas</dt>
         <dd><?= esc($student['kelas']) ?></dd>
       </div>
       <div>
-        <dt>Nomor Absen</dt>
+        <dt class="visually-hidden">Nomor Absen</dt>
         <dd><?= esc($student['nomor_absen'] ?? '-') ?></dd>
       </div>
     </dl>
@@ -36,12 +35,11 @@
     <aside class="dash-aside" aria-labelledby="schedule-title">
       <h2 class="dash-aside__title" id="schedule-title">Jadwal pemilihan</h2>
       <?= $this->include('partials/election_status') ?>
-      <?php if (in_array($election['status'] ?? null, ['UPCOMING', 'ONGOING'], true)): ?>
-        <?= view('partials/countdown', ['election' => $election, 'variant' => 'compact']) ?>
-      <?php endif; ?>
     </aside>
   </div>
 </section>
+
+<?= view('partials/float_clock', ['election' => $election]) ?>
 
 <?= $this->endSection() ?>
 

@@ -29,6 +29,15 @@
   src: url('../fonts/newsreader-latin-wght-normal.woff2') format('woff2');
 }
 
+/* Stage 8: countdown gaya terminal di dasbor & bilik suara (diunduh hanya bila dipakai) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('../fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+}
+
 :root {
   /* -- color: neutral base only -- */
   --ink:        #15141A;
@@ -55,6 +64,7 @@
 
   --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
   --radius: 3px;
   --radius-lg: 6px;
@@ -286,12 +296,9 @@ p { max-width: 62ch; }
 
 .site-nav__action .icon { width: 18px; height: 18px; }
 
-@media (max-width: 599px) {
-  .site-nav__role { display: none; }
-}
-
-/* HP sangat sempit: ikon saja (teks tetap terbaca pembaca layar) */
-@media (max-width: 379px) {
+/* HP (Stage 8): Dasbor & Keluar cukup ikon di kiri-kanan logo; teks tetap
+   terbaca pembaca layar */
+@media (max-width: 719px) {
   .site-nav__action {
     width: 44px;
     padding: 0;
@@ -619,7 +626,7 @@ summary:focus-visible {
 .kv-list__row dd { font-weight: 600; text-align: right; }
 
 /* ==========================================================================
-   Countdown bersama: "compact" (dasbor, halaman voting, hasil akhir).
+   Countdown bersama: "compact" (admin) & "terminal" (dasbor, bilik suara).
    Varian "dock" (panel status terminal beranda) ada di home.css.
    ========================================================================== */
 
@@ -724,38 +731,200 @@ summary:focus-visible {
 
 .countdown--compact .countdown__name { color: var(--gray-700); font-size: 0.625rem; }
 
+/* -- varian "terminal" (Stage 8): 03:12:45 ala konsol, odometer halus.
+   Ukuran angka lewat --term-size; bingkai diatur pemakainya: panel terminal
+   bilik suara (voting.css) dan jam melayang dasbor (.float-clock). -- */
+.countdown--terminal {
+  font-family: var(--font-mono);
+}
+
+.countdown--terminal .countdown__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.countdown--terminal .countdown__units {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  font-size: var(--term-size, 1rem);
+}
+
+.countdown--terminal .countdown__unit {
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+.countdown--terminal .countdown__unit--minutes::before,
+.countdown--terminal .countdown__unit--seconds::before {
+  content: ':';
+  padding-inline: 0.06em;
+  font-weight: 600;
+  opacity: 0.45;
+}
+
+.countdown--terminal .countdown__name { display: none; }
+
+.countdown--terminal .countdown__unit--days .countdown__name {
+  display: inline;
+  margin: 0 0.7em 0 0.3em;
+  font-size: 0.55em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  opacity: 0.7;
+}
+
+.countdown--terminal .countdown__digits {
+  gap: 0;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.countdown--terminal .odo {
+  --h: 1.2em;
+  width: 0.62em;
+  border-radius: 0;
+  background: transparent;
+}
+
+.countdown--terminal .odo::after { display: none; }
+
+.countdown--terminal .countdown__progress {
+  display: block;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+.countdown--terminal .countdown__progress-fill {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+}
+
+/* -- jam melayang dasbor (partials/float_clock.php): menempel di bawah layar,
+   berhenti di atas footer saat halaman habis digulir. Halaman pendek: <main>
+   jadi kolom flex agar pil tetap turun ke dasar layar (margin-top: auto). -- */
+main:has(> .float-clock) {
+  display: flex;
+  flex-direction: column;
+}
+
+.float-clock {
+  position: sticky;
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--space-4));
+  margin: auto auto var(--space-5);
+  padding: 10px 20px 12px 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 12px 32px rgba(21, 20, 26, 0.28), 0 2px 6px rgba(21, 20, 26, 0.18);
+}
+
+.float-clock__led {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+.float-clock--ongoing .float-clock__led { animation: float-led 1.8s ease-in-out infinite; }
+
+.float-clock--upcoming .float-clock__led {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ink-muted);
+}
+
+@keyframes float-led {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(250, 249, 246, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(250, 249, 246, 0); }
+}
+
+.float-clock .countdown--terminal {
+  --term-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.float-clock .countdown__label {
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+/* garis progres pemilihan di tepi bawah pil */
+.float-clock .countdown__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--ink-line);
+  opacity: 1;
+}
+
+.float-clock .countdown__progress-fill { background: var(--paper); opacity: 0.8; }
+
 /* ==========================================================================
    Stage 2 — Dasbor pemilih
    ========================================================================== */
 
+/* Stage 8: nama rata tengah; NISN / kelas / nomor absen satu baris miring
+   di bawahnya, dipisah garis miring (label hanya untuk pembaca layar) */
 .dash-head {
-  padding-block: var(--space-6);
+  padding-block: var(--space-7) var(--space-6);
   border-bottom: 1px solid var(--line);
+  text-align: center;
 }
 
 .dash-head__name {
-  margin-top: var(--space-2);
   font-size: clamp(2.1rem, 8vw, 3.8rem);
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .dash-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3) var(--space-6);
-  margin-top: var(--space-5);
+  justify-content: center;
+  align-items: baseline;
+  row-gap: var(--space-1);
+  margin-top: var(--space-3);
+  color: var(--gray-700);
+  font-size: 1rem;
+  font-style: italic;
 }
 
-.dash-meta dt {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gray-700);
+.dash-meta > div {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.dash-meta > div + div::before {
+  content: '/';
+  content: '/' / '';
+  margin-inline: 0.65em;
+  color: var(--line-strong);
+  font-style: normal;
 }
 
 .dash-meta dd {
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 

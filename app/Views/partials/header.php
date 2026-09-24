@@ -3,7 +3,8 @@
  * Navigasi situs (redesign beranda): logo lengkap di tengah pada desktop & HP,
  * tanpa tombol "Masuk Siswa/Guru" (pintu masuk ada di scene "Masuk" beranda).
  * Pengguna yang sudah login tetap mendapat Dasbor (kiri) dan Keluar (kanan):
- * penting di komputer lab yang dipakai bergantian.
+ * penting di komputer lab yang dipakai bergantian. Stage 8: di HP (< 720px)
+ * keduanya cukup ikon; teksnya tetap ada untuk pembaca layar.
  *
  * Stage 6: logo = lockup acara PILKETOS 2026 (Config\Homepage $logoOnLight /
  * $logoOnDark) + lambang resmi SMP 1 DAWE bila dipasang ($schoolEmblem),
