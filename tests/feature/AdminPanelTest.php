@@ -272,12 +272,13 @@ final class AdminPanelTest extends CIUnitTestCase
 
         // Stage 11: satu bagian per halaman (pill section header); setiap
         // bagian punya URL sendiri, tabel rekap tetap diperbarui live count.
+        // Stage 13: label Total / Pemilih / Jenis Kelamin, catatan sederhana.
         $panes = [
-            'admin/analitik'               => [null, ['Keseluruhan', 'Siswa dan guru digabung']],
-            'admin/analitik/jenis-pemilih' => ['type', ['Jenis pemilih', 'Siswa', 'Guru']],
-            'admin/analitik/jenis-kelamin' => ['gender', ['Jenis kelamin siswa', 'Laki-laki', 'Perempuan']],
-            'admin/analitik/kelas'         => ['grade', ['Rekap kelas', 'Kelas 7']],
-            'admin/analitik/rombel'        => ['class', ['Rekap rombel', '7A']],
+            'admin/analitik'               => [null, ['>Total</h2>', 'Gabungan suara siswa dan guru.']],
+            'admin/analitik/jenis-pemilih' => ['type', ['>Pemilih</h2>', 'Siswa', 'Guru']],
+            'admin/analitik/jenis-kelamin' => ['gender', ['Jenis Kelamin Siswa', 'Laki-laki', 'Perempuan']],
+            'admin/analitik/kelas'         => ['grade', ['Rekap Kelas', 'Kelas 7']],
+            'admin/analitik/rombel'        => ['class', ['Rekap Rombel', '7A']],
         ];
 
         foreach ($panes as $path => [$key, $texts]) {

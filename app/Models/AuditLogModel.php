@@ -36,6 +36,8 @@ class AuditLogModel extends Model
     public const TEACHER_CREATE   = 'TEACHER_CREATE';
     public const STUDENT_UPDATE   = 'STUDENT_UPDATE';
     public const TEACHER_UPDATE   = 'TEACHER_UPDATE';
+    public const ADMIN_USERNAME   = 'ADMIN_USERNAME';
+    public const ADMIN_PASSWORD   = 'ADMIN_PASSWORD';
 
     /**
      * Label tindakan untuk UI (urutan = urutan filter di halaman Audit).
@@ -57,6 +59,8 @@ class AuditLogModel extends Model
         self::TEACHER_STATUS   => 'Ubah status akun guru',
         self::STUDENT_DELETE   => 'Hapus data siswa',
         self::TEACHER_DELETE   => 'Hapus data guru',
+        self::ADMIN_USERNAME   => 'Ganti nama pengguna admin',
+        self::ADMIN_PASSWORD   => 'Ganti kata sandi admin',
     ];
 
     protected $table         = 'audit_logs';

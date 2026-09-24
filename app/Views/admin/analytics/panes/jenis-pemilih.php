@@ -7,6 +7,6 @@
     'groups'     => $snapshot['groups']['type'],
     'candidates' => $snapshot['candidates'],
     'key'        => 'type',
-    'label'      => 'Jenis',
-    'caption'    => 'Rekap suara per jenis pemilih',
+    'label'      => 'Pemilih',
+    'caption'    => 'Rekap suara per pemilih (siswa dan guru)',
 ]) ?>

@@ -347,3 +347,166 @@
   .auth-page { padding-block: var(--space-8); }
   .auth { padding: var(--space-7) var(--space-6) var(--space-6); }
 }
+
+/* ==========================================================================
+   Stage 13: login admin layar terbelah (admin/login.php, layouts/split).
+   Kiri foto surat suara (object-fit cover), kanan panel formulir. HP/tablet
+   (< 900 px): foto menjadi pita di atas, formulir di bawahnya. Keterangan
+   foto di atas pita tinta transparan solid (tanpa gradient).
+   ========================================================================== */
+.split-login {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--paper);
+}
+
+.split-login__visual {
+  position: relative;
+  height: clamp(200px, 34vh, 300px);
+  margin: 0;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.split-login__visual picture,
+.split-login__visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.split-login__visual img {
+  object-fit: cover;
+  object-position: 58% 62%;
+}
+
+.split-login__caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-5);
+  background: rgba(21, 20, 26, 0.72);
+  color: var(--paper);
+}
+
+.split-login__caption-kicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.split-login__caption-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.split-login__panel {
+  display: grid;
+  place-items: center;
+  padding: var(--space-7) var(--space-5) var(--space-8);
+}
+
+.split-login__panel:focus { outline: none; }
+
+.split-login__inner {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 400px;
+}
+
+.split-login__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: var(--space-3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  color: var(--gray-700);
+}
+
+.split-login__brand img { width: 52px; height: 52px; }
+
+.split-login__title {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-align: center;
+}
+
+.split-login__alert,
+.split-login__notice {
+  max-width: none;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius);
+  background: #F6E5E0;
+  color: var(--danger);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.split-login__alert p { max-width: none; }
+.split-login__alert p + p { margin-top: var(--space-1); }
+
+.split-login__notice {
+  border-left-color: var(--success);
+  background: var(--paper-dim);
+  color: var(--success);
+}
+
+.split-login__form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.split-login__form .field input { min-height: 52px; }
+.split-login__form .btn--block { min-height: 52px; margin-top: var(--space-2); }
+
+.split-login__back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.split-login__back:hover { color: var(--ink); }
+.split-login__back .icon { width: 1.1em; height: 1.1em; }
+
+@media (min-width: 900px) {
+  .split-login {
+    grid-template-columns: minmax(0, 1.25fr) minmax(420px, 1fr);
+    grid-template-rows: none;
+  }
+
+  .split-login__visual {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .split-login__visual img { object-position: 62% 55%; }
+
+  .split-login__caption { padding: var(--space-5) var(--space-7); }
+  .split-login__caption-title { font-size: 2rem; }
+
+  .split-login__panel { padding: var(--space-8) var(--space-7); }
+}

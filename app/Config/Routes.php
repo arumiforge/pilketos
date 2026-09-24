@@ -76,6 +76,8 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
 
     // Hasil akhir + confetti (Stage 4): aktif hanya saat pemilihan FINISHED
     $routes->get('hasil', 'Admin\ResultController::index');
+    // Stage 13: PDF hasil akhir (dompdf), dibuka di tab baru untuk dicetak/diunduh
+    $routes->get('hasil/cetak', 'Admin\ResultController::pdf');
 
     // Pasangan calon (paslon) + tema
     $routes->get('paslon', 'Admin\CandidateController::index');
@@ -134,4 +136,9 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->get('buka-kunci/guru/(:num)', 'Admin\UnlockController::form/teacher/$1');
     $routes->post('buka-kunci/guru/(:num)', 'Admin\UnlockController::unlock/teacher/$1');
     $routes->get('riwayat', 'Admin\AuditController::index');
+
+    // Stage 13: akun admin yang sedang masuk (ganti nama pengguna & kata sandi)
+    $routes->get('akun', 'Admin\AccountController::index');
+    $routes->post('akun/nama-pengguna', 'Admin\AccountController::username');
+    $routes->post('akun/kata-sandi', 'Admin\AccountController::password');
 });

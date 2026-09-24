@@ -63,28 +63,11 @@
   border-top: 6px double var(--ink);
 }
 
-/* Stage 6: stempel geometris hasil akhir (S04 result-mark.svg): dua cincin,
-   cincin perforasi, titik coblos; warna dari CSS lewat mask, tanpa piala. */
-.final__mark {
-  display: none;
-  position: absolute;
-  top: var(--space-5);
-  right: 0;
-  width: clamp(72px, 8vw, 104px);
-  aspect-ratio: 1;
-  background-color: var(--ink);
-  opacity: 0.85;
-  -webkit-mask: url('../img/results/result-mark.svg') center / contain no-repeat;
-  mask: url('../img/results/result-mark.svg') center / contain no-repeat;
-}
-
-@media (min-width: 720px) {
-  .final__mark { display: block; }
-  .final__kicker,
-  .final__title { padding-right: clamp(88px, 10vw, 128px); }
-}
-
+/* Stage 13: stempel geometris hasil akhir dihapus; kicker & judul rata
+   tengah (layar lebar, HP, maupun cetak). */
 .final__kicker {
+  max-width: none;
+  text-align: center;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -93,6 +76,8 @@
 }
 
 .final__title {
+  text-align: center;
+  text-wrap: balance;
   font-family: var(--font-display);
   font-size: clamp(1.55rem, 3.2vw, 2.5rem);
   font-weight: 500;
@@ -101,10 +86,8 @@
   overflow-wrap: anywhere;
 }
 
-.final__school {
-  font-weight: 300;
-  font-style: italic;
-}
+/* Stage 13: tegak (tidak miring) */
+.final__school { font-weight: 300; }
 
 .final__stamp {
   display: grid;
@@ -525,13 +508,18 @@
 /* -- rekap & catatan kaki ------------------------------------------------- */
 .final__recap { display: grid; gap: var(--space-5); }
 
+/* Stage 13: rata tengah selebar lembar (tanpa batas lebar baris) */
 .final__foot {
+  width: 100%;
   padding-top: var(--space-4);
   border-top: 1px solid var(--ink);
   font-size: 0.8125rem;
   color: var(--gray-700);
-  max-width: 90ch;
+  text-align: center;
+  text-wrap: pretty;
 }
+
+.final__foot p { max-width: none; }
 
 /* -- confetti (kanvas terpisah, tidak menghalangi klik) ------------------ */
 .confetti {
@@ -554,19 +542,83 @@
 
 .final-page::backdrop { background: var(--paper); }
 
-/* -- cetak: hemat tinta, tetap terbaca tanpa warna ----------------------- */
-@media print {
-  .final-actions,
-  .confetti { display: none !important; }
+/* -- tombol aksi (Stage 13): HP = ikon saja ----------------------------- */
+/* logo sekolah hanya tampil saat dicetak (menggantikan judul halaman) */
+.admin-head__logo { display: none; }
 
-  .final { gap: var(--space-5); }
+@media (max-width: 719px) {
+  .final-actions { gap: var(--space-3); }
 
-  .final__mark {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .final-actions .btn {
+    width: 48px;
+    min-height: 48px;
+    padding: 0;
+    border-radius: 50%;
   }
 
-  .victor {
+  .final-actions .btn .icon { width: 20px; height: 20px; }
+
+  /* teks tombol tetap dibaca pembaca layar */
+  .final-actions .btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* -- cetak lewat browser (Ctrl+P): hemat tinta, tetap terbaca tanpa warna.
+   Cetak utama memakai PDF (admin/hasil/cetak, dompdf); aturan ini
+   menyamakan hasil cetak halaman biasa. Stage 13: logo sekolah menggantikan
+   judul, catatan seri tidak dicetak, pasangan terpilih ringkas, rekap mulai
+   di halaman kedua; catatan kaki + nomor halaman berada di kotak margin
+   bawah setiap halaman (<style> @page di admin/results/index), jadi elemen
+   .final__foot sendiri tidak dicetak. -- */
+@page { margin: 14mm 14mm 22mm; }
+
+@media print {
+  .final-actions,
+  .confetti,
+  .final-note--tie,
+  .final__foot { display: none !important; }
+
+  .final-page > .admin-head { margin-bottom: var(--space-3); }
+  .final-page .admin-head__title { display: none; }
+
+  .admin-head__logo {
+    display: block;
+    width: 20mm;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  .final { gap: var(--space-4); }
+
+  .final__masthead { gap: var(--space-3); padding-top: var(--space-4); }
+
+  .final__stamp { grid-template-columns: 1.5fr 1fr 1fr; }
+
+  .final__section {
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    break-after: avoid;
+  }
+
+  /* pasangan terpilih: satu baris ringkas (nomor, foto, nama) */
+  .victor,
+  .victor--poster,
+  .victor--column {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "label label label"
+      "no people names"
+      "tally tally tally";
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+    padding: var(--space-4) var(--space-5);
     background: none;
     color: var(--ink);
     border: 3px solid var(--ink);
@@ -576,6 +628,26 @@
 
   .victor__pattern { display: none; }
 
+  .victor__no,
+  .victor--poster .victor__no {
+    font-size: 64pt;
+    text-align: left;
+  }
+
+  .victor__person { flex: 0 0 26mm; }
+  .victor__person img,
+  .victor__mono { border-width: 1px; border-color: var(--line-strong); }
+  .victor__mono { font-size: 18pt; }
+  .victor__hero { width: 60mm; border-width: 1px; }
+
+  .victor__names { font-size: 20pt; }
+
+  .standing .pill--ink {
+    border: 1px solid var(--ink);
+    background: none;
+    color: var(--ink);
+  }
+
   .standing__no,
   .standing__fill,
   .cand-chip,
@@ -584,6 +656,16 @@
     print-color-adjust: exact;
   }
 
+  .standing { padding-block: var(--space-3); }
+  .standing__fill { animation: none; }
+
   .standing,
   .turnout__item { break-inside: avoid; }
+
+  .turnout__item { padding-block: var(--space-3); }
+  .turnout__big { font-size: 22pt; }
+
+  .final__turnout { break-inside: avoid; }
+
+  .final__recap { break-before: page; }
 }

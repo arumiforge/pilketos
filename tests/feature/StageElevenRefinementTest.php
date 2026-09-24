@@ -108,7 +108,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
         $this->assertStringContainsString('data-pane-link="rombel" aria-current="page">Rombel</a>', $html);
         $this->assertSame(1, substr_count($html, 'aria-current="page">Rombel'));
         $this->assertStringContainsString('<div class="pane" data-pane="rombel"', $html);
-        $this->assertStringContainsString('<h2 class="chapter-x__title" id="pane-title" tabindex="-1">Rekap rombel</h2>', $html);
+        $this->assertStringContainsString('<h2 class="chapter-x__title" id="pane-title" tabindex="-1">Rekap Rombel</h2>', $html);
         $this->assertStringContainsString('data-live-label="Rombel"', $html);
 
         // Tanpa penomoran bab & tanpa TOC lama; hanya satu bagian dirender.
@@ -155,7 +155,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
         $result = $this->asAdmin()->get('admin/analitik/suara');
         $html   = $this->body($result);
 
-        $this->assertStringContainsString('data-pane-link="suara" aria-current="page">Detail suara</a>', $html);
+        $this->assertStringContainsString('data-pane-link="suara" aria-current="page">Detail Suara</a>', $html);
         $this->assertMatchesRegularExpression('/<a href="[^"]*admin\/analitik\/suara" class="admin-side__link" aria-current="page">/', $html);
 
         $student = substr($html, strpos($html, 'data-table--votes-siswa'));

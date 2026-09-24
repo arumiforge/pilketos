@@ -41,6 +41,18 @@ final class FinalResult
      *     total_votes: int
      * }
      */
+    /**
+     * Catatan kaki hasil akhir (Stage 13): kalimat sederhana tanpa istilah
+     * teknis. Dipakai di halaman hasil akhir (.final__foot) dan PDF (footer
+     * setiap halaman).
+     */
+    public static function footnote(string $generatedAt): string
+    {
+        return 'Dihitung pada ' . format_waktu($generatedAt, "d MMMM yyyy 'pukul' HH.mm") . '. '
+            . 'Hanya suara sah dari pemilih terdaftar yang dihitung. '
+            . 'Setelah pemilihan ditutup, data pemilih dan pasangan calon tidak dapat diubah, sehingga hasil ini bersifat tetap.';
+    }
+
     public static function build(?array $election, ?array $snapshot): array
     {
         $empty = [

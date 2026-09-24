@@ -2,6 +2,28 @@
 
 <?= $this->section('head') ?>
 <link rel="stylesheet" href="<?= asset_url('assets/css/results.css') ?>">
+<?php if ($result['available']): ?>
+<?php /* Stage 13: cetak lewat browser (Ctrl+P) = catatan kaki + nomor halaman di
+   kotak margin bawah setiap halaman (@page margin box, Chrome/Edge 131+).
+   Cetak utama tetap PDF (admin/hasil/cetak). */ ?>
+<style <?= csp_style_nonce() ?>>
+@page {
+  @bottom-center {
+    content: "<?= esc(\App\Services\FinalResult::footnote($snapshot['generated_at']), 'css') ?>\A Halaman " counter(page) " dari " counter(pages);
+    white-space: pre-line;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 7.5pt;
+    font-style: italic;
+    line-height: 1.5;
+    color: #514E45;
+    text-align: center;
+    vertical-align: top;
+    padding-top: 3mm;
+    border-top: 0.3mm solid #15141A;
+  }
+}
+</style>
+<?php endif; ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('crumbs') ?>
@@ -34,6 +56,7 @@ $accents = array_values(array_unique(array_merge(
     <div class="admin-head__text">
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Hasil akhir</h1>
+        <?php if ($result['available']): ?><img class="admin-head__logo" src="<?= base_url('assets/img/brand/logo-smp1dawe.png') ?>" alt="Logo SMP 1 DAWE" width="120" height="120"><?php endif; ?>
         <?php if (! $result['available']): ?><?= view('admin/partials/head_hint') ?><?php endif; ?>
       </div>
       <?php if (! $result['available']): ?>
@@ -42,9 +65,9 @@ $accents = array_values(array_unique(array_merge(
     </div>
     <?php if ($result['available']): ?>
       <div class="admin-head__actions final-actions">
-        <button type="button" class="btn btn--outline" data-fullscreen="#hasil-akhir" hidden><?= icon('expand') ?> <span data-fullscreen-label>Layar penuh</span></button>
-        <button type="button" class="btn btn--outline" data-print hidden><?= icon('printer') ?> Cetak</button>
-        <a class="btn btn--outline" href="<?= site_url('admin/analitik') ?>"><?= icon('chart') ?> Analitik lengkap</a>
+        <button type="button" class="btn btn--outline" data-fullscreen="#hasil-akhir" hidden><?= icon('expand') ?> <span class="btn__label" data-fullscreen-label>Layar penuh</span></button>
+        <a class="btn btn--outline" href="<?= site_url('admin/hasil/cetak') ?>" target="_blank" rel="noopener" data-print-pdf><?= icon('printer') ?> <span class="btn__label">Cetak PDF</span><span class="visually-hidden"> (tab baru)</span></a>
+        <a class="btn btn--outline" href="<?= site_url('admin/analitik') ?>"><?= icon('chart') ?> <span class="btn__label">Analitik lengkap</span></a>
       </div>
     <?php endif; ?>
   </header>
@@ -72,7 +95,6 @@ $accents = array_values(array_unique(array_merge(
     <?php $all = $snapshot['summary']['all']; ?>
     <article class="final" aria-labelledby="final-title">
       <header class="final__masthead">
-        <span class="final__mark" aria-hidden="true"></span>
         <p class="final__kicker">Rekapitulasi resmi penghitungan suara</p>
         <h2 class="final__title" id="final-title">
           Pemilihan Ketua &amp; Wakil Ketua OSIS <span class="final__school">SMP 1 DAWE <?= esc((string) $election['tahun']) ?></span>
@@ -185,8 +207,8 @@ $accents = array_values(array_unique(array_merge(
             'groups'     => $snapshot['groups']['type'],
             'candidates' => $snapshot['candidates'],
             'key'        => 'type',
-            'label'      => 'Jenis pemilih',
-            'caption'    => 'Hasil akhir per jenis pemilih',
+            'label'      => 'Pemilih',
+            'caption'    => 'Hasil akhir per pemilih (siswa dan guru)',
         ]) ?>
         <?= view('admin/partials/recap_table', [
             'groups'     => $snapshot['groups']['grade'],
@@ -199,14 +221,13 @@ $accents = array_values(array_unique(array_merge(
             'groups'     => $snapshot['groups']['gender'],
             'candidates' => $snapshot['candidates'],
             'key'        => 'gender',
-            'label'      => 'Jenis kelamin siswa',
+            'label'      => 'Jenis Kelamin Siswa',
             'caption'    => 'Hasil akhir siswa per jenis kelamin',
         ]) ?>
       </section>
 
       <footer class="final__foot">
-        <p>Dihitung <?= esc(format_waktu($snapshot['generated_at'], 'd MMMM yyyy, HH.mm.ss')) ?> dari suara terkunci (LOCKED) milik pemilih aktif; riwayat suara yang dibuka admin tidak dihitung.
-          Setelah pemilihan selesai, data pemilih dan susunan pasangan dikunci agar hasil akhir tidak berubah.</p>
+        <p><?= esc(FinalResult::footnote($snapshot['generated_at'])) ?></p>
       </footer>
     </article>
 

@@ -5,7 +5,12 @@
  *
  * Stage 9: brand satu baris "SMP 1 DAWE" + "Panel Admin"; menu tanpa nomor
  * dan tanpa judul kelompok (kelompok hanya dipisah garis tipis); dasbor
- * bernama "Beranda"; tautan situs pemilih bernama "Home".
+ * bernama "Beranda".
+ *
+ * Stage 13: label menu Title Case (huruf pertama setiap kata kapital).
+ * "Halaman Utama" (dulu tombol "Home") dan "Keluar" pindah dari kaki sidebar
+ * menjadi kelompok menu terakhir (paling bawah), bersama "Akun Admin"
+ * (ganti nama pengguna & kata sandi). Kaki sidebar tinggal "Masuk sebagai".
  *
  * @var array  $admin
  * @var string $nav
@@ -14,18 +19,18 @@ $groups = [
     [
         'dashboard' => ['admin', 'grid', 'Beranda'],
         'analytics' => ['admin/analitik', 'chart', 'Analitik'],
-        'votes'     => ['admin/analitik/suara', 'list', 'Detail suara'],
-        'results'   => ['admin/hasil', 'award', 'Hasil akhir'],
+        'votes'     => ['admin/analitik/suara', 'list', 'Detail Suara'],
+        'results'   => ['admin/hasil', 'award', 'Hasil Akhir'],
     ],
     [
-        'candidates' => ['admin/paslon', 'flag', 'Pasangan calon'],
+        'candidates' => ['admin/paslon', 'flag', 'Pasangan Calon'],
         'students'   => ['admin/siswa', 'users', 'Siswa'],
         'teachers'   => ['admin/guru', 'user', 'Guru'],
     ],
     [
-        'election' => ['admin/jadwal', 'calendar', 'Jadwal pemilihan'],
-        'unlock'   => ['admin/buka-kunci', 'unlock', 'Unlock hak suara'],
-        'audit'    => ['admin/riwayat', 'file', 'Audit log'],
+        'election' => ['admin/jadwal', 'calendar', 'Jadwal Pemilihan'],
+        'unlock'   => ['admin/buka-kunci', 'unlock', 'Unlock Hak Suara'],
+        'audit'    => ['admin/riwayat', 'file', 'Audit Log'],
     ],
 ];
 ?>
@@ -49,6 +54,30 @@ $groups = [
         <?php endforeach; ?>
       </ul>
     <?php endforeach; ?>
+
+    <ul class="admin-side__list admin-side__list--end">
+      <li>
+        <a href="<?= site_url('admin/akun') ?>" class="admin-side__link"<?= ($nav ?? '') === 'account' ? ' aria-current="page"' : '' ?>>
+          <?= icon('key', 'admin-side__icon') ?>
+          <span>Akun Admin</span>
+        </a>
+      </li>
+      <li>
+        <a href="<?= base_url('/') ?>" class="admin-side__link" target="_blank" rel="noopener">
+          <?= icon('home', 'admin-side__icon') ?>
+          <span>Halaman Utama<span class="visually-hidden"> (tab baru)</span></span>
+        </a>
+      </li>
+      <li>
+        <form action="<?= site_url('admin/keluar') ?>" method="post" class="admin-side__form">
+          <?= csrf_field() ?>
+          <button type="submit" class="admin-side__link admin-side__link--button">
+            <?= icon('logout', 'admin-side__icon') ?>
+            <span>Keluar</span>
+          </button>
+        </form>
+      </li>
+    </ul>
   </nav>
 
   <div class="admin-side__foot">
@@ -57,12 +86,5 @@ $groups = [
       <strong><?= esc($admin['name'] ?? 'Admin') ?></strong>
       <span class="admin-side__who-user">@<?= esc($admin['username'] ?? '') ?></span>
     </p>
-    <div class="admin-side__actions">
-      <a href="<?= base_url('/') ?>" class="admin-side__site" target="_blank" rel="noopener">Home <?= icon('external') ?></a>
-      <form action="<?= site_url('admin/keluar') ?>" method="post">
-        <?= csrf_field() ?>
-        <button type="submit" class="admin-side__logout"><?= icon('logout') ?> Keluar</button>
-      </form>
-    </div>
   </div>
 </aside>

@@ -11,6 +11,7 @@
         "ext-mbstring": "*",
         "ext-mysqli": "*",
         "ext-zip": "*",
+        "dompdf/dompdf": "^3.1",
         "laminas/laminas-escaper": "^2.18",
         "matomo/device-detector": "^6.4",
         "phpoffice/phpspreadsheet": "^5.10",

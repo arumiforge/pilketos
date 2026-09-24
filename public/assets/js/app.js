@@ -172,10 +172,50 @@
     });
   }
 
+  /**
+   * Stage 13: tombol mata "lihat kata sandi" (partials/password_field).
+   * Tombol baru tampil di sini; saat form dikirim isian kembali tersembunyi
+   * agar kata sandi tidak terlihat selama halaman berpindah.
+   */
+  function initPasswordToggles() {
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+      var input = document.getElementById(button.getAttribute('aria-controls'));
+      var label = button.querySelector('[data-password-toggle-label]');
+      if (!input) {
+        return;
+      }
+
+      function set(visible) {
+        input.type = visible ? 'text' : 'password';
+        button.setAttribute('aria-pressed', visible ? 'true' : 'false');
+        button.classList.toggle('is-visible', visible);
+        if (label) {
+          label.textContent = visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi';
+        }
+      }
+
+      button.hidden = false;
+      button.addEventListener('click', function () {
+        var end = input.value.length;
+        set(input.type === 'password');
+        input.focus();
+        try {
+          input.setSelectionRange(end, end);
+        } catch (e) { /* jenis isian tertentu tidak mendukung seleksi */ }
+      });
+      if (input.form) {
+        input.form.addEventListener('submit', function () {
+          set(false);
+        });
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initModals();
     initSubmitGuard();
     initFlash();
+    initPasswordToggles();
   });
 
   window.App = {
