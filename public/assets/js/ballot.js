@@ -1,15 +1,17 @@
 /**
  * Surat suara interaktif (Stage 2): ambil paku -> arahkan -> coblos ->
  * dampak pada kotak -> modal konfirmasi -> POST JSON -> terkunci.
+ * Stage 8: kertas bolong (lubang sobek besar + serpihan) dibiarkan terlihat
+ * 3 detik sebelum modal konfirmasi muncul.
  *
  * Efek visual TIDAK ikut menentukan keamanan: yang dikirim hanya
  * candidate_id; server memvalidasi ulang sesi, jadwal, kandidat, dan
  * suara ganda di dalam transaction.
  *
- * Mode paku:
+ * Mode paku (Stage 8: efek 3D selalu nyala, tanpa tombol pengalih):
  * - "3d": renderer WebGL (nail-webgl.js, dimuat malas);
- * - "2d": SVG + CSS transform (fallback: WebGL tidak ada, perangkat lemah,
- *         prefers-reduced-motion, frame lambat, atau dipilih pengguna).
+ * - "2d": SVG + CSS transform, hanya cadangan bila WebGL tidak tersedia,
+ *         gagal dibuat / context lost, atau frame terlalu lambat.
  * Tombol "Coblos Pasangan 0X" selalu tersedia (keyboard, pembaca layar,
  * dan tanpa gestur). Tanpa JavaScript tombol itu membuka halaman konfirmasi.
  */
@@ -30,8 +32,6 @@
   var cells = Array.prototype.slice.call(ballot.querySelectorAll('[data-cell]'));
   var dock = ballot.querySelector('[data-dock]');
   var grip = ballot.querySelector('[data-nail-grip]');
-  var fxToggle = ballot.querySelector('[data-fx-toggle]');
-  var fxLabel = ballot.querySelector('[data-fx-label]');
   var live = ballot.querySelector('[data-ballot-live]');
   var dialog = document.querySelector('[data-confirm]');
   var nail2d = document.querySelector('[data-nail2d]');
@@ -65,12 +65,12 @@
   var BASE_TILT = 38;
   var BASE_AZ = 48;
   var TOUCH_OFFSET = -72; // ujung paku di atas jari agar tidak tertutup
+  var CONFIRM_DELAY = 3000; // kertas bolong terlihat dulu sebelum konfirmasi
 
-  var phase = 'idle'; // idle | holding | flying | stabbing | confirming | submitting | done
+  var phase = 'idle'; // idle | holding | flying | stabbing | punched | confirming | submitting | done
   var mode = '2d';
   var renderer = null;
   var webglState = 'unknown'; // unknown | loading | ready | unavailable
-  var forced3d = false;
 
   var nail = {
     x: 0, y: 0, h: 0, scale: 1, alpha: 0, lean: 0, press: 0, spin: 0,
@@ -171,36 +171,31 @@
     }
   }
 
-  /* ------------------------------------------------------------------ */
-  /* mode 3D / ringan                                                   */
-  /* ------------------------------------------------------------------ */
-
-  function lowEndDevice() {
-    var nav = window.navigator;
-    return (nav.deviceMemory && nav.deviceMemory <= 2) ||
-      (nav.hardwareConcurrency && nav.hardwareConcurrency <= 2) ||
-      (nav.connection && nav.connection.saveData === true);
+  /**
+   * Kabar untuk journey timeline di pembuka (candidates.js): 0 = kenali,
+   * 1 = coblos, 2 = konfirmasi & kunci.
+   */
+  function journey(step) {
+    try {
+      document.dispatchEvent(new CustomEvent('osis:journey', { detail: { step: step } }));
+    } catch (e) { /* browser lama tanpa CustomEvent: timeline tetap statis */ }
   }
 
-  function decideMode() {
-    var query = /[?&]fx=(3d|2d)\b/.exec(window.location.search);
-    if (query) {
-      App.setPref('fx', query[1]);
-    }
+  /* ------------------------------------------------------------------ */
+  /* mode 3D (selalu) / cadangan 2D                                     */
+  /* ------------------------------------------------------------------ */
 
-    var pref = App.getPref('fx');
-    forced3d = pref === '3d';
+  function decideMode() {
+    // Preferensi lama dari tombol "Efek 3D" (Stage 2-7) tidak dipakai lagi.
+    App.setPref('fx', null);
 
     // Pemeriksaan murah saja; konteks WebGL baru dibuat saat renderer dimuat
-    // (NailWebGL.create() mengembalikan null bila GPU tidak layak).
+    // (NailWebGL.create() mengembalikan null bila WebGL gagal dibuat).
     if (!window.WebGLRenderingContext) {
       webglState = 'unavailable';
       return '2d';
     }
-    if (pref === '2d' || pref === '3d') {
-      return pref;
-    }
-    return (reduced || lowEndDevice()) ? '2d' : '3d';
+    return '3d';
   }
 
   function loadWebgl() {
@@ -213,16 +208,17 @@
     script.src = webglSrc;
     script.async = true;
     script.onload = function () {
-      renderer = window.NailWebGL ? window.NailWebGL.create(canvas, forced3d) : null;
+      // true: 3D selalu nyala, renderer software pun diizinkan; bila terlalu
+      // lambat, pemantau frame di bawah tetap menurunkan ke paku 2D.
+      renderer = window.NailWebGL ? window.NailWebGL.create(canvas, true) : null;
       webglState = renderer ? 'ready' : 'unavailable';
       if (!renderer && mode === '3d') {
-        setMode('2d', false);
+        setMode('2d');
       }
-      updateFxToggle();
     };
     script.onerror = function () {
       webglState = 'unavailable';
-      setMode('2d', false);
+      setMode('2d');
     };
     document.head.appendChild(script);
   }
@@ -231,18 +227,13 @@
     return mode === '3d' && webglState === 'ready' && renderer && !renderer.lost;
   }
 
-  function setMode(next, remember) {
+  function setMode(next) {
     mode = next;
-    if (remember) {
-      App.setPref('fx', next);
-      forced3d = next === '3d';
-    }
     if (next === '3d') {
       loadWebgl();
     }
     canvas.hidden = true;
     nail2d.hidden = true;
-    updateFxToggle();
     draw();
   }
 
@@ -256,24 +247,7 @@
       renderer = null;
     }
     webglState = 'unavailable';
-    setMode('2d', false);
-  }
-
-  function updateFxToggle() {
-    if (!fxToggle) {
-      return;
-    }
-    if (webglState === 'unavailable') {
-      fxToggle.disabled = true;
-      fxToggle.setAttribute('aria-pressed', 'false');
-      fxLabel.textContent = 'Tidak didukung';
-      fxToggle.title = 'Perangkat ini memakai paku 2D (mode ringan).';
-      return;
-    }
-    var on = mode === '3d';
-    fxToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-    fxLabel.textContent = on ? 'Nyala' : 'Mati';
-    fxToggle.title = on ? 'Matikan efek 3D (paku 2D ringan)' : 'Nyalakan efek 3D';
+    setMode('2d');
   }
 
   /* ------------------------------------------------------------------ */
@@ -409,38 +383,89 @@
     requestFrame();
   }
 
-  function holeSvg() {
-    function ring(count, minR, maxR) {
-      var points = [];
-      for (var i = 0; i < count; i++) {
-        var a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-        var r = minR + Math.random() * (maxR - minR);
-        points.push((Math.cos(a) * r).toFixed(2) + ' ' + (Math.sin(a) * r).toFixed(2));
-      }
-      return 'M' + points.join(' L') + ' Z';
+  function polar(angle, radius) {
+    return (Math.cos(angle) * radius).toFixed(2) + ' ' + (Math.sin(angle) * radius).toFixed(2);
+  }
+
+  /** Tepi sobek tak beraturan (acak tiap tusukan). */
+  function jagged(count, minR, maxR, jitter) {
+    var points = [];
+    for (var i = 0; i < count; i++) {
+      var a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * jitter;
+      points.push(polar(a, minR + Math.random() * (maxR - minR)));
     }
-    return '<svg viewBox="-15 -15 30 30" aria-hidden="true" focusable="false">' +
-      '<path d="' + ring(11, 8.5, 12.5) + '" fill="#E3E0D8" stroke="#B9B4A6" stroke-width="0.6"/>' +
-      '<path d="' + ring(9, 4.6, 6.4) + '" fill="#15141A"/>' +
+    return 'M' + points.join(' L') + ' Z';
+  }
+
+  /** Kelopak kertas yang terdorong paku ke dalam lubang. */
+  function petals(count, base, hole) {
+    var d = '';
+    var offset = Math.random() * Math.PI * 2;
+    for (var i = 0; i < count; i++) {
+      var a = offset + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+      var half = (Math.PI / count) * (0.5 + Math.random() * 0.3);
+      var tip = hole * (0.3 + Math.random() * 0.45);
+      d += 'M' + polar(a - half, base) + ' L' + polar(a + (Math.random() - 0.5) * 0.25, tip) + ' L' + polar(a + half, base) + ' Z';
+    }
+    return d;
+  }
+
+  /**
+   * Kertas bolong (Stage 8): cekungan, bibir sobek yang terangkat, lubang
+   * tembus (latar gelap bilik terlihat), kelopak sobekan, dan kilap tepi.
+   * Arah cahaya tetap (kiri atas), jadi elemen tidak diputar acak.
+   */
+  function holeSvg() {
+    return '<svg viewBox="-32 -32 64 64" aria-hidden="true" focusable="false">' +
+      '<circle r="31.5" fill="#15141A" fill-opacity="0.08"/>' +
+      '<path d="' + jagged(22, 22.5, 28, 0.22) + '" fill="#DCD8CD" stroke="#A8A294" stroke-width="0.9" stroke-linejoin="round"/>' +
+      '<path d="' + jagged(18, 15.5, 20, 0.3) + '" fill="#15141A"/>' +
+      '<path d="' + petals(5, 19, 16.5) + '" fill="#CBC7BB" stroke="#8F8A7C" stroke-width="0.6" stroke-linejoin="round"/>' +
+      '<path d="M-19.5 -8.5A21 21 0 0 1 -8.5 -19.5" fill="none" stroke="#FAF9F6" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M18.5 7.5A20 20 0 0 1 7.5 18.5" fill="none" stroke="#15141A" stroke-opacity="0.3" stroke-width="2.2" stroke-linecap="round"/>' +
       '</svg>';
   }
 
-  function punch(cell, point) {
+  /** Serpihan kertas terlempar dari lubang lalu jatuh. */
+  function scatterBits(holes, left, top) {
+    for (var i = 0; i < 9; i++) {
+      var bit = document.createElement('span');
+      var angle = (i / 9) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      var reach = 34 + Math.random() * 40;
+      bit.className = 'hole-bit';
+      bit.style.left = left;
+      bit.style.top = top;
+      bit.style.setProperty('--dx', (Math.cos(angle) * reach).toFixed(1) + 'px');
+      bit.style.setProperty('--dy', (Math.sin(angle) * reach - 14).toFixed(1) + 'px');
+      bit.style.setProperty('--spin', Math.round((Math.random() - 0.5) * 540) + 'deg');
+      bit.style.setProperty('--size', (3 + Math.random() * 4).toFixed(1) + 'px');
+      bit.addEventListener('animationend', function (event) {
+        event.target.remove();
+      });
+      holes.appendChild(bit);
+    }
+  }
+
+  function punch(cell, at) {
     var target = cell.querySelector('[data-target]');
     var holes = cell.querySelector('[data-holes]');
     var rect = target.getBoundingClientRect();
-    var x = clamp(point.x - rect.left, 18, rect.width - 18);
-    var y = clamp(point.y - rect.top, 18, rect.height - 18);
 
     var hole = document.createElement('span');
     hole.className = 'hole';
-    hole.style.left = (x / rect.width * 100).toFixed(2) + '%';
-    hole.style.top = (y / rect.height * 100).toFixed(2) + '%';
-    hole.style.rotate = Math.round(Math.random() * 360) + 'deg';
     hole.innerHTML = holeSvg();
     holes.appendChild(hole);
 
+    // Lubang utuh di dalam kotak (ukuran dari CSS: lebih besar di layar lebar).
+    var half = hole.offsetWidth / 2 + 4;
+    var x = clamp(at.x - rect.left, half, Math.max(half, rect.width - half));
+    var y = clamp(at.y - rect.top, half, Math.max(half, rect.height - half));
+    hole.style.left = (x / rect.width * 100).toFixed(2) + '%';
+    hole.style.top = (y / rect.height * 100).toFixed(2) + '%';
+
     if (!reduced) {
+      scatterBits(holes, hole.style.left, hole.style.top);
+
       ['impact-ring', 'impact-ring impact-ring--late'].forEach(function (className) {
         var ringEl = document.createElement('span');
         ringEl.className = className;
@@ -535,8 +560,24 @@
         return hole;
       })
       .then(function (hole) {
-        openConfirm(cell, hole);
+        confirmLater(cell, hole);
       });
+  }
+
+  /**
+   * Stage 8: jangan langsung konfirmasi. Kertas bolong dibiarkan terlihat
+   * CONFIRM_DELAY ms (kotak lain meredup, paku & tombol terkunci), baru
+   * modal konfirmasi dibuka.
+   */
+  function confirmLater(cell, hole) {
+    phase = 'punched';
+    journey(2);
+    say('Kotak pasangan ' + cell.getAttribute('data-number') + ' tercoblos. Konfirmasi muncul sebentar lagi.');
+    window.setTimeout(function () {
+      if (phase === 'punched') {
+        openConfirm(cell, hole);
+      }
+    }, CONFIRM_DELAY);
   }
 
   function flyAndStab(cell, fromRect) {
@@ -549,8 +590,7 @@
 
     if (reduced) {
       phase = 'stabbing';
-      var hole = punch(cell, point);
-      openConfirm(cell, hole);
+      confirmLater(cell, punch(cell, point));
       return;
     }
 
@@ -714,6 +754,7 @@
     cell.classList.remove('is-punched', 'is-hit');
     ballot.classList.remove('is-busy');
     phase = 'idle';
+    journey(1);
 
     var button = cell.querySelector('[data-coblos]');
     if (button) {
@@ -850,7 +891,6 @@
   function init() {
     mode = decideMode();
     dock.hidden = false;
-    updateFxToggle();
 
     if (mode === '3d') {
       // Muat renderer setelah halaman tenang, bukan saat render awal.
@@ -893,16 +933,6 @@
         flyAndStab(cell, button.getBoundingClientRect());
       });
     });
-
-    if (fxToggle) {
-      fxToggle.addEventListener('click', function () {
-        if (phase !== 'idle' || webglState === 'unavailable') {
-          return;
-        }
-        setMode(mode === '3d' ? '2d' : '3d', true);
-        say(mode === '3d' ? 'Efek 3D dinyalakan.' : 'Mode ringan dinyalakan.');
-      });
-    }
 
     // Kotak tujuan kini disorot lewat .is-picked (bukan :target) agar sorotan
     // bisa dilepas saat pemilih mencoblos kotak lain.

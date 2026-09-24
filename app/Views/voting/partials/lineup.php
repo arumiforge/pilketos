@@ -30,7 +30,9 @@
           </div>
 
           <p class="pair-card__theme">
-            <span><?= esc($c['theme_name']) ?></span>
+            <?php if ($c['theme_distinct']): ?>
+              <span><?= esc($c['theme_name']) ?></span>
+            <?php endif; ?>
             <span class="pair-card__meta"><?= count($c['misi']) ?> poin misi</span>
           </p>
           <h3 class="pair-card__names">

@@ -15,6 +15,8 @@
  *
  * Stage 7: CTA akhir bab langsung menuju kotak pasangan ini di surat suara
  * (#coblos-0X), bukan sekadar ke surat suara.
+ * Stage 8: tema hanya ditulis bila berbeda dari "Pasangan 0X" (tanpa teks
+ * kembar di eyebrow); jarak label peran & nama diperlebar.
  *
  * @var array $c       Hasil CandidateTheme::present()
  * @var bool  $canVote
@@ -54,7 +56,9 @@ $misiId = 'misi-list-' . $c['id'];
     <div class="chapter__body">
       <p class="chapter__eyebrow">
         <span>Pasangan <strong><?= esc($c['label']) ?></strong></span>
-        <span class="chapter__theme"><?= esc($c['theme_name']) ?></span>
+        <?php if ($c['theme_distinct']): ?>
+          <span class="chapter__theme"><?= esc($c['theme_name']) ?></span>
+        <?php endif; ?>
       </p>
 
       <h2 class="chapter__names" id="chapter-title-<?= esc((string) $c['id'], 'attr') ?>">

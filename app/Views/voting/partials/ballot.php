@@ -8,6 +8,8 @@
  *   biasa (form POST), jadi voting tidak bergantung pada efek visual.
  * - Stage 7: tiap kotak punya id "coblos-0X" (tujuan tombol "Pilih" di
  *   kartu Sekilas paslon & akhir bab); kotak tujuan disorot lewat :target.
+ * - Stage 8: paku 3D selalu nyala (tombol "Efek 3D" dihapus); kertas bolong
+ *   terlihat 3 detik sebelum modal konfirmasi.
  *
  * @var list<array>             $candidates Hasil CandidateTheme::presentAll()
  * @var bool                    $canVote
@@ -82,11 +84,6 @@ $status = $election['status'] ?? null;
             <strong>Ambil paku</strong>
             <span>Tahan, geser ke pasangan, lepaskan</span>
           </span>
-        </button>
-        <button type="button" class="fx-toggle" data-fx-toggle aria-pressed="false">
-          <?= icon('layers') ?>
-          <span>Efek 3D</span>
-          <span class="fx-toggle__state" data-fx-label aria-hidden="true">Mati</span>
         </button>
       </div>
       <p class="visually-hidden" aria-live="polite" data-ballot-live></p>

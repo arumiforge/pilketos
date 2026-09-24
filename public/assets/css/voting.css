@@ -3,6 +3,9 @@
    Stage 2: pengalaman kandidat, visi-misi interaktif, surat suara & paku coblos.
    Stage 7: bilik suara ringkas (pembuka pendek, "Sekilas paslon", kotak
    surat suara ringkas di HP, kotak tujuan disorot lewat :target).
+   Stage 8: pembuka rata tengah + journey timeline + panel terminal, tiap
+   bagian satu layar di HP, bagian lebih lebar di desktop, kertas bolong
+   besar, modal konfirmasi rata tengah dengan latar diburamkan.
    Dimuat hanya di halaman voting (voting/index, confirm, my_vote).
 
    Aturan: tanpa gradient, tanpa emoji. Warna hanya dari token netral app.css
@@ -10,22 +13,27 @@
    Semua efek gerak mati dengan prefers-reduced-motion (lihat bawah file).
    ========================================================================== */
 
-/* -- pembuka bilik suara (Stage 7: ringkas, tidak memakan satu layar HP) -- */
-.booth-intro {
-  padding-block: var(--space-5);
-  border-bottom: 1px solid var(--line);
-}
+/* Stage 8: bagian bilik suara lebih lebar di desktop (.container membaca
+   --container-w dari bagian induknya) */
+.booth-intro,
+.lineup,
+.chapter-nav,
+.chapter,
+.ballot { --container-w: 1360px; }
 
-.booth-intro__grid {
-  display: grid;
-  gap: var(--space-4);
+/* -- pembuka bilik suara (Stage 8): rata tengah, journey timeline vertikal,
+   countdown dalam panel terminal lebar penuh -- */
+.booth-intro {
+  padding-block: var(--space-7);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
 }
 
 .booth-intro__title {
-  margin-top: var(--space-2);
-  font-size: clamp(2.1rem, 9vw, 4.2rem);
+  font-size: clamp(2.5rem, 11vw, 4.6rem);
   line-height: 0.98;
   letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
 /* "coblos" diberi bekas lubang tusuk kecil, referensi surat suara kertas */
@@ -46,57 +54,322 @@
   box-shadow: 0 0 0 0.045em var(--paper), 0 0 0 0.07em var(--ink);
 }
 
-/* .booth-intro: menang atas reset ol[class] di app.css */
-.booth-intro .booth-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  margin-top: var(--space-3);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.booth-steps li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  white-space: nowrap;
-}
-
-.booth-steps__no {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--ink);
-  border-radius: 50%;
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
+.booth-intro__panel {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
 }
 
 .booth-intro__status {
   display: grid;
   gap: var(--space-3);
-  align-content: end;
+  text-align: left;
 }
 
-/* countdown lebih pipih di HP agar kartu paslon ikut terlihat di layar pertama */
-.booth-intro .countdown--compact { padding: var(--space-3); }
-.booth-intro .countdown--compact .countdown__digits { font-size: 1.45rem; }
-.booth-intro .countdown--compact .countdown__units { gap: var(--space-3); }
+/* -- journey timeline: node bernomor di rel vertikal. Langkah muncul
+   bergiliran (CSS saja, tanpa JS tetap tampil); .is-current / .is-done
+   diperbarui candidates.js (surat suara tercapai) & ballot.js (konfirmasi).
+   .booth-intro: menang atas reset ol[class] di app.css -- */
+.booth-intro .journey {
+  display: grid;
+  width: 100%;
+  max-width: 400px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+.journey__step {
+  --node: 44px;
+  position: relative;
+  padding-bottom: var(--space-6);
+  animation: journey-in 0.55s var(--ease) both;
+  animation-delay: calc(0.12s + var(--i, 0) * 0.16s);
+}
+
+.journey__step:last-child { padding-bottom: 0; }
+
+/* rel antarnode: abu-abu, terisi tinta saat langkah selesai */
+.journey__step:not(:last-child)::before,
+.journey__step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--node) + 6px);
+  bottom: 6px;
+  left: calc(var(--node) / 2 - 1px);
+  width: 2px;
+  border-radius: 2px;
+  transform-origin: top center;
+}
+
+.journey__step:not(:last-child)::before {
+  background: var(--line-strong);
+  animation: journey-rail 0.5s var(--ease) both;
+  animation-delay: calc(0.36s + var(--i, 0) * 0.16s);
+}
+
+.journey__step:not(:last-child)::after {
+  background: var(--ink);
+  transform: scaleY(0);
+  transition: transform 0.6s var(--ease);
+}
+
+.journey__step.is-done::after { transform: none; }
+
+.journey__item {
+  display: grid;
+  grid-template-columns: var(--node) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.journey__node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--gray-700);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.journey__check {
+  display: none;
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.5;
+}
+
+.journey__step.is-current .journey__node,
+.journey__step.is-done .journey__node {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.journey__step.is-done .journey__no { display: none; }
+.journey__step.is-done .journey__check { display: block; }
+
+/* langkah aktif: cincin berdenyut */
+.journey__step.is-current .journey__node::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  animation: journey-pulse 2.2s ease-out infinite;
+}
+
+.journey__text {
+  display: grid;
+  gap: 2px;
+  padding-top: 9px;
+}
+
+.journey__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.journey__title .icon {
+  width: 1em;
+  height: 1em;
+  color: var(--gray-500);
+  transition: transform 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.journey__desc {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--gray-700);
+}
+
+.journey__step:not(.is-current):not(.is-done) .journey__title { color: var(--gray-700); }
+
+a.journey__item:hover .journey__node,
+a.journey__item:focus-visible .journey__node { transform: scale(1.08); border-color: var(--ink); }
+
+a.journey__item:hover .journey__title .icon,
+a.journey__item:focus-visible .journey__title .icon { color: var(--ink); transform: translateY(2px); }
+
+a.journey__item:focus-visible { outline-offset: 6px; }
+
+@keyframes journey-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes journey-rail {
+  from { transform: scaleY(0); }
+  to { transform: none; }
+}
+
+@keyframes journey-pulse {
+  0% { opacity: 0.7; transform: scale(0.92); }
+  70%, 100% { opacity: 0; transform: scale(1.22); }
+}
+
+/* -- panel terminal: countdown "Ditutup dalam" rata tengah, lebar penuh -- */
+.term {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.term__bar {
+  position: relative;
+  max-width: none;
+  padding: 9px 44px;
+  border-bottom: 1px solid var(--ink-line);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.term__dots {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  display: flex;
+  gap: 6px;
+  transform: translateY(-50%);
+}
+
+.term__dots span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ink-muted);
+  border-radius: 50%;
+}
+
+.term__body {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+}
+
+.term__cmd,
+.term__meta {
+  max-width: none;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.term__prompt { color: var(--paper); }
+
+.term__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.term__cursor {
+  width: 0.6em;
+  height: 1.15em;
+  background: var(--paper);
+  animation: term-cursor 1.1s steps(1, end) infinite;
+}
+
+@keyframes term-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.term .countdown--terminal {
+  --term-size: clamp(2.25rem, 12vw, 3.75rem);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.term .countdown__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.term .countdown__units {
+  flex-wrap: wrap;
+  justify-content: center;
+  line-height: 1;
+}
+
+.term .countdown__progress {
+  width: 100%;
+  margin-top: var(--space-3);
+  background: var(--ink-line);
+}
+
+.term .countdown__progress-fill { background: var(--paper); }
+
+.booth-intro .notice { text-align: left; }
 
 @media (min-width: 720px) {
-  .booth-intro { padding-block: var(--space-6); }
-  .booth-intro .booth-steps { gap: var(--space-2) var(--space-5); font-size: 0.875rem; }
-  .booth-intro .countdown--compact { padding: var(--space-4); }
-  .booth-intro .countdown--compact .countdown__digits { font-size: 1.9rem; }
-  .booth-intro .countdown--compact .countdown__units { gap: var(--space-4); }
+  .booth-intro { padding-block: var(--space-8); }
+  .booth-intro__panel { margin-top: var(--space-7); }
+  .term__body { padding: var(--space-6); }
 }
 
+/* desktop: timeline & terminal berdampingan di bawah judul */
 @media (min-width: 960px) {
-  .booth-intro__grid {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    align-items: end;
+  .booth-intro__panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+    gap: var(--space-8);
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+
+  .booth-intro .journey { max-width: 420px; margin-inline: auto 0; }
+}
+
+/* HP: tiap bagian bilik suara setinggi satu layar (pembuka dikurangi
+   tinggi navigasi situs agar pas di layar pertama) */
+@media (max-width: 719px) {
+  .booth-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    min-height: calc(100svh - 65px);
+  }
+
+  .lineup,
+  .chapter,
+  .ballot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .ballot > .container {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 
@@ -179,6 +452,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  min-height: 1.2em;
   gap: var(--space-1) var(--space-3);
   font-size: 0.6875rem;
   font-weight: 700;
@@ -571,10 +845,11 @@
   color: var(--accent-text);
 }
 
+/* Stage 8: label peran diberi jarak dari nama, antarcalon lebih lega */
 .chapter__names {
   display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
+  gap: var(--space-5);
+  margin-top: var(--space-5);
   font-size: inherit;
 }
 
@@ -582,10 +857,12 @@
 
 .chapter__role {
   display: block;
+  margin-bottom: var(--space-3);
   font-family: var(--font-ui);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--gray-700);
 }
@@ -1073,12 +1350,16 @@
   100% { transform: none; }
 }
 
+/* kertas bolong (Stage 8: lebih besar, bibir sobek + kelopak, ballot.js) */
 .hole {
+  --hole: 72px;
   position: absolute;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
-  animation: hole-in 0.18s var(--ease) both;
+  z-index: 1;
+  width: var(--hole);
+  height: var(--hole);
+  margin: calc(var(--hole) / -2) 0 0 calc(var(--hole) / -2);
+  filter: drop-shadow(0 1px 0 rgba(21, 20, 26, 0.18));
+  animation: hole-in 0.34s var(--ease) both;
 }
 
 .hole svg { width: 100%; height: 100%; }
@@ -1086,19 +1367,39 @@
 .hole.is-leaving { animation: hole-out 0.3s var(--ease) both; }
 
 @keyframes hole-in {
-  from { transform: scale(0.2); }
-  to { transform: none; }
+  0% { transform: scale(0.15); }
+  55% { transform: scale(1.12); }
+  100% { transform: none; }
 }
 
 @keyframes hole-out {
   to { transform: scale(0.2); opacity: 0; }
 }
 
+/* serpihan kertas terlempar dari lubang, lalu jatuh */
+.hole-bit {
+  position: absolute;
+  z-index: 2;
+  width: var(--size, 5px);
+  height: var(--size, 5px);
+  margin: calc(var(--size, 5px) / -2) 0 0 calc(var(--size, 5px) / -2);
+  border: 1px solid var(--line-strong);
+  border-radius: 1px;
+  background: var(--gray-200);
+  animation: hole-bit 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes hole-bit {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  55% { opacity: 1; transform: translate(var(--dx), var(--dy)) rotate(calc(var(--spin) * 0.6)) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 1.12), calc(var(--dy) + 30px)) rotate(var(--spin)) scale(0.7); }
+}
+
 .impact-ring {
   position: absolute;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
   border: 3px solid var(--accent);
   border-radius: 50%;
   animation: impact-ring 0.65s ease-out forwards;
@@ -1115,6 +1416,8 @@
 }
 
 @media (min-width: 720px) {
+  .hole { --hole: 92px; }
+
   .ballot__sheet { padding: var(--space-4); }
 
   .ballot__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1210,38 +1513,7 @@
   color: var(--ink-muted);
 }
 
-.nail-grip:focus-visible,
-.fx-toggle:focus-visible { outline-color: var(--paper); }
-
-.fx-toggle {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  min-width: 80px;
-  padding: var(--space-2);
-  border: 1px solid #45434C;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--ink-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.fx-toggle[aria-pressed="true"] {
-  border-color: var(--paper);
-  color: var(--paper);
-}
-
-.fx-toggle__state {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--ink-muted);
-}
-
-.fx-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+.nail-grip:focus-visible { outline-color: var(--paper); }
 
 body.is-holding-nail {
   cursor: grabbing;
@@ -1303,12 +1575,23 @@ body.is-holding-nail {
    Konfirmasi (modal & halaman fallback)
    ========================================================================== */
 
+/* Stage 8: seluruh isi rata tengah; latar di belakang modal diburamkan
+   agar perhatian tertuju ke konfirmasi */
 .confirm {
   width: min(540px, calc(100% - 2 * var(--space-4)));
   padding: 0;
   border: 0;
   border-top: 8px solid var(--accent);
+  text-align: center;
 }
+
+.confirm::backdrop {
+  background: rgba(21, 20, 26, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.confirm p { max-width: none; }
 
 .confirm__state { padding: var(--space-6); }
 
@@ -1331,7 +1614,7 @@ body.is-holding-nail {
 .confirm__title span { color: var(--accent-text); }
 
 .confirm__portraits { margin-top: var(--space-4); }
-.confirm__portraits .portraits { max-width: 280px; }
+.confirm__portraits .portraits { max-width: 280px; margin-inline: auto; }
 
 .confirm__names {
   display: grid;
@@ -1354,19 +1637,38 @@ body.is-holding-nail {
   line-height: 1.3;
 }
 
+/* peringatan kunci: ikon gembok dalam lingkaran di atas, teks di bawahnya */
 .confirm__warning {
   display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-  max-width: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
   margin-top: var(--space-5);
-  padding: var(--space-3) var(--space-4);
-  border-left: 4px solid var(--ink);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
   background: var(--paper-dim);
   font-size: 0.9375rem;
+  line-height: 1.45;
 }
 
-.confirm__warning .icon { margin-top: 0.1em; }
+.confirm__warning .icon {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.confirm__warning span { max-width: 34ch; }
+
+.confirm .modal__actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.confirm .modal__actions .btn { flex: 0 0 auto; }
 
 .confirm__error {
   margin-top: var(--space-3);
@@ -1379,6 +1681,7 @@ body.is-holding-nail {
   place-items: center;
   width: 64px;
   height: 64px;
+  margin-inline: auto;
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-ink);
@@ -1401,6 +1704,7 @@ body.is-holding-nail {
 .confirm__lock {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   margin-top: var(--space-3);
   font-weight: 600;
@@ -1426,7 +1730,6 @@ body.is-holding-nail {
 @media (max-width: 479px) {
   .confirm__state { padding: var(--space-5); }
   .confirm--page { padding: var(--space-5); }
-  .confirm--page .modal__actions .btn { flex: 1 1 100%; }
 }
 
 /* ==========================================================================

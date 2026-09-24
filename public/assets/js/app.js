@@ -5,7 +5,8 @@
  * countdown.js, candidates.js, ballot.js, nail-webgl.js.
  *
  * Tidak menyimpan data siswa/guru di localStorage/sessionStorage.
- * localStorage hanya untuk preferensi non-sensitif (mode efek 3D/ringan).
+ * localStorage hanya untuk preferensi non-sensitif (Stage 8: preferensi lama
+ * "fx" dihapus oleh ballot.js; efek 3D kini selalu nyala).
  */
 (function () {
   'use strict';
