@@ -42,7 +42,6 @@ $counts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel', $type->adminPath('impor')], ['Pratinjau']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Periksa sebelum impor</h1>
         <?= view('admin/partials/head_hint') ?>
@@ -158,4 +157,8 @@ $counts = [
     <?php endif; ?>
   </section>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel', $type->adminPath('impor')], ['Pratinjau']]]) ?>
 <?= $this->endSection() ?>

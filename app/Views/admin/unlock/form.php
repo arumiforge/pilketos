@@ -29,7 +29,6 @@ $c       = $vote === null ? null : CandidateTheme::present([
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Unlock hak suara', 'admin/buka-kunci'], [$type->label()]]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
         <?= view('admin/partials/head_hint') ?>
@@ -43,10 +42,10 @@ $c       = $vote === null ? null : CandidateTheme::present([
   </header>
 
   <ol class="steps" aria-label="Tahapan unlock">
-    <li class="steps__item is-done"><span>01</span> Cari pemilih</li>
-    <li class="steps__item is-current"><span>02</span> Lihat status suara</li>
-    <li class="steps__item is-current"><span>03</span> Isi alasan</li>
-    <li class="steps__item is-current"><span>04</span> Konfirmasi</li>
+    <li class="steps__item is-done"><span class="steps__node" aria-hidden="true"><?= icon('check') ?></span><span class="steps__label">Cari pemilih<span class="visually-hidden"> (selesai)</span></span></li>
+    <li class="steps__item is-current" aria-current="step"><span class="steps__node" aria-hidden="true">02</span><span class="steps__label">Lihat status suara</span></li>
+    <li class="steps__item is-current"><span class="steps__node" aria-hidden="true">03</span><span class="steps__label">Isi alasan</span></li>
+    <li class="steps__item is-current"><span class="steps__node" aria-hidden="true">04</span><span class="steps__label">Konfirmasi</span></li>
   </ol>
 
   <?php if ($vote === null): ?>
@@ -117,4 +116,8 @@ $c       = $vote === null ? null : CandidateTheme::present([
     </section>
   <?php endif; ?>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Unlock hak suara', 'admin/buka-kunci'], [$type->label()]]]) ?>
 <?= $this->endSection() ?>

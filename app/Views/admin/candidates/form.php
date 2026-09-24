@@ -36,7 +36,6 @@ $layouts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon', 'admin/paslon'], [$candidate === null ? 'Baru' : 'Ubah']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title"><?= $candidate === null ? 'Tambah pasangan' : esc(sprintf('Pasangan %02d', $candidate['nomor_urut'])) ?></h1>
       </div>
@@ -204,4 +203,8 @@ $layouts = [
     </div>
   </form>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [['Pasangan calon', 'admin/paslon'], [$candidate === null ? 'Baru' : 'Ubah']]]) ?>
 <?= $this->endSection() ?>

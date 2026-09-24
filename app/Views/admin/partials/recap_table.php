@@ -5,8 +5,8 @@
  * (key class, 7A/8B) disebut "Rombel"; key data & JSON live count tetap.
  *
  * Kolom pasangan: jumlah suara + persentase di dalam kelompok (dari yang
- * sudah memilih). Kolom komposisi: batang bertumpuk suara tiap pasangan +
- * belum memilih terhadap total kelompok. admin-live.js membangun ulang
+ * sudah memilih). Kolom grafik (Stage 12, dulu "Komposisi"): batang
+ * bertumpuk suara tiap pasangan + belum memilih terhadap total kelompok. admin-live.js membangun ulang
  * isi tabel dengan struktur yang sama dari endpoint live count.
  *
  * @var list<array<string, mixed>> $groups     Snapshot::groups[<key>]
@@ -14,7 +14,7 @@
  * @var string                     $key        type|gender|grade|class
  * @var string                     $label      Judul kolom pertama
  * @var string                     $caption    Keterangan tabel (pembaca layar)
- * @var bool                       $bars       Tampilkan kolom komposisi
+ * @var bool                       $bars       Tampilkan kolom grafik
  * @var string|null                $link       URL dasar tautan baris (key ditambahkan di belakang)
  */
 $bars = $bars ?? true;
@@ -35,7 +35,7 @@ $link = $link ?? null;
             <span class="cand-chip"><?= esc($c['label']) ?></span><span class="visually-hidden"> Pasangan <?= esc($c['label']) ?></span>
           </th>
         <?php endforeach; ?>
-        <?php if ($bars): ?><th scope="col" class="dist">Komposisi</th><?php endif; ?>
+        <?php if ($bars): ?><th scope="col" class="dist">Grafik</th><?php endif; ?>
       </tr>
     </thead>
     <tbody>

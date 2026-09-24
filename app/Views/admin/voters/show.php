@@ -23,7 +23,6 @@ $active    = (int) $voter['status_aktif'] === 1;
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Detail']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title"><?= esc($voter['name']) ?></h1>
         <?= view('admin/partials/head_hint') ?>
@@ -178,4 +177,8 @@ $active    = (int) $voter['status_aktif'] === 1;
     <?php endif; ?>
   </section>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Detail']]]) ?>
 <?= $this->endSection() ?>

@@ -18,10 +18,16 @@
 /**
  * Layout panel admin (Stage 3): sidebar (drawer di HP), topbar, konten.
  *
+ * Stage 12: section "crumbs" (breadcrumb halaman) dirender sekali lalu
+ * dipasang dua kali: di topbar (desktop, ikon + teks) dan di awal konten
+ * (HP, ikon saja).
+ *
  * @var array       $admin    Admin yang login (AdminController::admin())
  * @var array|null  $election Election berjalan
  * @var string      $nav      Menu aktif
  */
+$crumbs = $this->renderSection('crumbs');
+$this->setVar('crumbs', $crumbs);
 ?>
 <body class="admin">
 <a class="skip-link" href="#main">Langsung ke konten</a>
@@ -34,6 +40,7 @@
     <?= $this->include('partials/flash') ?>
 
     <main id="main" class="admin-content" tabindex="-1">
+      <div class="admin-crumbs"><?= $crumbs ?></div>
       <?= $this->renderSection('content') ?>
     </main>
 

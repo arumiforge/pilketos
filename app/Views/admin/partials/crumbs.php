@@ -1,28 +1,56 @@
 <?php
 /**
- * Breadcrumb bergaya stepper di atas judul halaman admin (Stage 9, pengganti
- * eyebrow "Kelompok · Halaman"). Setiap langkah = titik kecil di rel tipis;
- * langkah terakhir = halaman ini (titik tinta bercincin, aria-current).
- * "Beranda" (dasbor admin) selalu menjadi langkah pertama.
+ * Breadcrumb bergaya stepper (Stage 9, pengganti eyebrow "Kelompok · Halaman").
+ * "Beranda" (dasbor admin) selalu menjadi langkah pertama; langkah terakhir =
+ * halaman ini (aria-current).
  *
- * Di HP rel digeser horizontal bila tidak muat (tanpa scrollbar).
+ * Stage 12: titik diganti ikon (sama dengan ikon menu samping). Halaman
+ * mengisi section "crumbs"; layout merendernya dua kali:
+ * - topbar (.admin-top__title, >= 720 px): ikon + teks;
+ * - awal konten (.admin-crumbs, HP < 720 px): ikon saja, teks .crumbs__label
+ *   tetap ada untuk pembaca layar.
+ * Salinan yang tidak dipakai disembunyikan (display: none), jadi pembaca
+ * layar hanya menemukan satu landmark Breadcrumb.
  *
- * @var list<array{0: string, 1?: string|null}> $trail [label, path admin|null] setelah Beranda
+ * @var list<array{0: string, 1?: string|null, 2?: string}> $trail [label, path admin|null, ikon] setelah Beranda
  */
+$icons = [
+    'Beranda'          => 'grid',
+    'Analitik'         => 'chart',
+    'Detail suara'     => 'list',
+    'Hasil akhir'      => 'award',
+    'Pasangan calon'   => 'flag',
+    'Siswa'            => 'users',
+    'Guru'             => 'user',
+    'Jadwal pemilihan' => 'calendar',
+    'Unlock hak suara' => 'unlock',
+    'Audit log'        => 'file',
+    'Detail'           => 'eye',
+    'Pratinjau'        => 'eye',
+    'Tambah'           => 'plus',
+    'Baru'             => 'plus',
+    'Ubah'             => 'edit',
+    'Impor Excel'      => 'upload',
+    'Hasil'            => 'check',
+];
 $trail = array_merge([['Beranda', 'admin']], $trail ?? []);
 $last  = count($trail) - 1;
 ?>
 <nav class="crumbs" aria-label="Breadcrumb">
   <ol class="crumbs__list">
     <?php foreach ($trail as $i => $crumb): ?>
-      <?php $label = $crumb[0]; $path = $crumb[1] ?? null; ?>
+      <?php
+        $label = $crumb[0];
+        $path  = $crumb[1] ?? null;
+        $inner = icon($crumb[2] ?? $icons[$label] ?? 'arrow-right', 'crumbs__icon') . '<span class="crumbs__label">' . esc($label) . '</span>';
+      ?>
       <li class="crumbs__item<?= $i === $last ? ' is-current' : '' ?>">
         <?php if ($i === $last): ?>
-          <span class="crumbs__step" aria-current="page"><span class="crumbs__dot" aria-hidden="true"></span><?= esc($label) ?></span>
+          <span class="crumbs__step" aria-current="page"><?= $inner ?></span>
         <?php elseif ($path !== null): ?>
-          <a class="crumbs__step" href="<?= site_url($path) ?>"><span class="crumbs__dot" aria-hidden="true"></span><?= esc($label) ?></a>
+          <a class="crumbs__step" href="<?= site_url($path) ?>"><?= $inner ?></a>
         <?php else: ?>
-          <span class="crumbs__step"><span class="crumbs__dot" aria-hidden="true"></span><?= esc($label) ?></span>
+          <span class="crumbs__step"><?= $inner ?></span>
         <?php endif; ?>
       </li>
     <?php endforeach; ?>

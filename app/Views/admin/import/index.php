@@ -19,7 +19,6 @@ $isStudent = $type === VoterType::Student;
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel']]]) ?>
       <div class="admin-head__heading">
         <h1 class="admin-head__title">Impor data <?= esc(strtolower($type->label())) ?></h1>
         <?= view('admin/partials/head_hint') ?>
@@ -85,4 +84,8 @@ $isStudent = $type === VoterType::Student;
     </section>
   </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('crumbs') ?>
+<?= view('admin/partials/crumbs', ['trail' => [[$type->label(), $type->adminPath()], ['Impor Excel']]]) ?>
 <?= $this->endSection() ?>

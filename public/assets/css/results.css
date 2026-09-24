@@ -11,12 +11,9 @@
 
 .final-page { position: relative; }
 
-/* garis kepala halaman diganti garis ganda "berita acara" pada lembar hasil */
-.final-page > .admin-head {
-  margin-bottom: var(--space-5);
-  padding-bottom: 0;
-  border-bottom: 0;
-}
+/* kepala halaman lebih rapat ke garis ganda "berita acara" pada lembar hasil
+   (Stage 12: semua kepala halaman admin sudah tanpa garis bawah) */
+.final-page > .admin-head { margin-bottom: var(--space-5); }
 
 /* -- keadaan terkunci (belum selesai) ------------------------------------- */
 .final-locked {

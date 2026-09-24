@@ -287,11 +287,12 @@ final class StageNineRefinementTest extends CIUnitTestCase
 
             $this->assertStringNotContainsString('eyebrow-x', $html, $path);
             $page->assertSee('<nav class="crumbs" aria-label="Breadcrumb">');
-            $this->assertSame(count($trail), substr_count($html, 'class="crumbs__item'), $path);
+            // Stage 12: satu salinan di topbar (desktop) + satu di atas judul (HP).
+            $this->assertSame(2 * count($trail), substr_count($html, 'class="crumbs__item'), $path);
             $current = end($trail);
-            $this->assertStringContainsString('aria-current="page"><span class="crumbs__dot" aria-hidden="true"></span>' . $current . '</span>', $html, $path);
+            $this->assertMatchesRegularExpression('#aria-current="page"><svg class="icon[^"]*crumbs__icon"[^>]*>.*?</svg><span class="crumbs__label">' . preg_quote($current, '#') . '</span></span>#', $html, $path);
             if (count($trail) > 1) {
-                $this->assertStringContainsString('<a class="crumbs__step" href="' . site_url('admin') . '"><span class="crumbs__dot" aria-hidden="true"></span>Beranda</a>', $html, $path);
+                $this->assertMatchesRegularExpression('#<a class="crumbs__step" href="' . preg_quote(site_url('admin'), '#') . '"><svg class="icon&\#x20;icon--grid[^"]*"[^>]*>.*?</svg><span class="crumbs__label">Beranda</span></a>#', $html, $path);
             }
 
             // Keterangan halaman di balik ikon "i" di samping judul.
