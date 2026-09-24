@@ -17,7 +17,7 @@ $heading  = match ($status) {
     default    => 'Perolehan suara',
 };
 ?>
-<div class="admin-page" data-live data-live-url="<?= esc(site_url('admin/live-count'), 'attr') ?>" data-live-status="<?= esc((string) $status, 'attr') ?>">
+<div class="admin-page" data-live data-live-url="<?= esc(site_url('admin/hitung-suara'), 'attr') ?>" data-live-status="<?= esc((string) $status, 'attr') ?>">
 
   <header class="admin-head">
     <div class="admin-head__text">
@@ -38,7 +38,7 @@ $heading  = match ($status) {
     <div class="notice notice--action">
       <?= icon('calendar') ?>
       <p>Pemilihan belum dijadwalkan. Tentukan nama, tahun, waktu mulai, dan waktu selesai agar siswa dan guru dapat mencoblos.</p>
-      <a class="btn btn--sm" href="<?= site_url('admin/election') ?>">Atur jadwal</a>
+      <a class="btn btn--sm" href="<?= site_url('admin/jadwal') ?>">Atur jadwal</a>
     </div>
   <?php else: ?>
     <section class="schedule-strip" aria-label="Status dan jadwal pemilihan">
@@ -73,7 +73,7 @@ $heading  = match ($status) {
     <section class="panel" aria-labelledby="results-title">
       <header class="panel__head">
         <h2 class="panel__title" id="results-title" data-live-results-title><?= esc($heading) ?></h2>
-        <a class="panel__link" href="<?= site_url('admin/analytics') ?>">Analitik lengkap <?= icon('arrow-right') ?></a>
+        <a class="panel__link" href="<?= site_url('admin/analitik') ?>">Analitik lengkap <?= icon('arrow-right') ?></a>
       </header>
       <?= view('admin/partials/candidate_results', ['candidates' => $snapshot['candidates'], 'total' => $summary['all']['voted']]) ?>
     </section>
@@ -83,7 +83,7 @@ $heading  = match ($status) {
         <h2 class="panel__title" id="voters-title">Pemilih</h2>
       </header>
       <div class="voter-split">
-        <?php foreach (['students' => ['Siswa', 'admin/students'], 'teachers' => ['Guru', 'admin/teachers']] as $key => [$label, $path]): ?>
+        <?php foreach (['students' => ['Siswa', 'admin/siswa'], 'teachers' => ['Guru', 'admin/guru']] as $key => [$label, $path]): ?>
           <?php $t = $summary[$key]; ?>
           <article class="voter-split__item">
             <h3 class="voter-split__title"><?= esc($label) ?></h3>
@@ -96,7 +96,7 @@ $heading  = match ($status) {
             </dl>
             <p class="voter-split__links">
               <a href="<?= site_url($path . '?vote=belum') ?>">Lihat yang belum memilih</a>
-              <a href="<?= site_url($path . '/import') ?>">Impor data</a>
+              <a href="<?= site_url($path . '/impor') ?>">Impor data</a>
             </p>
           </article>
         <?php endforeach; ?>
@@ -121,7 +121,7 @@ $heading  = match ($status) {
   <section class="panel" aria-labelledby="class-title">
     <header class="panel__head">
       <h2 class="panel__title" id="class-title">Rekap kelas</h2>
-      <a class="panel__link" href="<?= site_url('admin/analytics/votes') ?>">Detail suara <?= icon('arrow-right') ?></a>
+      <a class="panel__link" href="<?= site_url('admin/analitik/suara') ?>">Detail suara <?= icon('arrow-right') ?></a>
     </header>
     <?= view('admin/partials/recap_table', [
         'groups'     => $snapshot['groups']['class'],
@@ -129,7 +129,7 @@ $heading  = match ($status) {
         'key'        => 'class',
         'label'      => 'Kelas',
         'caption'    => 'Rekap suara siswa per kelas',
-        'link'       => site_url('admin/students') . '?status=aktif&kelas=',
+        'link'       => site_url('admin/siswa') . '?status=aktif&kelas=',
     ]) ?>
   </section>
 </div>

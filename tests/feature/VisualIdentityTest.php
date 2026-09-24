@@ -46,9 +46,9 @@ final class VisualIdentityTest extends CIUnitTestCase
 
         return [
             'beranda'     => (string) $this->get('/')->response()->getBody(),
-            'login siswa' => (string) $this->get('student/login')->response()->getBody(),
-            'login admin' => (string) $this->get('admin/login')->response()->getBody(),
-            'dasbor'      => (string) $this->withSession($admin)->get('admin/dashboard')->response()->getBody(),
+            'login siswa' => (string) $this->get('siswa/masuk')->response()->getBody(),
+            'login admin' => (string) $this->get('admin/masuk')->response()->getBody(),
+            'dasbor'      => (string) $this->withSession($admin)->get('admin')->response()->getBody(),
         ];
     }
 
@@ -240,7 +240,7 @@ final class VisualIdentityTest extends CIUnitTestCase
         $this->assertSame(2, substr_count($html, 'brandmark__rule'));
         $this->assertLessThan(strpos($html, 'brandmark__logo site-nav__logo'), strpos($html, 'brandmark__emblem', strpos($html, '<header')));
 
-        $login = (string) $this->get('student/login')->response()->getBody();
+        $login = (string) $this->get('siswa/masuk')->response()->getBody();
         $this->assertStringContainsString('assets/img/brand/logo-dark.svg', $login);
         $this->assertStringContainsString('brandmark__emblem', $login);
     }

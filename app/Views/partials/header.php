@@ -14,6 +14,8 @@
  */
 $navUser       = session()->get('user_type');
 $navSignedIn   = in_array($navUser, ['student', 'teacher', 'admin'], true);
+// Dasbor tiap role: /siswa, /guru, /admin (Stage 7); keluar = <dasbor>/keluar.
+$navHome       = $navSignedIn ? ($navUser === 'admin' ? 'admin' : \App\Services\VoterType::from($navUser)->path()) : null;
 $navBrand      = config(\Config\Homepage::class);
 $navLogo       = ($immersive ?? false) ? $navBrand->logoOnDark : $navBrand->logoOnLight;
 $navLogoSize   = asset_size($navLogo);
@@ -24,7 +26,7 @@ $navEmblemSize = $navEmblem !== null ? asset_size($navEmblem) : null;
   <div class="site-nav__row">
     <?php if ($navSignedIn): ?>
       <nav class="site-nav__start" aria-label="Navigasi akun">
-        <a class="site-nav__action" href="<?= base_url($navUser . '/dashboard') ?>">
+        <a class="site-nav__action" href="<?= base_url($navHome) ?>">
           <?= icon('grid') ?>
           <span class="site-nav__label">Dasbor<span class="site-nav__role"> <?= esc(['student' => 'Siswa', 'teacher' => 'Guru', 'admin' => 'Admin'][$navUser]) ?></span></span>
         </a>
@@ -47,7 +49,7 @@ $navEmblemSize = $navEmblem !== null ? asset_size($navEmblem) : null;
     </a>
 
     <?php if ($navSignedIn): ?>
-      <form class="site-nav__end" action="<?= base_url($navUser . '/logout') ?>" method="post">
+      <form class="site-nav__end" action="<?= base_url($navHome . '/keluar') ?>" method="post">
         <?= csrf_field() ?>
         <button type="submit" class="site-nav__action"><?= icon('logout') ?><span class="site-nav__label">Keluar</span></button>
       </form>

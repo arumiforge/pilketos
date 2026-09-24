@@ -12,7 +12,7 @@ $summary    = $snapshot['summary'];
 $candidates = $snapshot['candidates'];
 $groups     = $snapshot['groups'];
 ?>
-<div class="admin-page" data-live data-live-url="<?= esc(site_url('admin/live-count'), 'attr') ?>" data-live-status="<?= esc((string) ($election['status'] ?? ''), 'attr') ?>">
+<div class="admin-page" data-live data-live-url="<?= esc(site_url('admin/hitung-suara'), 'attr') ?>" data-live-status="<?= esc((string) ($election['status'] ?? ''), 'attr') ?>">
 
   <header class="admin-head">
     <div class="admin-head__text">
@@ -29,7 +29,7 @@ $groups     = $snapshot['groups'];
     <a href="#jenis-kelamin">03 Jenis kelamin siswa</a>
     <a href="#jenjang">04 Jenjang</a>
     <a href="#kelas">05 Kelas</a>
-    <a href="<?= site_url('admin/analytics/votes') ?>">06 Detail suara <?= icon('arrow-right') ?></a>
+    <a href="<?= site_url('admin/analitik/suara') ?>">06 Detail suara <?= icon('arrow-right') ?></a>
   </nav>
 
   <section class="chapter-x" id="keseluruhan" aria-labelledby="overall-title">
@@ -99,7 +99,7 @@ $groups     = $snapshot['groups'];
         'key'        => 'class',
         'label'      => 'Kelas',
         'caption'    => 'Rekap suara siswa per kelas',
-        'link'       => site_url('admin/students') . '?status=aktif&kelas=',
+        'link'       => site_url('admin/siswa') . '?status=aktif&kelas=',
     ]) ?>
   </section>
 </div>

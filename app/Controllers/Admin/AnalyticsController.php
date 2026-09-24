@@ -12,7 +12,7 @@ class AnalyticsController extends AdminController
     public const VOTES_PER_PAGE = 25;
 
     /**
-     * GET admin/analytics
+     * GET admin/analitik
      * Keseluruhan, jenis pemilih, jenis kelamin siswa, jenjang, dan kelas.
      */
     public function index()
@@ -24,7 +24,7 @@ class AnalyticsController extends AdminController
     }
 
     /**
-     * GET admin/analytics/votes
+     * GET admin/analitik/suara
      * Detail suara: pencarian, filter jenis pemilih/kelas/jenis kelamin/
      * pasangan/status, dan pagination.
      */

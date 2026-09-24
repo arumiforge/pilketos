@@ -49,8 +49,8 @@ $liveNote = match ($status) {
     default    => 'Jadwal pemilihan belum tersedia.',
 };
 $entries = [
-    ['key' => 'student', 'who' => 'Siswa', 'no' => '01', 'href' => base_url('student/login'), 'img' => $home->entryStudent, 'mobile' => $home->entryStudentMobile],
-    ['key' => 'teacher', 'who' => 'Guru', 'no' => '02', 'href' => base_url('teacher/login'), 'img' => $home->entryTeacher, 'mobile' => $home->entryTeacherMobile],
+    ['key' => 'student', 'who' => 'Siswa', 'no' => '01', 'href' => base_url('siswa/masuk'), 'img' => $home->entryStudent, 'mobile' => $home->entryStudentMobile],
+    ['key' => 'teacher', 'who' => 'Guru', 'no' => '02', 'href' => base_url('guru/masuk'), 'img' => $home->entryTeacher, 'mobile' => $home->entryTeacherMobile],
 ];
 ?>
 <div class="scenes" data-scenes>
@@ -129,7 +129,7 @@ $entries = [
   <section class="scene scene--live" id="<?= esc($liveId, 'attr') ?>" data-scene aria-labelledby="live-title" tabindex="-1"
     <?php if ($live !== null): ?>
       data-live
-      data-live-url="<?= esc(site_url('live-count'), 'attr') ?>"
+      data-live-url="<?= esc(site_url('hitung-suara'), 'attr') ?>"
       data-live-status="<?= esc((string) $status, 'attr') ?>"
       data-live-interval="<?= esc((string) $live['poll']['interval'], 'attr') ?>"
     <?php endif; ?>>

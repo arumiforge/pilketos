@@ -94,7 +94,7 @@ class Homepage extends BaseConfig
     /**
      * Live count publik di beranda (persentase per pasangan + partisipasi).
      * false = beranda hanya menampilkan pasangan calon tanpa angka dan
-     * GET live-count menjawab 404. Rincian analitik tetap hanya untuk admin.
+     * GET hitung-suara menjawab 404. Rincian analitik tetap hanya untuk admin.
      */
     public bool $publicLiveCount = true;
 

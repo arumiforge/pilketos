@@ -13,7 +13,7 @@ class StudentAuthFilter extends AuthFilter
 
     protected function loginPath(): string
     {
-        return 'student/login';
+        return 'siswa/masuk';
     }
 
     protected function deniedMessage(): string

@@ -10,7 +10,7 @@
         <h1 class="card__title">Masuk ke panel admin</h1>
       </div>
 
-      <form action="<?= base_url('admin/login') ?>" method="post" class="stack" novalidate>
+      <form action="<?= base_url('admin/masuk') ?>" method="post" class="stack" novalidate>
         <?= csrf_field() ?>
 
         <div class="field">

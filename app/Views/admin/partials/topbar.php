@@ -12,7 +12,7 @@ $status = $election['status'] ?? null;
     <?= icon('menu') ?><span>Menu</span>
   </button>
   <p class="admin-top__title"><?= esc($title ?? 'Panel Admin') ?></p>
-  <a class="admin-top__status" href="<?= site_url('admin/election') ?>" data-live-badge>
+  <a class="admin-top__status" href="<?= site_url('admin/jadwal') ?>" data-live-badge>
     <span class="badge badge--<?= esc(strtolower((string) $status), 'attr') ?>" data-live-badge-class>
       <span class="badge__dot" aria-hidden="true"></span>
       <span data-live-badge-label><?= esc(election_status_label($status)) ?></span>

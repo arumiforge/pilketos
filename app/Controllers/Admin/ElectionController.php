@@ -26,7 +26,7 @@ class ElectionController extends AdminController
     private const INPUT_FORMATS = ['Y-m-d\TH:i', 'Y-m-d\TH:i:s', 'Y-m-d H:i', 'Y-m-d H:i:s'];
 
     /**
-     * GET admin/election
+     * GET admin/jadwal
      */
     public function index()
     {
@@ -38,7 +38,7 @@ class ElectionController extends AdminController
     }
 
     /**
-     * POST admin/election
+     * POST admin/jadwal
      * Buat election (bila belum ada) atau ubah jadwal election berjalan.
      */
     public function save(): RedirectResponse
@@ -70,11 +70,11 @@ class ElectionController extends AdminController
         ];
 
         if (! $this->validateData($input, $rules, $messages)) {
-            return redirect()->to('admin/election')->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->to('admin/jadwal')->withInput()->with('errors', $this->validator->getErrors());
         }
 
         if (strtotime($input['end_at']) <= strtotime($input['start_at'])) {
-            return redirect()->to('admin/election')->withInput()->with('errors', ['end_at' => 'Waktu selesai harus setelah waktu mulai.']);
+            return redirect()->to('admin/jadwal')->withInput()->with('errors', ['end_at' => 'Waktu selesai harus setelah waktu mulai.']);
         }
 
         $data = ['tahun' => (int) $input['tahun']] + $input;
@@ -83,7 +83,7 @@ class ElectionController extends AdminController
     }
 
     /**
-     * POST admin/election/close
+     * POST admin/jadwal/tutup
      * Tutup sekarang: end_at = waktu server saat ini (hanya saat ONGOING).
      */
     public function close(): RedirectResponse
@@ -91,7 +91,7 @@ class ElectionController extends AdminController
         $election = $this->election();
 
         if (($election['status'] ?? null) !== ElectionModel::STATUS_ONGOING) {
-            return redirect()->to('admin/election')->with('error', 'Pemilihan hanya dapat ditutup saat sedang berlangsung.');
+            return redirect()->to('admin/jadwal')->with('error', 'Pemilihan hanya dapat ditutup saat sedang berlangsung.');
         }
 
         $now   = Time::now();
@@ -103,7 +103,7 @@ class ElectionController extends AdminController
     }
 
     /**
-     * POST admin/election/open
+     * POST admin/jadwal/buka
      * Buka sekarang: start_at = waktu server saat ini (hanya saat UPCOMING).
      */
     public function open(): RedirectResponse
@@ -111,7 +111,7 @@ class ElectionController extends AdminController
         $election = $this->election();
 
         if (($election['status'] ?? null) !== ElectionModel::STATUS_UPCOMING) {
-            return redirect()->to('admin/election')->with('error', 'Pemilihan hanya dapat dibuka lebih awal bila statusnya belum dibuka.');
+            return redirect()->to('admin/jadwal')->with('error', 'Pemilihan hanya dapat dibuka lebih awal bila statusnya belum dibuka.');
         }
 
         return $this->update($election, ['start_at' => Time::now()->toDateTimeString()], 'Pemilihan dibuka. Siswa dan guru dapat mencoblos sekarang.');
@@ -127,7 +127,7 @@ class ElectionController extends AdminController
         $id = $model->insert($data);
 
         if ($id === false) {
-            return redirect()->to('admin/election')->withInput()->with('errors', $model->errors());
+            return redirect()->to('admin/jadwal')->withInput()->with('errors', $model->errors());
         }
 
         $this->audit(AuditLogModel::ELECTION_CREATE, sprintf(
@@ -138,7 +138,7 @@ class ElectionController extends AdminController
             $data['end_at'],
         ), ['election_id' => (int) $id]);
 
-        return redirect()->to('admin/election')->with('success', 'Pemilihan dibuat. Status: ' . election_status_label($data['status']) . '.');
+        return redirect()->to('admin/jadwal')->with('success', 'Pemilihan dibuat. Status: ' . election_status_label($data['status']) . '.');
     }
 
     /**
@@ -158,7 +158,7 @@ class ElectionController extends AdminController
         }
 
         if ($diff === []) {
-            return redirect()->to('admin/election')->with('success', 'Tidak ada perubahan jadwal.');
+            return redirect()->to('admin/jadwal')->with('success', 'Tidak ada perubahan jadwal.');
         }
 
         $statusBefore = $model->resolveStatus($election);
@@ -167,7 +167,7 @@ class ElectionController extends AdminController
         // selesai) menarik hasil akhir, jadi wajib dikonfirmasi eksplisit.
         if ($statusBefore === ElectionModel::STATUS_FINISHED && $status !== ElectionModel::STATUS_FINISHED
             && $this->request->getPost('confirm_reopen') !== '1') {
-            return redirect()->to('admin/election')->withInput()->with('errors', [
+            return redirect()->to('admin/jadwal')->withInput()->with('errors', [
                 'confirm_reopen' => 'Jadwal baru membuka kembali pemilihan yang sudah selesai. Centang konfirmasi pembukaan kembali untuk melanjutkan.',
             ]);
         }
@@ -182,7 +182,7 @@ class ElectionController extends AdminController
         } catch (DatabaseException $e) {
             log_message('error', 'Ubah jadwal gagal: {msg}', ['msg' => $e->getMessage()]);
 
-            return redirect()->to('admin/election')->withInput()->with('errors', ['end_at' => 'Jadwal tidak dapat disimpan. Pastikan waktu selesai setelah waktu mulai.']);
+            return redirect()->to('admin/jadwal')->withInput()->with('errors', ['end_at' => 'Jadwal tidak dapat disimpan. Pastikan waktu selesai setelah waktu mulai.']);
         }
 
         $this->forgetElection();
@@ -195,7 +195,7 @@ class ElectionController extends AdminController
                 : 'Status: ' . election_status_label($statusBefore) . ' -> ' . election_status_label($status),
         ), ['election_id' => (int) $election['id']]);
 
-        return redirect()->to('admin/election')->with('success', $message . ' Status sekarang: ' . election_status_label($status) . '.');
+        return redirect()->to('admin/jadwal')->with('success', $message . ' Status sekarang: ' . election_status_label($status) . '.');
     }
 
     /**

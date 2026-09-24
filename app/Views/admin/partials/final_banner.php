@@ -33,5 +33,5 @@ $winner = $final['winner'];
       Pencoblosan ditolak server sejak waktu selesai; angka di dasbor ini adalah hasil akhir.
     </p>
   </div>
-  <a class="btn final-banner__cta" href="<?= site_url('admin/results') ?>"><?= icon('award') ?> Buka hasil akhir</a>
+  <a class="btn final-banner__cta" href="<?= site_url('admin/hasil') ?>"><?= icon('award') ?> Buka hasil akhir</a>
 </section>

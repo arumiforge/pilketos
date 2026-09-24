@@ -42,7 +42,7 @@ $counts = [
 <div class="admin-page">
   <header class="admin-head">
     <div class="admin-head__text">
-      <p class="eyebrow-x"><a href="<?= site_url($type->adminPath('import')) ?>">Impor <?= esc(strtolower($type->label())) ?></a> &middot; Pratinjau</p>
+      <p class="eyebrow-x"><a href="<?= site_url($type->adminPath('impor')) ?>">Impor <?= esc(strtolower($type->label())) ?></a> &middot; Pratinjau</p>
       <h1 class="admin-head__title">Periksa sebelum impor</h1>
       <p class="admin-head__lede">File <strong><?= esc($fileName) ?></strong> &middot; belum ada data yang disimpan. Pratinjau berlaku sampai pukul <?= esc(\CodeIgniter\I18n\Time::createFromTimestamp($expires, config('App')->appTimezone)->toLocalizedString('HH.mm')) ?> WIB.</p>
     </div>
@@ -71,7 +71,7 @@ $counts = [
 
   <nav class="tabs" aria-label="Saring baris pratinjau">
     <?php foreach (ImportController::PREVIEW_FILTERS as $key => $label): ?>
-      <a class="tabs__link" href="<?= site_url($type->adminPath('import/preview/' . $token)) ?>?show=<?= esc($key, 'url') ?>"<?= $show === $key ? ' aria-current="page"' : '' ?>>
+      <a class="tabs__link" href="<?= site_url($type->adminPath('impor/cek/' . $token)) ?>?show=<?= esc($key, 'url') ?>"<?= $show === $key ? ' aria-current="page"' : '' ?>>
         <?= esc($label) ?> <span class="tabs__count"><?= angka($counts[$key]) ?></span>
       </a>
     <?php endforeach; ?>
@@ -133,9 +133,9 @@ $counts = [
   <section class="panel commit-panel" aria-labelledby="commit-title">
     <header class="panel__head"><h2 class="panel__title" id="commit-title">04 &middot; Impor</h2></header>
     <?php if ($summary['importable'] === 0): ?>
-      <p>Tidak ada baris baru atau berubah untuk diimpor. <a href="<?= site_url($type->adminPath('import')) ?>">Unggah file lain</a>.</p>
+      <p>Tidak ada baris baru atau berubah untuk diimpor. <a href="<?= site_url($type->adminPath('impor')) ?>">Unggah file lain</a>.</p>
     <?php else: ?>
-      <form action="<?= site_url($type->adminPath('import/commit')) ?>" method="post" class="stack"
+      <form action="<?= site_url($type->adminPath('impor/simpan')) ?>" method="post" class="stack"
             data-confirm="<?= esc(sprintf('Impor %d baris (%d baru, %d diperbarui) ke data %s?', $summary['importable'], $summary['create'], $summary['update'], strtolower($type->label())), 'attr') ?>"
             data-confirm-button="Impor sekarang">
         <?= csrf_field() ?>
@@ -149,7 +149,7 @@ $counts = [
         <?php endif; ?>
         <div class="cluster">
           <button type="submit" class="btn btn--lg" data-loading-text="Mengimpor..."><?= icon('check') ?> Impor <?= angka($summary['importable']) ?> baris</button>
-          <a class="btn btn--lg btn--outline" href="<?= site_url($type->adminPath('import')) ?>">Batal &amp; unggah ulang</a>
+          <a class="btn btn--lg btn--outline" href="<?= site_url($type->adminPath('impor')) ?>">Batal &amp; unggah ulang</a>
         </div>
       </form>
     <?php endif; ?>

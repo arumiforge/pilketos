@@ -14,7 +14,7 @@ $offset = 0.0;
 ?>
 <div class="results<?= $donut ? ' results--donut' : '' ?>" data-live-results>
   <?php if ($candidates === []): ?>
-    <p class="empty">Belum ada pasangan calon aktif. <a href="<?= site_url('admin/candidates/new') ?>">Tambah pasangan</a>.</p>
+    <p class="empty">Belum ada pasangan calon aktif. <a href="<?= site_url('admin/paslon/tambah') ?>">Tambah pasangan</a>.</p>
   <?php else: ?>
     <ol class="results__list">
       <?php foreach ($candidates as $c): ?>

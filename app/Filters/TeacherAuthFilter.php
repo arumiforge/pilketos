@@ -13,7 +13,7 @@ class TeacherAuthFilter extends AuthFilter
 
     protected function loginPath(): string
     {
-        return 'teacher/login';
+        return 'guru/masuk';
     }
 
     protected function deniedMessage(): string

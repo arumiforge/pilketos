@@ -37,11 +37,11 @@ $c = $candidate;
         <?= icon('lock') ?>
         <span>Setelah dikonfirmasi, pilihan akan <strong>dikunci</strong> dan tidak dapat diubah.</span>
       </p>
-      <form action="<?= base_url($type->path('vote')) ?>" method="post" class="modal__actions">
+      <form action="<?= base_url($type->path('coblos')) ?>" method="post" class="modal__actions">
         <?= csrf_field() ?>
         <input type="hidden" name="candidate_id" value="<?= esc((string) $c['id'], 'attr') ?>">
         <button type="submit" class="btn btn--accent btn--lg" data-loading-text="MENYIMPAN SUARA...">KONFIRMASI PILIHAN</button>
-        <a class="btn btn--outline" href="<?= base_url($type->path('vote')) ?>#surat-suara">Batal, pilih ulang</a>
+        <a class="btn btn--outline" href="<?= base_url($type->path('coblos')) ?>#surat-suara">Batal, pilih ulang</a>
       </form>
     </div>
   </div>

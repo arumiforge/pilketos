@@ -16,8 +16,8 @@ $status = $election['status'] ?? null;
 ?>
 <section class="ballot<?= $canVote ? '' : ' ballot--closed' ?>" id="surat-suara" aria-labelledby="ballot-title"
          data-ballot<?php if ($canVote): ?>
-         data-submit-url="<?= esc(site_url($type->path('vote')), 'attr') ?>"
-         data-myvote-url="<?= esc(site_url($type->path('my-vote')), 'attr') ?>"
+         data-submit-url="<?= esc(site_url($type->path('coblos')), 'attr') ?>"
+         data-myvote-url="<?= esc(site_url($type->path('pilihanku')), 'attr') ?>"
          data-webgl-src="<?= esc(asset_url('assets/js/nail-webgl.js'), 'attr') ?>"<?php endif; ?>>
   <div class="container">
     <header class="ballot__head">
@@ -62,7 +62,7 @@ $status = $election['status'] ?? null;
                 <span class="ballot-cell__aim" aria-hidden="true">Lepas untuk mencoblos</span>
               </div>
               <?php if ($canVote): ?>
-                <a class="ballot-cell__btn" href="<?= esc(site_url($type->path('vote/confirm/' . $c['id'])), 'attr') ?>" data-coblos>
+                <a class="ballot-cell__btn" href="<?= esc(site_url($type->path('coblos/yakin/' . $c['id'])), 'attr') ?>" data-coblos>
                   <?= icon('nail') ?> Coblos Pasangan <?= esc($c['label']) ?>
                 </a>
               <?php endif; ?>

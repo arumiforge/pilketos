@@ -26,15 +26,15 @@ $status = $election['status'] ?? null;
       </p>
     </div>
     <p class="vote-card__meta">Dicoblos pada <time datetime="<?= esc($vote['voted_at'], 'attr') ?>"><?= esc(format_waktu($vote['voted_at'])) ?></time></p>
-    <a class="btn btn--outline" href="<?= base_url($type->path('my-vote')) ?>">Lihat pilihan saya</a>
+    <a class="btn btn--outline" href="<?= base_url($type->path('pilihanku')) ?>">Lihat pilihan saya</a>
   <?php elseif ($canVote): ?>
     <h2 class="vote-card__title" id="vote-card-title">Belum memilih</h2>
     <p class="vote-card__text">Surat suara sudah dibuka. Baca visi dan misi ketiga pasangan, lalu coblos satu pasangan. Setelah dikonfirmasi, pilihan dikunci.</p>
-    <a class="btn btn--lg" href="<?= base_url($type->path('vote')) ?>">Lihat kandidat &amp; coblos <?= icon('arrow-right') ?></a>
+    <a class="btn btn--lg" href="<?= base_url($type->path('coblos')) ?>">Lihat kandidat &amp; coblos <?= icon('arrow-right') ?></a>
   <?php elseif ($status === 'UPCOMING'): ?>
     <h2 class="vote-card__title" id="vote-card-title">Belum memilih</h2>
     <p class="vote-card__text">Pencoblosan dibuka pada <strong><?= esc(format_waktu($election['start_at'])) ?></strong>. Sambil menunggu, kenali ketiga pasangan calon.</p>
-    <a class="btn btn--outline" href="<?= base_url($type->path('vote')) ?>">Lihat kandidat</a>
+    <a class="btn btn--outline" href="<?= base_url($type->path('coblos')) ?>">Lihat kandidat</a>
   <?php elseif ($status === 'FINISHED'): ?>
     <h2 class="vote-card__title" id="vote-card-title">Tidak memberikan suara</h2>
     <p class="vote-card__text">Pemilihan telah ditutup pada <?= esc(format_waktu($election['end_at'])) ?>. Hak suara ini tidak digunakan.</p>

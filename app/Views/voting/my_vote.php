@@ -82,8 +82,8 @@ $c = $candidate;
       </dl>
       <p class="receipt__note">Pilihan tidak dapat diubah. Bila benar-benar terjadi kesalahan, hubungi panitia: hanya admin yang dapat membuka kembali hak pilih, lalu Anda mencoblos sendiri.</p>
       <div class="cluster">
-        <a class="btn btn--outline" href="<?= base_url($type->path('dashboard')) ?>">Kembali ke dasbor</a>
-        <form action="<?= base_url($type->path('logout')) ?>" method="post">
+        <a class="btn btn--outline" href="<?= base_url($type->path()) ?>">Kembali ke dasbor</a>
+        <form action="<?= base_url($type->path('keluar')) ?>" method="post">
           <?= csrf_field() ?>
           <button type="submit" class="btn">Selesai &amp; keluar</button>
         </form>

@@ -50,7 +50,7 @@ abstract class VotingController extends BaseController
     }
 
     /**
-     * GET <role>/vote
+     * GET <siswa|guru>/coblos
      */
     public function index()
     {
@@ -59,7 +59,7 @@ abstract class VotingController extends BaseController
 
         if ($state['vote'] !== null) {
             // Sudah memilih: tidak ada form voting lagi.
-            return redirect()->to($type->path('my-vote'));
+            return redirect()->to($type->path('pilihanku'));
         }
 
         return view('voting/index', [
@@ -73,7 +73,7 @@ abstract class VotingController extends BaseController
     }
 
     /**
-     * GET <role>/vote/confirm/{candidateId}
+     * GET <siswa|guru>/coblos/yakin/{candidateId}
      * Konfirmasi tanpa JavaScript. Versi JS memakai modal di halaman index.
      */
     public function confirm($candidateId = null)
@@ -82,11 +82,11 @@ abstract class VotingController extends BaseController
         $state = service('voting')->ballotState($type, $this->voterId());
 
         if ($state['vote'] !== null) {
-            return redirect()->to($type->path('my-vote'));
+            return redirect()->to($type->path('pilihanku'));
         }
 
         if (! $state['canVote']) {
-            return redirect()->to($type->path('vote'))
+            return redirect()->to($type->path('coblos'))
                 ->with('error', VoteResult::rejected(VoteResult::VOTING_CLOSED, $state['status'])->message());
         }
 
@@ -95,7 +95,7 @@ abstract class VotingController extends BaseController
             : null;
 
         if ($candidate === null) {
-            return redirect()->to($type->path('vote'))
+            return redirect()->to($type->path('coblos'))
                 ->with('error', VoteResult::rejected(VoteResult::INVALID_CANDIDATE)->message());
         }
 
@@ -107,7 +107,7 @@ abstract class VotingController extends BaseController
     }
 
     /**
-     * POST <role>/vote
+     * POST <siswa|guru>/coblos
      * Body: candidate_id (JSON dari ballot.js atau form POST dari halaman konfirmasi).
      */
     public function submit()
@@ -136,7 +136,7 @@ abstract class VotingController extends BaseController
     }
 
     /**
-     * GET <role>/my-vote
+     * GET <siswa|guru>/pilihanku
      * Hanya pilihan milik pemilih sendiri: tanpa jumlah suara, peringkat,
      * atau data kandidat lain.
      */
@@ -146,7 +146,7 @@ abstract class VotingController extends BaseController
         $state = service('voting')->ballotState($type, $this->voterId());
 
         if ($state['vote'] === null) {
-            return redirect()->to($type->path('dashboard'))
+            return redirect()->to($type->path())
                 ->with('error', 'Belum ada suara aktif untuk akun ini.');
         }
 
@@ -195,7 +195,7 @@ abstract class VotingController extends BaseController
                 $candidate           = $result->vote['candidate'];
                 $payload['title']    = 'SUARA BERHASIL DISIMPAN';
                 $payload['detail']   = 'Hak suara Anda telah dikunci.';
-                $payload['redirect'] = site_url($type->path('my-vote'));
+                $payload['redirect'] = site_url($type->path('pilihanku'));
                 $payload['vote']     = [
                     'number'   => sprintf('%02d', $candidate['nomor_urut']),
                     'ketua'    => $candidate['nama_ketua'],
@@ -203,18 +203,18 @@ abstract class VotingController extends BaseController
                     'voted_at' => format_waktu($result->vote['voted_at'], 'd MMMM yyyy, HH.mm.ss'),
                 ];
             } elseif ($result->status === VoteResult::ALREADY_VOTED) {
-                $payload['redirect'] = site_url($type->path('my-vote'));
+                $payload['redirect'] = site_url($type->path('pilihanku'));
             }
 
             return $this->response->setStatusCode($result->httpStatus())->setJSON($payload);
         }
 
         if ($result->isOk()) {
-            return redirect()->to($type->path('my-vote'))
+            return redirect()->to($type->path('pilihanku'))
                 ->with('success', 'SUARA BERHASIL DISIMPAN. Hak suara Anda telah dikunci.');
         }
 
-        $target = $result->status === VoteResult::ALREADY_VOTED ? 'my-vote' : 'vote';
+        $target = $result->status === VoteResult::ALREADY_VOTED ? 'pilihanku' : 'coblos';
 
         return redirect()->to($type->path($target))->with('error', $result->message());
     }
@@ -230,7 +230,7 @@ abstract class VotingController extends BaseController
                 ->setJSON(['status' => 'throttled', 'message' => $message]);
         }
 
-        return redirect()->to($this->voterType()->path('vote'))->with('error', $message);
+        return redirect()->to($this->voterType()->path('coblos'))->with('error', $message);
     }
 
     private function wantsJson(): bool

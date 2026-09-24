@@ -97,7 +97,7 @@ class Home extends BaseController
     }
 
     /**
-     * GET live-count: angka live count publik untuk beranda (JSON, no-store).
+     * GET hitung-suara: angka live count publik untuk beranda (JSON, no-store).
      * Hanya persentase per pasangan + partisipasi (PublicLiveCount); 404 bila
      * Config\Homepage::$publicLiveCount = false.
      */

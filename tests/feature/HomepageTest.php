@@ -13,7 +13,7 @@ use Config\Homepage;
  * Redesign beranda (STAGE5-NOTES.md): navigasi logo di tengah tanpa tombol
  * masuk, tiga scene layar penuh, pintu masuk Siswa/Guru, layar pembuka,
  * panel status bergaya terminal, footer rata tengah, dan live count publik
- * (GET live-count) sebagai proyeksi sempit AnalyticsService.
+ * (GET hitung-suara) sebagai proyeksi sempit AnalyticsService.
  *
  * Perilaku gerak (scroll per scene, roda/trackpad, sentuh, keyboard,
  * transisi) diuji di browser; lihat STAGE5-NOTES.md bagian 9.
@@ -107,30 +107,30 @@ final class HomepageTest extends CIUnitTestCase
 
         // Halaman lain (latar terang): logo versi gelap, juga tanpa tombol masuk.
         // Penanda beranda imersif tidak terbawa ke render berikutnya (renderer bersama).
-        $login = $this->get('student/login');
+        $login = $this->get('siswa/masuk');
         $login->assertDontSee('is-immersive');
         $login->assertSee('class="site-footer"');
         $login->assertSee('assets/img/brand/logo-dark.svg');
-        $login->assertDontSee('href="' . base_url('teacher/login') . '"');
+        $login->assertDontSee('href="' . base_url('guru/masuk') . '"');
         $login->assertDontSee('site-nav__action');
     }
 
     public function testSignedInVoterKeepsDashboardAndLogoutAroundTheLogo(): void
     {
         $page = $this->withSession(['user_type' => 'student', 'student_id' => 1, 'isLoggedIn' => true])
-            ->get('student/dashboard');
+            ->get('siswa');
 
         $page->assertStatus(200);
         $page->assertSee('aria-label="Navigasi akun"');
-        $page->assertSee('href="' . base_url('student/dashboard') . '"');
-        $page->assertSee('action="' . base_url('student/logout') . '"');
+        $page->assertSee('href="' . base_url('siswa') . '"');
+        $page->assertSee('action="' . base_url('siswa/keluar') . '"');
         $page->assertSee('Keluar');
         $page->assertSee('assets/img/brand/logo-dark.svg');
     }
 
     public function testFooterIsMinimalAndCentredOnEveryPage(): void
     {
-        $login = $this->get('student/login');
+        $login = $this->get('siswa/masuk');
         $body  = (string) $login->response()->getBody();
 
         $login->assertSee('class="site-footer"');
@@ -187,8 +187,8 @@ final class HomepageTest extends CIUnitTestCase
 
         $page->assertSee('aria-label="Masuk sebagai Siswa"');
         $page->assertSee('aria-label="Masuk sebagai Guru"');
-        $page->assertSee('href="' . base_url('student/login') . '"');
-        $page->assertSee('href="' . base_url('teacher/login') . '"');
+        $page->assertSee('href="' . base_url('siswa/masuk') . '"');
+        $page->assertSee('href="' . base_url('guru/masuk') . '"');
         $page->assertSee('assets/img/home/entry-student.svg');
         $page->assertSee('assets/img/home/entry-teacher.svg');
         // Tanpa penjelasan "cara masuk" (NISN/NIP & kode unik ada di halaman login).
@@ -262,7 +262,7 @@ final class HomepageTest extends CIUnitTestCase
         $this->scheduleAt('2026-10-01 09:00:00');
         $this->seedVotes();
 
-        $result = $this->get('live-count');
+        $result = $this->get('hitung-suara');
 
         $result->assertStatus(200);
         $this->assertStringContainsString('no-store', $result->response()->getHeaderLine('Cache-Control'));
@@ -304,7 +304,7 @@ final class HomepageTest extends CIUnitTestCase
 
         $page = $this->get('/');
 
-        $page->assertSee('data-live-url="' . site_url('live-count') . '"');
+        $page->assertSee('data-live-url="' . site_url('hitung-suara') . '"');
         $page->assertSee('data-live-status="ONGOING"');
         $page->assertSee('data-live-interval="30"');
         $page->assertSee('data-live-pair="1"');
@@ -337,7 +337,7 @@ final class HomepageTest extends CIUnitTestCase
         $page->assertSee('data-live-pair="3"');
         $page->assertSee('Dewi Anggraini');
 
-        $data = $this->json($this->get('live-count'));
+        $data = $this->json($this->get('hitung-suara'));
         $this->assertSame([1, 3], array_column($data['candidates'], 'id'));
         $this->assertEquals(100, $data['candidates'][1]['percent']);
     }
@@ -345,14 +345,14 @@ final class HomepageTest extends CIUnitTestCase
     public function testPollingFollowsTheElectionStatus(): void
     {
         $this->scheduleAt('2026-10-01 06:00:00');
-        $upcoming = $this->json($this->get('live-count'));
+        $upcoming = $this->json($this->get('hitung-suara'));
         $this->assertSame('UPCOMING', $upcoming['status']);
         $this->assertSame(30, $upcoming['poll']['interval']);
         $this->get('/')->assertSee('Penghitungan dimulai saat pencoblosan dibuka.');
 
         // Tepat pada end_at: selesai, polling berhenti.
         $this->scheduleAt('2026-10-01 12:00:00');
-        $finished = $this->json($this->get('live-count'));
+        $finished = $this->json($this->get('hitung-suara'));
         $this->assertSame('FINISHED', $finished['status']);
         $this->assertSame(0, $finished['poll']['interval']);
 
@@ -364,7 +364,7 @@ final class HomepageTest extends CIUnitTestCase
 
         // Tanpa jadwal pemilihan: tanpa status, tanpa polling.
         $this->db->table('elections')->delete(['id' => 1]);
-        $none = $this->json($this->get('live-count'));
+        $none = $this->json($this->get('hitung-suara'));
         $this->assertNull($none['status']);
         $this->assertSame(0, $none['poll']['interval']);
         $this->assertSame(15, $none['turnout']['total']);
@@ -381,15 +381,15 @@ final class HomepageTest extends CIUnitTestCase
         config(Homepage::class)->liveCacheSeconds = 5;
         $this->scheduleAt('2026-10-01 09:00:00');
 
-        $first = $this->json($this->get('live-count'));
+        $first = $this->json($this->get('hitung-suara'));
         $this->vote('student', 1, 1);
 
         // Dalam masa cache: angka yang sama untuk semua layar.
-        $this->assertSame($first, $this->json($this->get('live-count')));
+        $this->assertSame($first, $this->json($this->get('hitung-suara')));
 
         // Status berubah = kunci cache baru: tidak pernah basi.
         $this->scheduleAt('2026-10-01 12:00:00');
-        $final = $this->json($this->get('live-count'));
+        $final = $this->json($this->get('hitung-suara'));
         $this->assertSame('FINISHED', $final['status']);
         $this->assertEquals(100, $final['candidates'][0]['percent']);
     }
@@ -417,6 +417,6 @@ final class HomepageTest extends CIUnitTestCase
 
         $this->expectException(PageNotFoundException::class);
 
-        $this->get('live-count');
+        $this->get('hitung-suara');
     }
 }

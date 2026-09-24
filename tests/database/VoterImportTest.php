@@ -82,7 +82,7 @@ final class VoterImportTest extends CIUnitTestCase
         $spreadsheet = (new Xlsx())->load($path);
         $sheet       = $spreadsheet->getSheet(0);
 
-        $this->assertSame('student-import-template.xlsx', $importer->templateFilename());
+        $this->assertSame('templat-impor-siswa.xlsx', $importer->templateFilename());
         $this->assertSame(
             [['no', 'NISN', 'nama', 'jenis_kelamin', 'kelas', 'nomor_absen', 'kodeunik']],
             $sheet->rangeToArray('A1:G1'),
@@ -114,7 +114,7 @@ final class VoterImportTest extends CIUnitTestCase
         $spreadsheet = (new Xlsx())->load($path);
         $sheet       = $spreadsheet->getSheet(0);
 
-        $this->assertSame('teacher-import-template.xlsx', $importer->templateFilename());
+        $this->assertSame('templat-impor-guru.xlsx', $importer->templateFilename());
         $this->assertSame([['no', 'NIP', 'nama', 'kodeunik']], $sheet->rangeToArray('A1:D1'));
         $this->assertSame('@', $spreadsheet->getCellXfByIndex($sheet->getColumnDimension('B')->getXfIndex())->getNumberFormat()->getFormatCode());
         $spreadsheet->disconnectWorksheets();

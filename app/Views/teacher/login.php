@@ -10,7 +10,7 @@
         <h1 class="card__title">Selamat datang, silakan masuk untuk memilih</h1>
       </div>
 
-      <form action="<?= base_url('teacher/login') ?>" method="post" class="stack" novalidate>
+      <form action="<?= base_url('guru/masuk') ?>" method="post" class="stack" novalidate>
         <?= csrf_field() ?>
 
         <div class="field">

@@ -66,7 +66,7 @@ $active    = (int) $voter['status_aktif'] === 1;
             <div><dt>Browser</dt><dd><?= esc($vote['browser_info'] ?? '-') ?></dd></div>
           </dl>
           <?php if (($election['status'] ?? null) === 'ONGOING'): ?>
-            <a class="btn btn--danger" href="<?= site_url('admin/unlock/' . $type->value . '/' . $voter['id']) ?>"><?= icon('unlock') ?> Unlock Hak Suara</a>
+            <a class="btn btn--danger" href="<?= site_url($type->unlockPath($voter['id'])) ?>"><?= icon('unlock') ?> Unlock Hak Suara</a>
           <?php else: ?>
             <p class="field-hint">Unlock hanya dapat dilakukan saat pemilihan berlangsung.</p>
           <?php endif; ?>
@@ -155,7 +155,7 @@ $active    = (int) $voter['status_aktif'] === 1;
       </form>
 
       <?php if ($deletable): ?>
-        <form action="<?= site_url($type->adminPath($voter['id'] . '/delete')) ?>" method="post"
+        <form action="<?= site_url($type->adminPath($voter['id'] . '/hapus')) ?>" method="post"
               data-confirm="<?= esc('Hapus data ' . $voter['name'] . ' secara permanen? Gunakan hanya untuk data salah impor.', 'attr') ?>"
               data-confirm-button="Hapus data" data-confirm-danger>
           <?= csrf_field() ?>

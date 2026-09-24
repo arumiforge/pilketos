@@ -13,7 +13,7 @@ use App\Models\ElectionModel;
 class ElectionController extends BaseController
 {
     /**
-     * GET election/clock
+     * GET jam-server
      */
     public function clock()
     {

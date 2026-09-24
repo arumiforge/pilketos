@@ -31,7 +31,7 @@ $filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['kelas']
     </div>
   </header>
 
-  <form class="filters" method="get" action="<?= site_url('admin/analytics/votes') ?>" role="search" data-autosubmit>
+  <form class="filters" method="get" action="<?= site_url('admin/analitik/suara') ?>" role="search" data-autosubmit>
     <div class="field filters__search">
       <label for="f-q">Cari nama / NISN / NIP</label>
       <input type="search" id="f-q" name="q" value="<?= esc($filters['q'], 'attr') ?>" maxlength="100" autocomplete="off">
@@ -80,7 +80,7 @@ $filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['kelas']
     </div>
     <div class="filters__actions">
       <button type="submit" class="btn btn--sm"><?= icon('search') ?> Terapkan</button>
-      <?php if ($filtered): ?><a class="btn btn--sm btn--outline" href="<?= site_url('admin/analytics/votes') ?>">Reset</a><?php endif; ?>
+      <?php if ($filtered): ?><a class="btn btn--sm btn--outline" href="<?= site_url('admin/analitik/suara') ?>">Reset</a><?php endif; ?>
     </div>
     <?php if ($filters['kelas'] !== '' || $filters['gender'] !== ''): ?>
       <p class="filters__note">Filter kelas/jenis kelamin hanya berlaku untuk siswa, sehingga guru tidak ditampilkan.</p>
@@ -112,7 +112,7 @@ $filtered = $filters['q'] !== '' || $filters['type'] !== '' || $filters['kelas']
             <?php
               $isStudent = $row['voter_type'] === 'student';
               $c         = $accent[(int) $row['candidate_id']] ?? null;
-              $detailUrl = site_url(($isStudent ? 'admin/students/' : 'admin/teachers/') . $row['voter_id']);
+              $detailUrl = site_url(($isStudent ? 'admin/siswa/' : 'admin/guru/') . $row['voter_id']);
             ?>
             <tr>
               <td class="num"><?= $offset + $i + 1 ?></td>
