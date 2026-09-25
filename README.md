@@ -14,8 +14,9 @@ lereng Muria, tiga scene layar penuh yang berpindah satu per satu (lereng,
 pintu masuk **Siswa/Guru**, perolehan suara langsung), dan panel status
 bergaya terminal dengan countdown jam server (bagian 21).
 
-Dokumen ini adalah panduan pemakaian dan deployment. Riwayat implementasi per
-tahap ada di `STAGE1-NOTES.md` s.d. `STAGE6-NOTES.md`.
+Dokumen ini adalah panduan pemakaian dan deployment. Spesifikasi, identitas
+visual, dan riwayat implementasi per tahap ada di folder [`docs/`](docs/README.md)
+(bagian 20).
 
 Daftar isi:
 [1 Ringkasan](#1-ringkasan) ·
@@ -107,6 +108,7 @@ NO_ACTIVE_VOTE --coblos--> LOCKED --unlock admin (alasan)--> NO_ACTIVE_VOTE (bar
 Struktur folder utama:
 
 ```
+docs/                spesifikasi (00–05), desain (06–10), catatan-tahap (STAGE1–13)
 app/Commands/        admin:create, admin:password, osis:check
 app/Config/          Routes.php, Filters.php, ContentSecurityPolicy.php, App.php, Homepage.php, ...
 app/Controllers/     Home, VotingController, Student/*, Teacher/*, Admin/*
@@ -126,7 +128,7 @@ tests/               unit, database, feature (PHPUnit)
 writable/            cache (+ cache/dompdf: metrik font PDF), logs, session, uploads/imports (pratinjau impor)
 ```
 
-Daftar file lengkap ada di `STAGE4-NOTES.md` bagian 12.
+Daftar file lengkap ada di [`STAGE4-NOTES.md`](docs/catatan-tahap/STAGE4-NOTES.md) bagian 12.
 
 ## 3. Kebutuhan
 
@@ -186,7 +188,7 @@ seperti `/student/login` sudah tidak ada dan menjawab 404):
 | Admin | `/admin/masuk`, `/admin` (dasbor), `/admin/analitik` (+ `/jenis-pemilih`, `/jenis-kelamin`, `/kelas`, `/rombel`), `/admin/analitik/suara`, `/admin/hasil`, `/admin/paslon`, `/admin/siswa`, `/admin/siswa/tambah`, `/admin/guru`, `/admin/guru/tambah`, `/admin/siswa/impor`, `/admin/guru/impor`, `/admin/jadwal`, `/admin/buka-kunci`, `/admin/riwayat` |
 | JSON (dipakai halaman) | `/jam-server` (countdown), `/hitung-suara` (beranda), `/admin/hitung-suara` (dasbor admin) |
 
-Peta lengkap lama -> baru: `STAGE7-NOTES.md`.
+Peta lengkap lama -> baru: [`STAGE7-NOTES.md`](docs/catatan-tahap/STAGE7-NOTES.md).
 
 Instalasi server hari pemilihan: bagian 7.
 
@@ -755,27 +757,20 @@ Hasil terakhir (Stage 13): **403 test, 3.725 assertion, lulus** pada PHP
 8.4.19 dengan MariaDB 10.11.14 (Stage 12: 383 test, Stage 11: 374 test, Stage 10: 348 test, Stage 9: 340 test, Stage 8: 331 test, Stage 7: 323 test). Stage 4 (289 test) juga lulus di MySQL
 8.0.46; Stage 5 dan 6 tidak mengubah schema maupun query. Test paralel (race
 condition) memakai `pcntl_fork` sehingga di-skip di Windows. Rincian dan uji
-browser: `STAGE4-NOTES.md` bagian 9, beranda: `STAGE5-NOTES.md` dan
-`STAGE6-NOTES.md` bagian 9.
+browser: [`STAGE4-NOTES.md`](docs/catatan-tahap/STAGE4-NOTES.md) bagian 9,
+beranda: [`STAGE5-NOTES.md`](docs/catatan-tahap/STAGE5-NOTES.md) dan
+[`STAGE6-NOTES.md`](docs/catatan-tahap/STAGE6-NOTES.md) bagian 9.
 
 ## 20. Dokumen proyek
 
-| File | Isi |
+Semua dokumentasi selain README ini ada di folder `docs/`. Daftar lengkap
+beserta ringkasan tiap dokumen: [`docs/README.md`](docs/README.md).
+
+| Folder | Isi |
 |---|---|
-| `00-MASTER-PROJECT.md` | Spesifikasi utama (source of truth) |
-| `01-FOUNDATION-DATABASE-AUTH.md` + `STAGE1-NOTES.md` | Stage 1: fondasi, database, autentikasi |
-| `02-STUDENT-TEACHER-VOTING.md` + `STAGE2-NOTES.md` | Stage 2: pengalaman voting siswa & guru |
-| `03-ADMIN-IMPORT-ANALYTICS.md` + `STAGE3-NOTES.md` | Stage 3: panel admin, impor, tema, analitik, live count, unlock, audit |
-| `04-FINAL-INTEGRATION-TESTING-DEPLOYMENT.md` + `STAGE4-NOTES.md` | Stage 4: audit keamanan, integritas suara, hasil akhir & confetti, deployment, matriks route & hak akses, test akhir |
-| `05-HOMEPAGE-REDESIGN.md` + `STAGE5-NOTES.md` | Stage 5: redesign beranda (scene layar penuh, pintu masuk Siswa/Guru, live count publik, layar pembuka, panel status terminal, navigasi logo & footer) |
-| `06`–`10-*-PILKETOS.md` + `STAGE6-NOTES.md` | Stage 6: identitas visual SMP 1 DAWE (arah visual "lereng Muria", font Plus Jakarta Sans, spesifikasi & prompt aset, sistem gerak, layar pembuka selalu tampil) |
-| `STAGE7-NOTES.md` | Stage 7: URL bahasa Indonesia santai, nama templat impor, redesain bilik suara siswa & guru |
-| `STAGE8-NOTES.md` | Stage 8: rapikan dasbor pemilih & bilik suara (navigasi ikon di HP, jam melayang, journey timeline, countdown terminal, kertas bolong + jeda konfirmasi, paku 3D selalu nyala) |
-| `STAGE9-NOTES.md` | Stage 9: bilik suara lebih padat di HP, login pemilih dua tahap + gembok terbuka, panel admin (brand, menu, breadcrumb stepper, keterangan di balik ikon, bar live count di HP) |
-| `STAGE10-NOTES.md` | Stage 10: Sekilas paslon bergeser sendiri di HP + panah ke navigasi bab, dasbor HP rata tengah + jam di atas footer, modal sukses & halaman pilihan saya (siswa "kamu"), scene perolehan suara rata tengah dengan "Suara masuk" sebagai baris penutup |
-| `STAGE11-NOTES.md` | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel, istilah "rombel" seragam (label, impor, pesan, audit) |
-| `STAGE12-NOTES.md` | Stage 12: kerangka "memuat" analitik (pengganti garis progres), breadcrumb berikon di topbar / ikon saja di HP, kepala halaman rata tengah tanpa garis, "Selengkapnya" & kolom "Grafik", kartu paslon + timeline asset, timeline tahapan unlock, live search di semua pencarian admin |
-| `STAGE13-NOTES.md` | Stage 13: hasil akhir (PDF dompdf, cetak browser dengan logo & catatan kaki per halaman, tombol ikon di HP), sidebar Title Case + Halaman Utama/Keluar di bawah, Akun Admin (ganti nama pengguna & kata sandi), login admin layar terbelah + lihat kata sandi, istilah analitik Total/Pemilih/Jenis Kelamin |
+| [`docs/spesifikasi/`](docs/spesifikasi) | `00-MASTER-PROJECT.md` (spesifikasi utama, source of truth) dan brief Stage 1–5 (`01`–`05`) |
+| [`docs/desain/`](docs/desain) | Identitas visual SMP 1 DAWE, Stage 6 (`06`–`10`): arah visual, tipografi, spesifikasi aset, prompt gambar, sistem gerak |
+| [`docs/catatan-tahap/`](docs/catatan-tahap) | Catatan implementasi & handoff tiap tahap (`STAGE1-NOTES.md` s.d. `STAGE13-NOTES.md`) |
 
 ## 21. Beranda imersif & aset visual
 
@@ -808,8 +803,8 @@ interaksi. Palet netral "Pagi Muria" + warna aksen masing-masing pasangan.
 Mengganti gambar (tanpa mengubah layout): simpan file di
 `public/assets/img/...`, lalu isi path-nya (relatif ke `public/`) di
 `app/Config/Homepage.php` atau `.env`. Ukuran, zona aman, dan prompt
-pembuatan: `08-VISUAL-ASSET-SPECIFICATION-PILKETOS.md` dan
-`09-IMAGE-GENERATION-PROMPTS-PILKETOS.md`.
+pembuatan: [`08-VISUAL-ASSET-SPECIFICATION-PILKETOS.md`](docs/desain/08-VISUAL-ASSET-SPECIFICATION-PILKETOS.md)
+dan [`09-IMAGE-GENERATION-PROMPTS-PILKETOS.md`](docs/desain/09-IMAGE-GENERATION-PROMPTS-PILKETOS.md).
 
 ```
 # lambang resmi sekolah (file dari sekolah, dipasang apa adanya di kiri lockup)
@@ -842,7 +837,7 @@ homepage.logoOnLight  = 'assets/img/brand/logo-dark.svg'
 | Foto pasangan | dari menu **Pasangan calon** (foto ketua, foto wakil, hero/foto berdua) | scene perolehan suara memakai foto berdua bila ada; tanpa foto tampil monogram inisial |
 
 Garis kontur (`hero-contour*.svg`) menjiplak punggungan latar hero bawaan;
-bila latar hero diganti foto asli, gambar ulang konturnya (dokumen 09 §8)
+bila latar hero diganti foto asli, gambar ulang konturnya ([dokumen 09](docs/desain/09-IMAGE-GENERATION-PROMPTS-PILKETOS.md) §8)
 atau biarkan sebagai tekstur halus.
 
 Warna identitas sekolah (parijoto, `homepage.identityAccent`) hanya dipakai
@@ -851,7 +846,8 @@ pada bilah muat layar pembuka, dan otomatis diganti warna netral bila mirip
 
 Perolehan suara publik dapat dimatikan: `homepage.publicLiveCount = false`
 (scene ketiga menjadi "Pasangan calon" tanpa angka). Rincian teknis:
-`STAGE5-NOTES.md` dan `STAGE6-NOTES.md`.
+[`STAGE5-NOTES.md`](docs/catatan-tahap/STAGE5-NOTES.md) dan
+[`STAGE6-NOTES.md`](docs/catatan-tahap/STAGE6-NOTES.md).
 
 ## Lisensi
 
