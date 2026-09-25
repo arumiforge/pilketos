@@ -42,7 +42,7 @@ final class StudentImporter extends VoterImporter
         return [
             'no'            => ['field' => null, 'format' => NumberFormat::FORMAT_GENERAL, 'width' => 6, 'example' => '1', 'required' => false],
             'NISN'          => ['field' => 'nisn', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 16, 'example' => '0012345678', 'required' => true],
-            'nama'          => ['field' => 'name', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 32, 'example' => 'Ahmad Fauzan', 'required' => true],
+            'nama'          => ['field' => 'name', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 32, 'example' => 'Sasuke Uchiha', 'required' => true],
             'jenis_kelamin' => ['field' => 'jenis_kelamin', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 14, 'example' => 'L', 'required' => true],
             'rombel'        => ['field' => 'kelas', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 10, 'example' => '7A', 'required' => true],
             'nomor_absen'   => ['field' => 'nomor_absen', 'format' => NumberFormat::FORMAT_NUMBER, 'width' => 13, 'example' => '1', 'required' => true],

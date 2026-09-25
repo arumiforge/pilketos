@@ -1868,24 +1868,47 @@ ol.steps {
   .steps__item { --node: 30px; font-size: 0.75rem; }
 }
 
+/* Tab saring pratinjau impor: satu baris rata tengah; bila tidak muat (HP)
+   bergulir mendatar. Rata tengah lewat margin auto di tab pertama & terakhir
+   (bukan justify-content: center) agar tab paling kiri tetap bisa dicapai
+   saat bergulir. Garis bawah = bayangan dalam, karena overflow memotong
+   margin negatif. Diganti tanpa muat ulang oleh admin.js (data-live-nav). */
 .tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1);
   margin-top: var(--space-5);
-  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  box-shadow: inset 0 -1px 0 var(--line);
+  scroll-margin-top: 76px;
 }
 
 .tabs__link {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  margin-bottom: -1px;
   padding: 0 var(--space-3);
   border-bottom: 3px solid transparent;
   font-size: 0.875rem;
+  white-space: nowrap;
   text-decoration: none;
+}
+
+.tabs__link:first-child { margin-left: auto; }
+.tabs__link:last-child { margin-right: auto; }
+
+@media (max-width: 719px) {
+  .tabs {
+    margin-inline: calc(var(--admin-pad) * -1);
+    padding-inline: var(--admin-pad);
+    scroll-padding-inline: var(--admin-pad);
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar { display: none; }
 }
 
 .tabs__link[aria-current="page"] {
@@ -2066,6 +2089,20 @@ ol.asset-dots {
 }
 
 .cand-card__actions form { margin: 0; }
+
+/* HP: tombol aksi (Ubah, Pratinjau, Hapus / keterangan kunci) rata tengah */
+@media (max-width: 719px) {
+  .cand-card__actions {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cand-card__actions .cand-card__lock {
+    flex-basis: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
 
 @media (min-width: 960px) {
   .cand-card__actions {
@@ -2566,6 +2603,15 @@ ol.asset-dots {
 
 @media (min-width: 1024px) {
   .import-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* HP: tombol unduh template selebar panel, teks rata tengah */
+@media (max-width: 719px) {
+  .import-download {
+    display: flex;
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .spec-table {

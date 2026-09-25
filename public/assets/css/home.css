@@ -192,15 +192,13 @@ html.is-immersive {
 }
 
 /* sebingkai dengan latar hero: object-fit & skala awal sama (1,04), jadi
-   saat kabut memudar pemandangan tidak bergeser */
+   saat kabut memudar pemandangan tidak bergeser. Langsung terlihat begitu
+   terlukis (tidak menunggu home.js), sesuai 10-MOTION §10.3 "0 ms latar
+   kabut tampil"; latar diminta sejak <head> (preload). */
 .splash__img {
   object-fit: cover;
-  opacity: 0;
   transform: scale(1.04);
-  transition: opacity 400ms var(--ease-out);
 }
-
-.splash__img.is-loaded { opacity: 1; }
 
 /* lapisan gelap tipis: latar sudah berkabut & diredupkan, lockup tetap fokus */
 .splash__shade {
