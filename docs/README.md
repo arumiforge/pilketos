@@ -8,7 +8,7 @@ Dokumentasi pendukung aplikasi Pemilihan Ketua & Wakil Ketua OSIS SMP 1 DAWE
 docs/
 ├── spesifikasi/     brief & spesifikasi per tahap (00–05)
 ├── desain/          identitas visual, tipografi, aset, gerak (06–10)
-└── catatan-tahap/   catatan implementasi & handoff tiap tahap (STAGE1–13)
+└── catatan-tahap/   catatan implementasi & handoff tiap tahap (STAGE1–14)
 ```
 
 Dokumen di `spesifikasi/` dan `desain/` adalah **rencana** (apa yang harus
@@ -56,6 +56,7 @@ catatan tahap.
 | [`STAGE11-NOTES.md`](catatan-tahap/STAGE11-NOTES.md) | Stage 11: analitik pill section header + bagian dimuat lewat fetch, detail suara siswa/guru terpisah, deteksi perangkat `matomo/device-detector` + Client Hints, CRUD siswa & guru, indikator "Live", countdown dasbor gaya terminal di HP, rekap kelas/rombel, istilah "rombel" seragam (label, impor, pesan, audit) |
 | [`STAGE12-NOTES.md`](catatan-tahap/STAGE12-NOTES.md) | Stage 12: kerangka "memuat" analitik (pengganti garis progres), breadcrumb berikon di topbar / ikon saja di HP, kepala halaman rata tengah tanpa garis, "Selengkapnya" & kolom "Grafik", kartu paslon + timeline asset, timeline tahapan unlock, live search di semua pencarian admin |
 | [`STAGE13-NOTES.md`](catatan-tahap/STAGE13-NOTES.md) | Stage 13: hasil akhir (PDF dompdf, cetak browser dengan logo & catatan kaki per halaman, tombol ikon di HP), sidebar Title Case + Halaman Utama/Keluar di bawah, Akun Admin (ganti nama pengguna & kata sandi), login admin layar terbelah + lihat kata sandi, istilah analitik Total/Pemilih/Jenis Kelamin |
+| [`STAGE14-NOTES.md`](catatan-tahap/STAGE14-NOTES.md) | Stage 14: gambar layar pembuka tidak telat (preload di `<head>`, tampil tanpa menunggu skrip, diurai sebelum dihitung), aksi kartu paslon rata tengah di HP, halaman impor siswa & guru berbahasa ramah + contoh baru, tombol unduh template selebar layar di HP, tab saring pratinjau impor rata tengah / bergulir mendatar di HP dan dimuat tanpa muat ulang |
 
 Catatan tahap adalah arsip: isinya menggambarkan kondisi proyek saat tahap itu
 selesai, termasuk letak file saat itu (sebelum dokumen dipindah ke `docs/`).

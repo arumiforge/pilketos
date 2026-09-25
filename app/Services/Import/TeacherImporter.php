@@ -28,9 +28,9 @@ final class TeacherImporter extends VoterImporter
     {
         return [
             'no'       => ['field' => null, 'format' => NumberFormat::FORMAT_GENERAL, 'width' => 6, 'example' => '1', 'required' => false],
-            'NIP'      => ['field' => 'nip', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 24, 'example' => '198501012010011001', 'required' => true],
-            'nama'     => ['field' => 'name', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 36, 'example' => 'Siti Nur Aini, S.Pd.', 'required' => true],
-            'kodeunik' => ['field' => 'kodeunik', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 14, 'example' => '01061992', 'required' => true],
+            'NIP'      => ['field' => 'nip', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 24, 'example' => '199305012020121004', 'required' => true],
+            'nama'     => ['field' => 'name', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 36, 'example' => 'Fajar Afif Dewantoro, S.Pd.', 'required' => true],
+            'kodeunik' => ['field' => 'kodeunik', 'format' => NumberFormat::FORMAT_TEXT, 'width' => 14, 'example' => '01012000', 'required' => true],
         ];
     }
 
@@ -41,7 +41,7 @@ final class TeacherImporter extends VoterImporter
             '1. Isi data mulai baris 2 pada sheet pertama ("Data Guru"). Jangan mengubah, menghapus, atau memindahkan baris judul.',
             '2. NIP diketik sebagai teks (kolom sudah berformat Teks). NIP 18 digit yang diketik sebagai angka akan dibulatkan Excel dan ditolak sistem.',
             '3. Guru tanpa NIP PNS boleh memakai nomor identitas lain berupa angka (mis. NUPTK) yang juga dipakai untuk login.',
-            '4. kodeunik = tanggal lahir DDMMYYYY sebagai teks, contoh 01061992 untuk 1 Juni 1992.',
+            '4. kodeunik = tanggal lahir DDMMYYYY sebagai teks, contoh 01012000 untuk 1 Januari 2000.',
             '5. NIP yang sudah ada akan DIPERBARUI (bukan dibuat ganda). Guru yang tidak ada di file tidak dihapus.',
             '6. Setelah unggah, periksa pratinjau: baris bermasalah ditandai dan tidak ikut diimpor.',
         ];

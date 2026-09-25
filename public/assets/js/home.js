@@ -101,18 +101,45 @@
     return !!el && !!el.closest('button, a[href], summary, [role="button"], input, label');
   }
 
+  /**
+   * Selesai setelah gambar dimuat DAN diurai (img.decode()), bukan sekadar
+   * "load": gambar yang baru dimuat bisa masih kosong satu-dua frame sebelum
+   * terlukis (decoding="async", SVG besar). Gagal dimuat/diurai tetap selesai.
+   */
   function whenImage(img, done) {
-    if (!img || (img.complete && img.naturalWidth > 0)) {
+    if (!img) {
       done();
+      return;
+    }
+    var decoded = function () {
+      if (img.naturalWidth > 0 && typeof img.decode === 'function') {
+        img.decode().then(done, done);
+      } else {
+        done();
+      }
+    };
+    if (img.complete && img.naturalWidth > 0) {
+      decoded();
       return;
     }
     var finish = function () {
       img.removeEventListener('load', finish);
       img.removeEventListener('error', finish);
-      done();
+      decoded();
     };
     img.addEventListener('load', finish);
     img.addEventListener('error', finish);
+  }
+
+  /**
+   * Gambar scene lain (portal Siswa/Guru, foto pasangan) tidak ditunggu layar
+   * pembuka (10-MOTION §10.4), tetapi diurai lebih dulu begitu aset layar
+   * pertama siap, sehingga tidak muncul terlambat saat scene-nya dibuka.
+   */
+  function warmImages() {
+    toArray(document.querySelectorAll('.portal__img, .pair__img')).forEach(function (img) {
+      whenImage(img, function () {});
+    });
   }
 
   /**
@@ -726,13 +753,9 @@
     this.el.classList.add('is-managed');
     doc.classList.add('intro-active');
 
-    if (this.bg) {
-      whenImage(this.bg, function () {
-        if (self.bg.naturalWidth > 0) {
-          self.bg.classList.add('is-loaded');
-        }
-      });
-    }
+    // Latar pembuka tampil langsung dari HTML (tidak menunggu skrip ini):
+    // diminta sejak <head> (preload di home/index.php), jadi terlihat sejak
+    // frame pertama, bukan setelah home.js berjalan.
 
     // Yang ditunggu (10-MOTION §10.4): lockup (pembuka & navigasi), latar
     // pembuka, latar hero yang dipilih <picture>, dan font layar pertama.
@@ -766,6 +789,9 @@
         if (!called) {
           called = true;
           self.loaded++;
+          if (self.loaded === self.total) {
+            warmImages();
+          }
         }
       });
     });
@@ -1492,6 +1518,7 @@
       if (splash && splash.parentNode) {
         splash.parentNode.removeChild(splash);
       }
+      warmImages();
       // Satu frame dengan keadaan tersembunyi dulu, agar transisi masuk berjalan.
       window.requestAnimationFrame(function () {
         window.requestAnimationFrame(ready);

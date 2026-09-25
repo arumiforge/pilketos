@@ -226,6 +226,22 @@ final class AdminImportTest extends CIUnitTestCase
         $result->assertSee('templat-impor-siswa.xlsx');
         $result->assertSee('href="' . site_url('admin/siswa/impor/templat') . '"');
         $result->assertSee('enctype="multipart/form-data"');
-        $result->assertSee('NISN tepat 10 digit');
+        $result->assertSee('NISN harus 10 angka');
+        $result->assertSee('Sasuke Uchiha');
+        $result->assertSee('misalnya 01032013 untuk 1 Maret 2013');
+        $result->assertSee('class="btn import-download"');
+    }
+
+    public function testTeacherImportPageUsesPlainLanguageAndNewExample(): void
+    {
+        $result = $this->withSession($this->admin())->get('admin/guru/impor');
+
+        $result->assertStatus(200);
+        $result->assertSee('199305012020121004');
+        $result->assertSee('Fajar Afif Dewantoro, S.Pd.');
+        $result->assertSee('misalnya 01012000 untuk 1 Januari 2000');
+        $result->assertSee('Guru yang NIP-nya sudah ada cukup diperbarui');
+        $result->assertDontSee('dibulatkan Excel');
+        $result->assertDontSee('DDMMYYYY');
     }
 }

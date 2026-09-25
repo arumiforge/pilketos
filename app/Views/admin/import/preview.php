@@ -5,6 +5,10 @@
 /**
  * Pratinjau import: ringkasan, pesan per baris, konfirmasi impor.
  *
+ * Tab saring (data-live-nav) & halaman tabel memuat [data-live-region]
+ * lewat fetch tanpa muat ulang (admin.js); tanpa JavaScript tetap tautan
+ * biasa. Tab rata tengah, bergulir mendatar di HP.
+ *
  * @var \App\Services\VoterType             $type
  * @var \App\Services\Import\VoterImporter $importer
  * @var string                              $token
@@ -71,7 +75,7 @@ $counts = [
     <p class="notice"><?= icon('info') ?><span><?= esc($notice) ?></span></p>
   <?php endforeach; ?>
 
-  <nav class="tabs" aria-label="Saring baris pratinjau">
+  <nav class="tabs" aria-label="Saring baris pratinjau" data-live-nav="saring">
     <?php foreach (ImportController::PREVIEW_FILTERS as $key => $label): ?>
       <a class="tabs__link" href="<?= site_url($type->adminPath('impor/cek/' . $token)) ?>?show=<?= esc($key, 'url') ?>"<?= $show === $key ? ' aria-current="page"' : '' ?>>
         <?= esc($label) ?> <span class="tabs__count"><?= angka($counts[$key]) ?></span>
@@ -79,58 +83,61 @@ $counts = [
     <?php endforeach; ?>
   </nav>
 
-  <?php if ($rows === []): ?>
-    <p class="empty">Tidak ada baris pada saringan ini.</p>
-  <?php else: ?>
-    <div class="table-scroll" role="region" aria-label="Baris pratinjau impor" tabindex="0">
-      <table class="data-table data-table--import">
-        <thead>
-          <tr>
-            <th scope="col" class="num">Baris</th>
-            <th scope="col">Status</th>
-            <th scope="col"><?= esc($type->identifierLabel()) ?></th>
-            <th scope="col">Nama</th>
-            <?php if ($isStudent): ?>
-              <th scope="col">JK</th>
-              <th scope="col">Rombel</th>
-              <th scope="col" class="num">Absen</th>
-            <?php endif; ?>
-            <th scope="col">Kode unik</th>
-            <th scope="col">Catatan</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($rows as $row): ?>
-            <?php [$label, $class] = $labels[$row['action']]; $v = $row['values']; ?>
-            <tr class="<?= $row['action'] === VoterImporter::ACTION_INVALID ? 'is-invalid' : '' ?>">
-              <td class="num"><?= (int) $row['row'] ?></td>
-              <td><span class="pill <?= $class ?>"><?= esc($label) ?></span></td>
-              <td class="mono"><?= esc((string) ($v[$idColumn] ?? '-')) ?></td>
-              <td><?= esc((string) ($v['name'] ?? '-')) ?></td>
+  <div class="preview-rows" data-live-region="pratinjau" data-live-nav="halaman">
+    <p class="visually-hidden" data-live-announce><?= esc(ImportController::PREVIEW_FILTERS[$show]) ?>: <?= angka($total) ?> baris.</p>
+    <?php if ($rows === []): ?>
+      <p class="empty">Tidak ada baris pada saringan ini.</p>
+    <?php else: ?>
+      <div class="table-scroll" role="region" aria-label="Baris pratinjau impor" tabindex="0">
+        <table class="data-table data-table--import">
+          <thead>
+            <tr>
+              <th scope="col" class="num">Baris</th>
+              <th scope="col">Status</th>
+              <th scope="col"><?= esc($type->identifierLabel()) ?></th>
+              <th scope="col">Nama</th>
               <?php if ($isStudent): ?>
-                <td><?= esc((string) ($v['jenis_kelamin'] ?? '-')) ?></td>
-                <td><?= esc((string) ($v['kelas'] ?? '-')) ?></td>
-                <td class="num"><?= esc((string) ($v['nomor_absen'] ?? '-')) ?></td>
+                <th scope="col">JK</th>
+                <th scope="col">Rombel</th>
+                <th scope="col" class="num">Absen</th>
               <?php endif; ?>
-              <td class="mono"><?= esc((string) ($v['kodeunik'] ?? '-')) ?></td>
-              <td class="notes">
-                <?php foreach ($row['errors'] as $message): ?>
-                  <p class="notes__error"><?= icon('alert') ?> <?= esc($message) ?></p>
-                <?php endforeach; ?>
-                <?php foreach ($row['warnings'] as $message): ?>
-                  <p class="notes__warn"><?= icon('info') ?> <?= esc($message) ?></p>
-                <?php endforeach; ?>
-                <?php if ($row['changes'] !== []): ?>
-                  <p class="notes__change">Berubah: <?= esc(implode(', ', array_map(static fn ($f) => $fieldNames[$f] ?? $f, array_keys($row['changes'])))) ?></p>
-                <?php endif; ?>
-              </td>
+              <th scope="col">Kode unik</th>
+              <th scope="col">Catatan</th>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-    <?= $pager ?>
-  <?php endif; ?>
+          </thead>
+          <tbody>
+            <?php foreach ($rows as $row): ?>
+              <?php [$label, $class] = $labels[$row['action']]; $v = $row['values']; ?>
+              <tr class="<?= $row['action'] === VoterImporter::ACTION_INVALID ? 'is-invalid' : '' ?>">
+                <td class="num"><?= (int) $row['row'] ?></td>
+                <td><span class="pill <?= $class ?>"><?= esc($label) ?></span></td>
+                <td class="mono"><?= esc((string) ($v[$idColumn] ?? '-')) ?></td>
+                <td><?= esc((string) ($v['name'] ?? '-')) ?></td>
+                <?php if ($isStudent): ?>
+                  <td><?= esc((string) ($v['jenis_kelamin'] ?? '-')) ?></td>
+                  <td><?= esc((string) ($v['kelas'] ?? '-')) ?></td>
+                  <td class="num"><?= esc((string) ($v['nomor_absen'] ?? '-')) ?></td>
+                <?php endif; ?>
+                <td class="mono"><?= esc((string) ($v['kodeunik'] ?? '-')) ?></td>
+                <td class="notes">
+                  <?php foreach ($row['errors'] as $message): ?>
+                    <p class="notes__error"><?= icon('alert') ?> <?= esc($message) ?></p>
+                  <?php endforeach; ?>
+                  <?php foreach ($row['warnings'] as $message): ?>
+                    <p class="notes__warn"><?= icon('info') ?> <?= esc($message) ?></p>
+                  <?php endforeach; ?>
+                  <?php if ($row['changes'] !== []): ?>
+                    <p class="notes__change">Berubah: <?= esc(implode(', ', array_map(static fn ($f) => $fieldNames[$f] ?? $f, array_keys($row['changes'])))) ?></p>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?= $pager ?>
+    <?php endif; ?>
+  </div>
 
   <section class="panel commit-panel" aria-labelledby="commit-title">
     <header class="panel__head"><h2 class="panel__title" id="commit-title">04 &middot; Impor</h2></header>

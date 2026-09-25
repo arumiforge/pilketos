@@ -468,7 +468,7 @@ final class StageElevenRefinementTest extends CIUnitTestCase
             'admin/siswa/tambah'                   => ['<label for="kelas">Rombel</label>', 'Diawali kelas 7, 8, atau 9'],
             'admin/analitik/suara'                 => ['<label for="f-rombel">Rombel</label>', '<th scope="col">Rombel</th>'],
             'admin/buka-kunci?q=Ahmad'             => ['<th scope="col">Rombel</th>'],
-            'admin/siswa/impor'                    => ['rombel diawali kelas 7, 8, atau 9'],
+            'admin/siswa/impor'                    => ['Rombel diawali kelas 7, 8, atau 9'],
         ];
 
         foreach ($pages as $path => $needles) {

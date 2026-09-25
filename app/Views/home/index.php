@@ -1,6 +1,24 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('head') ?>
+<?php
+/* Yang pertama terlihat di layar pembuka diminta sejak <head>, sebelum
+   browser sampai ke <body>: latar pembuka (media sama dengan <source> di
+   <picture>: potret -> versi HP, lanskap -> versi desktop; URL ?v= sama agar
+   dipakai ulang), lockup, dan lambang sekolah bila dipasang. Latar hero
+   tidak perlu: tertutup layar pembuka dan sudah fetchpriority="high". */
+$firstScreen = [
+    [$home->introMobile, '(orientation: portrait)'],
+    [$home->introDesktop, '(orientation: landscape)'],
+    [$home->logoOnDark, null],
+    [($home->schoolEmblem ?? '') !== '' ? $home->schoolEmblem : null, null],
+];
+?>
+<?php foreach ($firstScreen as [$path, $media]): ?>
+<?php if ($path !== null): ?>
+<link rel="preload" href="<?= esc(asset_url($path), 'attr') ?>" as="image"<?= $media !== null ? ' media="' . esc($media, 'attr') . '"' : '' ?> fetchpriority="high">
+<?php endif; ?>
+<?php endforeach; ?>
 <link rel="preload" href="<?= base_url('assets/fonts/jetbrains-mono-latin-wght-normal.woff2') ?>" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= asset_url('assets/css/home.css') ?>">
 <?= $this->endSection() ?>
